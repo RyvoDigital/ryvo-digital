@@ -35,8 +35,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Large binary assets — store locally or in cloud storage
-/public/frames/
+# Source videos — not needed in repo (frames are committed instead)
 /public/videos/
 
 # Claude project files
