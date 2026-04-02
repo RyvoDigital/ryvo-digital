@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Large binary assets — store locally or in cloud storage
+/public/frames/
+/public/videos/
+
+# Claude project files
+.claude/

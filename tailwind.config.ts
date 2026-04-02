@@ -9,8 +9,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "#080808",
+        accent: "#4F6EF7",
+      },
+      fontFamily: {
+        display: ["var(--font-syne)", "sans-serif"],
+        sans: ["var(--font-dm-sans)", "sans-serif"],
+        mono: ["var(--font-dm-mono)", "monospace"],
       },
     },
   },
