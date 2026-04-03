@@ -14,8 +14,8 @@ export default function Navbar() {
         RYVO
       </span>
 
-      {/* Nav links */}
-      <ul className="flex items-center gap-10 translate-x-8">
+      {/* Nav links — hidden on mobile */}
+      <ul className="hidden md:flex items-center gap-10 translate-x-8">
         {navLinks.map((link) => (
           <li key={link.label}>
             <a

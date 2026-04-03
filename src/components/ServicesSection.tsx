@@ -378,9 +378,9 @@ export default function ServicesSection() {
           className="absolute inset-0 z-20 pointer-events-none"
           style={{ opacity: 0 }}
         >
-          {/* SVG connector lines: stat dots → headline characters */}
+          {/* SVG connector lines: stat dots → headline characters — hidden on mobile */}
           <svg
-            className="absolute inset-0 w-full h-full"
+            className="hidden md:block absolute inset-0 w-full h-full"
             aria-hidden="true"
             style={{ overflow: "visible" }}
           >
@@ -424,11 +424,11 @@ export default function ServicesSection() {
             </p>
           </div>
 
-          {/* ── 4 corner stats ── */}
+          {/* ── 4 corner stats — hidden on mobile ── */}
           {MANIFESTO_STATS.map((stat, i) => (
             <div
               key={stat.key}
-              className={`absolute ${stat.position} flex flex-col ${stat.align}`}
+              className={`hidden md:flex absolute ${stat.position} flex-col ${stat.align}`}
             >
               <div className="flex items-center gap-2">
                 {/* Dot on inner (center-facing) edge */}

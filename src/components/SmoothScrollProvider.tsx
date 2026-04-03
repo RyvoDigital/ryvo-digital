@@ -13,6 +13,14 @@ export default function SmoothScrollProvider({
   children: React.ReactNode;
 }) {
   useEffect(() => {
+    // On touch devices native scroll is already smooth — Lenis fights it and causes jank
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    if (isTouch) {
+      // Still keep ScrollTrigger in sync with native scroll
+      window.addEventListener("scroll", () => ScrollTrigger.update(), { passive: true });
+      return;
+    }
+
     const lenis = new Lenis({
       duration: 1.4,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
