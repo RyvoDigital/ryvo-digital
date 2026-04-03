@@ -16,7 +16,6 @@ function getFrameSrc(index: number): string {
 // ─── Text opacity ─────────────────────────────────────────────────────────────
 const FADE_RANGE = 0.035;
 const TEXT_ENTER = 0.30;
-const TEXT_LEAVE = 1.05; // never leaves
 
 function textOpacity(p: number): number {
   if (p < TEXT_ENTER) return 0;
