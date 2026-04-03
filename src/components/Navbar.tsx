@@ -30,7 +30,9 @@ export default function Navbar() {
 
       {/* CTA */}
       <a
-        href="#"
+        href="https://calendly.com/d/cvt3-7gk-kpd/discovery-call"
+        target="_blank"
+        rel="noopener noreferrer"
         className="font-sans text-sm font-medium px-5 py-2.5 rounded-full tracking-wide text-white/90 transition-all duration-300
           backdrop-blur-md bg-white/10 border border-white/20
           shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_24px_rgba(0,0,0,0.3)]
