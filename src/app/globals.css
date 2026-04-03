@@ -6,6 +6,18 @@
   --background: #080808;
   --foreground: #ffffff;
   --accent: #4F6EF7;
+
+  /* shadcn-compatible tokens used by ui/button + ui/footer */
+  --primary: #ffffff;
+  --primary-foreground: #080808;
+  --secondary: rgba(255,255,255,0.08);
+  --secondary-foreground: #ffffff;
+  --muted-foreground: rgba(255,255,255,0.4);
+  --input: rgba(255,255,255,0.12);
+  --ring: rgba(255,255,255,0.3);
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255,255,255,0.1);
 }
 
 * {

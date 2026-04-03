@@ -6,13 +6,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ─── Frame config ─────────────────────────────────────────────────────────────
+// ─── Frame config — 4 segments, petal animation + about transition ────────────
 const SEGMENTS = [
   { dir: "petal0", count: 192 }, // Full sphere → Design petal
   { dir: "petal1", count: 192 }, // Design → Build petal
   { dir: "petal2", count: 192 }, // Build → Maintain petal
+  { dir: "about",  count: 192 }, // Maintain petal → smoke (about transition)
 ];
-const TOTAL_FRAMES = SEGMENTS.reduce((s, seg) => s + seg.count, 0); // 576
+const TOTAL_FRAMES = SEGMENTS.reduce((s, seg) => s + seg.count, 0); // 768
 
 function getFrameSrc(globalIndex: number): string {
   let remaining = globalIndex;
@@ -27,15 +28,17 @@ function getFrameSrc(globalIndex: number): string {
 }
 
 // ─── Scroll mapping ───────────────────────────────────────────────────────────
-// 700vh total: first 100vh = slide-up + title, remaining 600vh = frame animation
-const SLIDE_END = 100 / 700; // ≈ 0.143
+// 900vh total: 100vh slide-up + 800vh frame animation
+// Petal frames (576): progress 0.111 → 0.778
+// About frames (192): progress 0.778 → 1.0
+const SLIDE_END = 100 / 900; // ≈ 0.111
 
-// ─── Text sections ────────────────────────────────────────────────────────────
+// ─── Service text sections (petal phase) ─────────────────────────────────────
 const TEXT_SECTIONS = [
   {
     key: "design",
     enter: 0.14,
-    leave: 0.40,
+    leave: 0.36,
     number: "01",
     label: "Design",
     lines: ["We craft", "experiences", "that define brands."],
@@ -44,16 +47,14 @@ const TEXT_SECTIONS = [
       "UI/UX design & prototyping",
       "Motion & interaction design",
     ],
-    // Bottom-right — petal curls left, open dark space on the right
     position: "bottom-16 right-14",
     align: "items-end",
     textAlign: "text-right",
-    cta: false,
   },
   {
     key: "build",
-    enter: 0.43,
-    leave: 0.68,
+    enter: 0.40,
+    leave: 0.58,
     number: "02",
     label: "Build",
     lines: ["We engineer", "digital products", "that perform."],
@@ -62,16 +63,14 @@ const TEXT_SECTIONS = [
       "Performance & Core Web Vitals",
       "Animations & immersive interfaces",
     ],
-    // Upper-left — petal ridge is centered, diagonal tension with top-left text
     position: "top-[22%] left-12",
     align: "items-start",
     textAlign: "text-left",
-    cta: false,
   },
   {
     key: "maintain",
-    enter: 0.71,
-    leave: 1.02,
+    enter: 0.62,
+    leave: 0.74,
     number: "03",
     label: "Maintain",
     lines: ["We grow", "your presence", "over time."],
@@ -80,11 +79,49 @@ const TEXT_SECTIONS = [
       "Analytics & conversion optimisation",
       "Priority support & evolution",
     ],
-    // Upper-right — petals fan bottom-left to upper-right, text anchors upper-right corner
     position: "top-24 right-14",
     align: "items-end",
     textAlign: "text-right",
-    cta: false,
+  },
+];
+
+// ─── Manifesto + stats overlay (about phase) ─────────────────────────────────
+const MANIFESTO_ENTER = 0.82;
+const MANIFESTO_LEAVE = 1.05; // never leaves
+
+// 4 corner stats — each connects to one edge of the manifesto headline
+const MANIFESTO_STATS = [
+  {
+    key: "satisfaction",
+    value: "100%",
+    label: "Client satisfaction",
+    position: "top-[32%] left-[4%]",
+    align: "items-start",
+    textAlign: "text-left",
+  },
+  {
+    key: "custom",
+    value: "Custom",
+    label: "Built, never templated",
+    position: "top-[20%] right-[5%]",
+    align: "items-end",
+    textAlign: "text-right",
+  },
+  {
+    key: "load",
+    value: "< 2s",
+    label: "Average load time",
+    position: "bottom-[20%] left-[5%]",
+    align: "items-start",
+    textAlign: "text-left",
+  },
+  {
+    key: "response",
+    value: "< 24h",
+    label: "Response guaranteed",
+    position: "bottom-[30%] right-[4%]",
+    align: "items-end",
+    textAlign: "text-right",
   },
 ];
 
@@ -107,9 +144,46 @@ export default function ServicesSection() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const framesRef = useRef<(HTMLImageElement | null)[]>(new Array(TOTAL_FRAMES).fill(null));
   const currentFrameRef = useRef(0);
-  const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const titleRef = useRef<HTMLDivElement>(null);
+  const textRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const manifestoRef = useRef<HTMLDivElement>(null);
 
+  // Refs for SVG connector lines: stat dot → headline character
+  const statDotRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const headlineCharRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const svgLineRefs = useRef<(SVGLineElement | null)[]>([]);
+
+  // ── Connector endpoint measurement ─────────────────────────────────────────
+  useEffect(() => {
+    const updateLines = () => {
+      MANIFESTO_STATS.forEach((_, i) => {
+        const lineEl = svgLineRefs.current[i];
+        const dotEl = statDotRefs.current[i];
+        const charEl = headlineCharRefs.current[i];
+        if (!lineEl || !dotEl || !charEl) return;
+
+        const dotRect = dotEl.getBoundingClientRect();
+        const charRect = charEl.getBoundingClientRect();
+
+        // Stat dot → nearest edge of headline character
+        const x1 = ((dotRect.left + dotRect.width / 2) / window.innerWidth * 100).toFixed(2);
+        const y1 = ((dotRect.top + dotRect.height / 2) / window.innerHeight * 100).toFixed(2);
+        const x2 = ((charRect.left + charRect.width / 2) / window.innerWidth * 100).toFixed(2);
+        const y2 = ((charRect.top + charRect.height / 2) / window.innerHeight * 100).toFixed(2);
+
+        lineEl.setAttribute("x1", `${x1}%`);
+        lineEl.setAttribute("y1", `${y1}%`);
+        lineEl.setAttribute("x2", `${x2}%`);
+        lineEl.setAttribute("y2", `${y2}%`);
+      });
+    };
+
+    document.fonts.ready.then(updateLines);
+    window.addEventListener("resize", updateLines);
+    return () => window.removeEventListener("resize", updateLines);
+  }, []);
+
+  // ── Canvas + ScrollTrigger ──────────────────────────────────────────────────
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -120,7 +194,6 @@ export default function ServicesSection() {
 
     const dpr = window.devicePixelRatio || 1;
 
-    // ── Canvas sizing ────────────────────────────────────────────────────────
     const setCanvasSize = () => {
       canvas.width = Math.round(window.innerWidth * dpr);
       canvas.height = Math.round(window.innerHeight * dpr);
@@ -130,7 +203,6 @@ export default function ServicesSection() {
     setCanvasSize();
     window.addEventListener("resize", setCanvasSize);
 
-    // ── Cover-scaled draw — zoom 7% to crop VEO watermark from corners ───────
     const drawCover = (img: HTMLImageElement) => {
       const cw = canvas.width;
       const ch = canvas.height;
@@ -142,7 +214,6 @@ export default function ServicesSection() {
       ctx.drawImage(img, (cw - iw * scale) / 2, (ch - ih * scale) / 2, iw * scale, ih * scale);
     };
 
-    // ── Sub-frame blending ───────────────────────────────────────────────────
     const drawFrame = (exactIndex: number) => {
       const lower = Math.floor(exactIndex);
       const upper = Math.min(lower + 1, TOTAL_FRAMES - 1);
@@ -162,7 +233,6 @@ export default function ServicesSection() {
       }
     };
 
-    // ── Frame loading ────────────────────────────────────────────────────────
     const loadOneFrame = (index: number): Promise<void> =>
       new Promise((resolve) => {
         const img = new Image();
@@ -172,11 +242,8 @@ export default function ServicesSection() {
       });
 
     loadOneFrame(0).then(() => drawFrame(0));
-    Promise.all(
-      Array.from({ length: TOTAL_FRAMES - 1 }, (_, i) => loadOneFrame(i + 1))
-    );
+    Promise.all(Array.from({ length: TOTAL_FRAMES - 1 }, (_, i) => loadOneFrame(i + 1)));
 
-    // ── GSAP ScrollTrigger ───────────────────────────────────────────────────
     const st = ScrollTrigger.create({
       trigger: container,
       start: "top top",
@@ -185,41 +252,40 @@ export default function ServicesSection() {
       onUpdate: (self) => {
         const p = self.progress;
 
-        // Slide-up: panel rises from translateY(100vh) → 0
+        // Crossfade: panel dissolves in over SLIDE_END
         const slideT = Math.min(1, p / SLIDE_END);
-        panel.style.transform = `translateY(${(1 - slideT) * 100}vh)`;
+        panel.style.opacity = String(slideT);
 
-        // "SERVICES" title: fades in during first half of slide, out during second half
+        // "SERVICES" label: rises and fades during crossfade
         const title = titleRef.current;
         if (title) {
           let titleOpacity = 0;
-          if (slideT <= 0.45) {
-            titleOpacity = slideT / 0.45;
-          } else if (slideT <= 0.75) {
-            titleOpacity = 1;
-          } else {
-            titleOpacity = 1 - (slideT - 0.75) / 0.25;
-          }
+          if (slideT <= 0.4) titleOpacity = slideT / 0.4;
+          else titleOpacity = Math.max(0, 1 - (slideT - 0.4) / 0.55);
           title.style.opacity = String(Math.max(0, Math.min(1, titleOpacity)));
         }
 
-        // Frame animation (linear — starts after slide completes)
+        // Frame playback (linear)
         const frameP = Math.max(0, (p - SLIDE_END) / (1 - SLIDE_END));
         const exactIndex = Math.min(frameP * (TOTAL_FRAMES - 1), TOTAL_FRAMES - 1);
         const roundedIndex = Math.floor(exactIndex);
-
         if (roundedIndex !== currentFrameRef.current || exactIndex % 1 > 0.01) {
           currentFrameRef.current = roundedIndex;
           requestAnimationFrame(() => drawFrame(exactIndex));
         }
 
-        // Text opacity
+        // Service text sections opacity
         TEXT_SECTIONS.forEach((section, i) => {
           const el = textRefs.current[i];
           if (!el) return;
-          const opacity = sectionOpacity(p, section.enter, section.leave);
-          el.style.opacity = String(Math.max(0, Math.min(1, opacity)));
+          el.style.opacity = String(Math.max(0, Math.min(1, sectionOpacity(p, section.enter, section.leave))));
         });
+
+        // Manifesto + stats overlay opacity
+        const manifesto = manifestoRef.current;
+        if (manifesto) {
+          manifesto.style.opacity = String(Math.max(0, Math.min(1, sectionOpacity(p, MANIFESTO_ENTER, MANIFESTO_LEAVE))));
+        }
       },
     });
 
@@ -233,15 +299,30 @@ export default function ServicesSection() {
     <section
       id="services"
       ref={containerRef}
-      style={{ height: "700vh" }}
+      style={{ height: "900vh" }}
       className="relative bg-[#080808]"
     >
-      {/* ── "SERVICES" title — lives on the black background, visible while panel slides up ── */}
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center pointer-events-none" style={{ zIndex: 1 }}>
+      {/* ── Main panel — crossfades in over the hero ── */}
+      <div
+        ref={panelRef}
+        className="sticky top-0 h-screen w-full overflow-hidden bg-[#080808]"
+        style={{ opacity: 0, zIndex: 2 }}
+      >
+        {/* Canvas */}
+        <canvas ref={canvasRef} className="absolute inset-0" />
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-[#080808]/25 z-10 pointer-events-none" />
+
+        {/* ── "SERVICES" label — appears on the canvas during the crossfade ── */}
         <div
           ref={titleRef}
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 pointer-events-none"
           style={{ opacity: 0 }}
         >
+          <p className="font-mono text-[10px] tracking-[0.3em] text-white/40 uppercase">
+            What we do
+          </p>
           <h1
             className="font-display font-black text-white tracking-tight select-none"
             style={{ fontSize: "clamp(56px, 10vw, 130px)", letterSpacing: "-0.03em" }}
@@ -249,21 +330,8 @@ export default function ServicesSection() {
             Services
           </h1>
         </div>
-      </div>
 
-      {/* ── Sliding panel — rises over the title screen ── */}
-      <div
-        ref={panelRef}
-        className="sticky top-0 h-screen w-full overflow-hidden bg-[#080808]"
-        style={{ transform: "translateY(100vh)", zIndex: 2 }}
-      >
-        {/* ── Canvas ── */}
-        <canvas ref={canvasRef} className="absolute inset-0" />
-
-        {/* ── Dark overlay ── */}
-        <div className="absolute inset-0 bg-[#080808]/25 z-10 pointer-events-none" />
-
-        {/* ── Text sections ── */}
+        {/* ── Service text sections (petal phase) ── */}
         {TEXT_SECTIONS.map((section, i) => (
           <div
             key={section.key}
@@ -272,15 +340,12 @@ export default function ServicesSection() {
             style={{ opacity: 0 }}
           >
             <div className={`absolute ${section.position} flex flex-col ${section.align}`}>
-              {/* Service number */}
               <p className="font-mono text-[10px] tracking-[0.25em] text-white/30 uppercase mb-2">
                 {section.number}
               </p>
-              {/* Service label */}
               <p className="font-display font-bold text-[#4F6EF7] tracking-widest uppercase text-sm mb-6">
                 {section.label}
               </p>
-              {/* Heading lines */}
               <h2 className="font-display font-black text-white overflow-visible">
                 {section.lines.map((line, j) => (
                   <span
@@ -296,34 +361,102 @@ export default function ServicesSection() {
                   </span>
                 ))}
               </h2>
-              {/* Bullets */}
               <ul className="mt-6 flex flex-col gap-2">
                 {section.bullets.map((b, j) => (
-                  <li
-                    key={j}
-                    className={`font-sans text-sm text-white/40 tracking-wide ${section.textAlign}`}
-                  >
+                  <li key={j} className={`font-sans text-sm text-white/40 tracking-wide ${section.textAlign}`}>
                     {b}
                   </li>
                 ))}
               </ul>
-              {/* CTA — Maintain section only */}
-              {section.cta && (
-                <a
-                  href="#"
-                  className="mt-8 font-sans text-sm font-medium px-5 py-2.5 rounded-full tracking-wide
-                    text-white/90 transition-all duration-300 pointer-events-auto
-                    backdrop-blur-md bg-white/10 border border-white/20
-                    shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_24px_rgba(0,0,0,0.3)]
-                    hover:bg-white/15 hover:border-white/30 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_32px_rgba(0,0,0,0.4)]
-                    self-end"
-                >
-                  Get a website
-                </a>
-              )}
             </div>
           </div>
         ))}
+
+        {/* ── Manifesto + stats overlay (about/smoke phase) ── */}
+        <div
+          ref={manifestoRef}
+          className="absolute inset-0 z-20 pointer-events-none"
+          style={{ opacity: 0 }}
+        >
+          {/* SVG connector lines: stat dots → headline characters */}
+          <svg
+            className="absolute inset-0 w-full h-full"
+            aria-hidden="true"
+            style={{ overflow: "visible" }}
+          >
+            {MANIFESTO_STATS.map((_, i) => (
+              <line
+                key={i}
+                ref={(el) => { svgLineRefs.current[i] = el; }}
+                x1="50%" y1="50%" x2="50%" y2="50%"
+                stroke="rgba(255,255,255,0.2)"
+                strokeWidth="1"
+                strokeDasharray="4 6"
+              />
+            ))}
+          </svg>
+
+          {/* Centered manifesto headline */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <h2
+              className="font-display font-black text-white text-center leading-none select-none"
+              style={{ fontSize: "clamp(36px, 5.5vw, 85px)", letterSpacing: "-0.02em", opacity: 0.75 }}
+            >
+              {/* Line 1 — refs on first and last char for connector lines */}
+              <span className="block">
+                <span ref={(el) => { headlineCharRefs.current[0] = el; }}>Y</span>
+                {"OUR VISION.".slice(0, -1)}
+                <span ref={(el) => { headlineCharRefs.current[1] = el; }}>.</span>
+              </span>
+              <span className="block opacity-70">ENGINEERED</span>
+              {/* Line 3 — refs on first and last char */}
+              <span className="block opacity-30">
+                <span ref={(el) => { headlineCharRefs.current[2] = el; }}>T</span>
+                {"O LAST.".slice(0, -1)}
+                <span ref={(el) => { headlineCharRefs.current[3] = el; }}>.</span>
+              </span>
+            </h2>
+            <p
+              className="font-sans text-base text-white/40 tracking-wide text-center mt-10"
+              style={{ maxWidth: "420px", lineHeight: 1.7 }}
+            >
+              Ryvo is a boutique digital agency based in Madrid. We exist for brands worth building for. Small by choice. Meticulous by nature.
+            </p>
+          </div>
+
+          {/* ── 4 corner stats ── */}
+          {MANIFESTO_STATS.map((stat, i) => (
+            <div
+              key={stat.key}
+              className={`absolute ${stat.position} flex flex-col ${stat.align}`}
+            >
+              <div className="flex items-center gap-2">
+                {/* Dot on inner (center-facing) edge */}
+                {stat.align === "items-end" && (
+                  <span
+                    ref={(el) => { statDotRefs.current[i] = el; }}
+                    className="inline-block w-1.5 h-1.5 rounded-full bg-white/35 flex-shrink-0"
+                  />
+                )}
+                <span
+                  className={`font-display font-black text-white/70 ${stat.textAlign}`}
+                  style={{ fontSize: "clamp(22px, 2.2vw, 36px)", lineHeight: 1 }}
+                >
+                  {stat.value}
+                </span>
+                {stat.align === "items-start" && (
+                  <span
+                    ref={(el) => { statDotRefs.current[i] = el; }}
+                    className="inline-block w-1.5 h-1.5 rounded-full bg-white/35 flex-shrink-0"
+                  />
+                )}
+              </div>
+              <p className={`font-mono text-[10px] tracking-[0.25em] text-white/30 uppercase mt-2 ${stat.textAlign}`}>
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

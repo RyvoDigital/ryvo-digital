@@ -11,6 +11,24 @@ const config: Config = {
       colors: {
         background: "#080808",
         accent: "#4F6EF7",
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          foreground: "var(--muted-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+        input: "var(--input)",
+        ring: "var(--ring)",
+        border: "var(--border)",
       },
       fontFamily: {
         display: ["var(--font-syne)", "sans-serif"],
