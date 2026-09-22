@@ -33,7 +33,7 @@ const TEXT_SECTIONS = [
     key: "hero",
     enter: 0,
     leave: 0.08,
-    label: "Web Design & Development · Madrid",
+    label: "Web Design & Development · Lisbon & Madrid",
     lines: ["We build", "digital worlds", "that last."],
     sub: null as string | null,
     position: "left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2",
@@ -357,7 +357,14 @@ export default function HeroSection() {
 
             {/* Text block — positioned per section */}
             <div className={`absolute ${section.position} flex flex-col ${section.align}`}>
-              <p className="font-mono text-[10px] tracking-[0.25em] text-white/40 uppercase mb-4">
+              <p
+                className={`font-mono text-[10px] text-white/40 uppercase mb-4 ${
+                  // Hero label must stay on one line — tighter tracking lets it fit 320px screens
+                  section.key === "hero"
+                    ? "whitespace-nowrap tracking-[0.12em] sm:tracking-[0.25em]"
+                    : "tracking-[0.25em]"
+                }`}
+              >
                 {section.label}
               </p>
               <h2 className={`font-display font-black text-white overflow-visible${section.align === "items-center" ? " text-center" : ""}`}>

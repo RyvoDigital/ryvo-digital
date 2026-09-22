@@ -6,7 +6,8 @@ const navLinks = [
   { label: "About", href: "#about" },
 ];
 
-export default function Navbar() {
+// linkPrefix lets pages other than the homepage point section anchors back at "/"
+export default function Navbar({ linkPrefix = "" }: { linkPrefix?: string }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6">
       {/* Logo */}
@@ -19,7 +20,7 @@ export default function Navbar() {
         {navLinks.map((link) => (
           <li key={link.label}>
             <a
-              href={link.href}
+              href={`${linkPrefix}${link.href}`}
               className="font-sans text-sm text-white/60 hover:text-white transition-colors duration-300 tracking-wide"
             >
               {link.label}

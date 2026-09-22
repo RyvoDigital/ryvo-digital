@@ -19,6 +19,7 @@ interface FooterProps {
   copyright: {
     text: string
     license?: string
+    legalEntity?: string
   }
 }
 
@@ -33,7 +34,7 @@ export function Footer({
   return (
     <footer className="pb-6 pt-16 lg:pb-8 lg:pt-24">
       <div className="px-4 lg:px-8">
-        <div className="md:flex md:items-start md:justify-between">
+        <div className="flex items-center justify-between">
           <a
             href="/"
             className="flex items-center gap-x-2"
@@ -42,7 +43,7 @@ export function Footer({
             {logo}
             <span className="font-bold text-xl">{brandName}</span>
           </a>
-          <ul className="flex list-none mt-6 md:mt-0 space-x-3">
+          <ul className="flex list-none space-x-3">
             {socialLinks.map((link, i) => (
               <li key={i}>
                 <Button
@@ -51,7 +52,12 @@ export function Footer({
                   className="h-10 w-10 rounded-full"
                   asChild
                 >
-                  <a href={link.href} target="_blank" aria-label={link.label}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={link.label}
+                  >
                     {link.icon}
                   </a>
                 </Button>
@@ -88,9 +94,16 @@ export function Footer({
               ))}
             </ul>
           </div>
-          <div className="mt-6 text-sm leading-6 text-muted-foreground whitespace-nowrap lg:mt-0 lg:row-[1/3] lg:col-[1/4]">
-            <div>{copyright.text}</div>
-            {copyright.license && <div>{copyright.license}</div>}
+          <div className="mt-6 text-sm leading-6 text-muted-foreground lg:mt-0 lg:row-[1/3] lg:col-[1/4]">
+            <div className="whitespace-nowrap">{copyright.text}</div>
+            {copyright.legalEntity && (
+              <p className="mt-1 max-w-md text-[11px] leading-5 text-white/25">
+                {copyright.legalEntity}
+              </p>
+            )}
+            {copyright.license && (
+              <div className="whitespace-nowrap">{copyright.license}</div>
+            )}
           </div>
         </div>
       </div>

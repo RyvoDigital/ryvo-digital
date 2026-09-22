@@ -160,7 +160,7 @@ export default function ManifestoSection() {
             className="font-sans text-base text-white/40 tracking-wide text-center mt-10"
             style={{ maxWidth: "420px", lineHeight: 1.7 }}
           >
-            Ryvo is a boutique digital agency based in Madrid. We exist for brands worth building for. Small by choice. Meticulous by nature.
+            Ryvo is a boutique digital agency based in Lisbon and Madrid. We exist for brands worth building for. Small by choice. Meticulous by nature.
           </p>
         </div>
       </div>
