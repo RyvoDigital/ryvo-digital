@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { fill, formatViewing, nextThursday, useViewingKey, weekdayOnly } from "@/lib/viewing-date";
@@ -30,7 +30,6 @@ const useStill = () =>
   useSyncExternalStore(noop, () => (new URLSearchParams(location.search).get("still") === "a" ? "a" : "b"), () => "b" as const);
 
 export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["hero"] }) {
-  const [booked, setBooked] = useState(false);
   const [loaded, setLoaded] = useState(false); // the light sweep waits for the page's load
   useEffect(() => {
     const go = () => setLoaded(true);
@@ -38,7 +37,6 @@ export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["h
     window.addEventListener("load", go, { once: true });
     return () => window.removeEventListener("load", go);
   }, []);
-  const onBooked = useCallback(() => setBooked(true), []);
   const still = STILLS[useStill()];
   const key = useViewingKey();
 
@@ -68,12 +66,12 @@ export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["h
         {loaded && <div aria-hidden="true" className={styles.sweep} />}
         <ScreenFit corners={still.corners as Corners} aspect={still.aspect} radius={still.radius} className="hero-chat">
           <div aria-hidden="true" className={styles.dim} />
-          <HeroChat chat={chat} onBooked={onBooked} key={key ?? "ssr"} />
+          <HeroChat chat={chat} key={key ?? "ssr"} />
           <div aria-hidden="true" className={styles.glass} />
         </ScreenFit>
       </div>
 
-      <div className={styles.chip} data-on={booked} aria-hidden={!booked}>
+      <div className={styles.chip} data-chip>
         <span className="font-mono text-[8.5px] tracking-[0.12em] text-silver md:text-[10px]">{t.chipLabel}</span>
         <span className="text-[12px] font-medium md:text-[15px]">{fill(t.chipValue, date)}</span>
       </div>

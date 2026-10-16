@@ -72,7 +72,12 @@ export default async function LangLayout({
   return (
     <html lang={HREFLANG[lang]} className={`${archivo.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "var d=document.documentElement;d.classList.add('js');try{if(sessionStorage.getItem('ryvo-intro'))d.classList.add('intro-seen');else sessionStorage.setItem('ryvo-intro','1')}catch(e){}",
+          }}
+        />
       </head>
       <body>
         <SmoothScroll />

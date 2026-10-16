@@ -1,11 +1,14 @@
+import Link from "next/link";
 import { preload } from "react-dom";
+import type { CSSProperties } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import SiteNav from "@/components/chrome/SiteNav";
 import { BookButton } from "@/components/chrome/Icons";
+import { navLinks } from "@/components/chrome/nav-links";
+import { NOTCH, NOTCH_AT, NOTCH_W, notchMaskUrl, notchPath } from "@/components/chrome/notch";
 import HeroVisual from "./HeroVisual";
 import { HERO_SIZES, heroSrcSet } from "./hero-media";
-import HeroReveal from "./HeroReveal";
 import styles from "./Hero.module.css";
 
 export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
@@ -18,22 +21,32 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
     imageSrcSet: heroSrcSet("/media/hero/hand-phone-b", "avif"),
     imageSizes: HERO_SIZES,
   });
+
+  const w = NOTCH_W[lang];
+  const notch = { "--notch": notchMaskUrl(w), "--notch-w": `${w + 2 * NOTCH.r}px`, "--notch-h": `${NOTCH.h}px` } as CSSProperties;
+
   return (
-    <header className={styles.wrap} data-hero>
+    <header className={styles.wrap} data-hero data-notch-at={NOTCH_AT[lang]} style={notch}>
       <div aria-hidden="true" className={styles.spill} />
 
+      {/* Wide desktops: the four links sit in the card's notch, on the page itself
+          (narrower ones keep them inline in the card's bar, where they fit). */}
+      <nav aria-label={t.nav.main} className={styles.notchNav} style={{ width: w }}>
+        {navLinks(lang, t).map((l) => (
+          <Link key={l.href} href={l.href} className={styles.notchLink}>{l.label}</Link>
+        ))}
+      </nav>
+      <svg aria-hidden="true" className={styles.notchEdge} width={w + 2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${w + 2 * NOTCH.r} ${NOTCH.h}`}>
+        <path d={notchPath(w, NOTCH.h, NOTCH.r, false)} />
+      </svg>
+
+      <div aria-hidden="true" className={styles.cardShadow} />
       <section className={styles.card} aria-labelledby="hero-title">
         <div className={styles.nav}>
-          <SiteNav lang={lang} t={t} bookHref="#book" />
+          <SiteNav lang={lang} t={t} bookHref="#book" linksClassName={styles.inlineLinks} />
         </div>
 
         <div className={styles.headline}>
-          <span className="mono-label" data-reveal style={{ ["--i" as string]: 0 }}>
-            {h.eyebrow[0]}
-            <br className="hidden md:block" />
-            <span className="md:hidden"> </span>
-            {h.eyebrow[1]}
-          </span>
           <h1 id="hero-title" className={styles.h1}>
             <span className="md:block md:whitespace-nowrap" data-reveal-line style={{ ["--i" as string]: 0 }}>{h.titleA}</span>{" "}
             <span className="md:block md:whitespace-nowrap" data-reveal-line style={{ ["--i" as string]: 1 }}>
@@ -43,52 +56,39 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
               <span className="text-steel">{h.titleD}</span> {h.titleE}
             </span>
           </h1>
-        </div>
-
-        <div className={styles.aside}>
-          <p className="m-0 text-[16px] leading-[1.6] text-body" data-reveal style={{ ["--i" as string]: 1 }}>{h.body}</p>
-          <span className="flex flex-wrap gap-[10px]" data-reveal style={{ ["--i" as string]: 2 }}>
-            <BookButton href="#book" label={h.primary} />
-            <a href="#demo" className="btn-ghost">{h.secondary}</a>
-          </span>
+          <div className={styles.deskOnly}>
+            <p className={styles.sub} data-reveal style={{ ["--i" as string]: 0 }}>{h.body}</p>
+            <span className={styles.actions} data-reveal style={{ ["--i" as string]: 1 }}>
+              <BookButton href="#book" label={h.primary} />
+              <a href="#demo" className={styles.textLink}>{h.secondary}</a>
+            </span>
+          </div>
         </div>
 
         <div aria-hidden="true" className={styles.wordmark} data-wordmark>RYVO</div>
 
         <HeroVisual lang={lang} t={h} />
-
-        <span className={styles.corner} style={{ left: 44 }}>
-          {h.cities[0]}
-          <br />
-          {h.cities[1]}
-        </span>
-        <span className={styles.corner} style={{ right: 44, textAlign: "right" }}>
-          {h.repliesIn}
-          <br />
-          <span className="text-text">PT · EN · ES · FR · DE</span>
-        </span>
       </section>
 
       <div className={styles.panel}>
-        {/* Mobile: the buttons live here (homepage-v2-mobile). */}
-        <div className="flex flex-col gap-3 lg:hidden">
-          <BookButton href="#book" label={h.primary} className="w-full !pl-5 text-[14px]" />
-          <a href="#demo" className="btn-ghost w-full text-[15px]">{h.secondary}</a>
-          <span className="pt-2 text-center font-mono text-[9.5px] tracking-[0.12em] text-steel">
-            {h.repliesIn} <span className="text-text">PT · EN · ES · FR · DE</span>
+        {/* Phones: the subline and the two actions sit under the card. */}
+        <div className="flex flex-col gap-4 lg:hidden">
+          <p className="m-0 text-[15px] leading-[1.55] text-body" data-reveal style={{ ["--i" as string]: 0 }}>{h.body}</p>
+          <span className="flex items-center gap-5" data-reveal style={{ ["--i" as string]: 1 }}>
+            <BookButton href="#book" label={h.primary} className="!pl-5 text-[14px]" />
+            <a href="#demo" className={styles.textLink}>{h.secondary}</a>
           </span>
         </div>
         {/* Desktop: the five automation names. */}
         <ol className="hidden grid-cols-5 gap-6 lg:grid">
           {t.automationNames.map((name, i) => (
-            <li key={name} className="flex flex-col gap-2" data-reveal style={{ ["--i" as string]: 3 + i }}>
+            <li key={name} className="flex flex-col gap-2">
               <span className={`font-mono text-[11px] ${i === 0 ? "text-text" : "text-steel"}`}>0{i + 1}</span>
               <span className={`text-[15px] ${i === 0 ? "text-text" : "text-body"}`}>{name}</span>
             </li>
           ))}
         </ol>
       </div>
-      <HeroReveal />
     </header>
   );
 }

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight } from "./Icons";
 
-// After the hero, a small glass "Book a call" pill waits bottom-centre. It steps
+// Phones only (on desktop the floating nav pill carries "Book"). After the hero,
+// a small glass "Book a call" pill waits bottom-centre. It steps
 // aside over the booking section and the footer and while anyone is typing in
 // the calculator. On phones it also hides while scrolling down (back on scroll
 // up) and never sits over an open row or a chat ([data-no-pill]).
@@ -63,7 +64,7 @@ export default function StickyBook({ href, label }: { href: string; label: strin
   return (
     <div
       data-sticky-book
-      className="pointer-events-none fixed inset-x-0 bottom-[max(16px,env(safe-area-inset-bottom))] z-50 flex justify-center transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]"
+      className="pointer-events-none fixed inset-x-0 bottom-[max(16px,env(safe-area-inset-bottom))] z-50 flex justify-center lg:hidden transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]"
       style={{ opacity: show ? 1 : 0, transform: show ? "none" : "translateY(16px)" }}
     >
       <a

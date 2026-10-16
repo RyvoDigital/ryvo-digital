@@ -29,7 +29,6 @@
   letter-spacing: -0.045em;
 }
 
-.l3 { color: var(--color-steel); }
 
 @media (min-width: 768px) {
   .title { font-size: 54px; }

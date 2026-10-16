@@ -809,17 +809,21 @@ Sources are in `~/ryvo-automation-platform` unless marked.
    - This supersedes "No setup fee is shown" (setup is now shown live) and the earlier three-tier control.
 2. **Hero still B**, with the chat mapped onto the screen by its four corners (matrix3d).
 3. **No 24-hour ruler, no thread.** Minimal is the rule.
-4. **About leads with proof, not names.** Names move to /about (Manuel "Founder & Engineering"). The test figure is the real one, rounded down: 3,317 recorded on 13 Oct, so "3,300+".
-5. **Booking:** 30-minute calls ("Thirty minutes"); the two Google Calendar schedules are embedded, with a button fallback.
+4. **About leads with proof, not names.** Names move to /about (Manuel "Founder & Engineering"). The test figure is the real one, rounded down: 3,317 recorded on 13 Oct, so "3,300+". Updated in round 3: the regression record of 15 Oct 2026 (20:04 UTC) has 3,552 cockpit tests passed plus 113/113 root test files, so "3,600+" (PT/ES "3600+"). The 113 are test files, not single tests.
+5. **Booking:** 30-minute calls ("Thirty minutes"). Superseded the same day: our own booking UI on hello@'s Google Calendar (free/busy + event with Meet; `docs/booking-google-setup.md`), with buttons to the Google pages as the fallback.
+
+**16 Oct 2026 (Manuel), homepage review round 3:**
+
+1. **First-visit intro**, once per session (sessionStorage, CSS only): the phone sharpens and rises, then RYVO, the headline, the subline and buttons, the chip last. Skipped on later visits and under reduced motion.
+2. **Notch nav:** the four links sit in a notch cut into the hero card, but only where the notch clears the language switch and Book. Measured: EN from 1280 px, PT and ES from 1440 px (`NOTCH_AT` in `src/components/chrome/notch.ts`). Narrower desktops keep the links inline in the card's bar. Notch widths: EN 430, PT 490, ES 550.
+3. **Floating pill** past the notch: stays within the hero, hides on scroll down after it, returns on scroll up. Phones: RYVO + menu. The bottom Book pill is now phone-only.
+4. **Own booking UI** (pick → form → confirmation) on the Calendar API, with the Google pages as the fallback (§ launch checklist).
+5. **Scroll word reveal** on the night-shift headline and the About body. **How we work** scales to fit the viewport while pinned.
 
 **Launch checklist (before the Vercel preview works):**
 
-- [ ] Vercel → Project → Settings → Environment Variables, for Preview and Production:
-  - `NEXT_PUBLIC_BOOKING_URL_AUTOMATIONS` = https://calendar.app.google/B2oHRfo416JWU1UD8
-  - `NEXT_PUBLIC_BOOKING_URL_WEBSITES` = https://calendar.app.google/T4LvbW8jcoD855j98
-  - `NEXT_PUBLIC_BOOKING_EMBED_AUTOMATIONS` = https://calendar.google.com/calendar/appointments/schedules/AcZssZ2S2upbjph5P5wzZcAupGLE7pOzG_6avJCjbLvs3n3PhgTbKKnTbpkJd81j8YPIeZzTYk22b7tV?gv=true
-  - `NEXT_PUBLIC_BOOKING_EMBED_WEBSITES` = https://calendar.google.com/calendar/appointments/schedules/AcZssZ2PCB5k4OIpGto4wjLgrMSf-d-vai0Em2uvmxRBY-CfOgi99vJDnbFkUMce0fxQV0zPs8bfltqi?gv=true
-  - (`NEXT_PUBLIC_*` values are baked in at build time, so redeploy after setting them.)
+- [ ] Booking on hello@'s calendar (own UI, replaces the Google embed): follow `docs/booking-google-setup.md`. Then in Vercel → Project → Settings → Environment Variables (Preview and Production), add by hand: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`, `BOOKING_CALENDAR_ID` = hello@ryvodigital.com. Never set `BOOKING_MOCK` in Vercel. Until these are set, the site shows buttons to the Google booking pages (the short links are in `src/lib/booking/config.ts`, so the `NEXT_PUBLIC_BOOKING_*` variables are no longer needed).
+- [ ] Confirm the booking hours in `src/lib/booking/config.ts` (read from the public schedules on 16 Oct: Mon–Fri 09:00–14:00 and 19:00–23:00 Madrid time; Saturday automations 10:30–17:00, websites 09:00–14:00 and 19:00–23:00).
 - [ ] Move the project to Vercel Pro and turn on Web Analytics (custom events).
 - [ ] The privacy policy names Google Calendar appointment schedules and Vercel Web Analytics (text change for Manuel and the lawyer).
 - [ ] FR/DE replies are live in the product before the site says "PT · EN · ES · FR · DE".

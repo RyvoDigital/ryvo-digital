@@ -15,6 +15,7 @@ import Book from "@/components/home/Book";
 import LightSwitch from "@/components/home/LightSwitch";
 import SiteFooter from "@/components/chrome/SiteFooter";
 import StickyBook from "@/components/chrome/StickyBook";
+import FloatingNav from "@/components/chrome/FloatingNav";
 
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
@@ -34,9 +35,10 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         <Pricing lang={lang} t={t.pricing} names={t.automationNames} />
         <Websites lang={lang} t={t.websites} />
         <About t={t.about} />
-        <Book t={t.book} />
+        <Book lang={lang} t={t.book} />
       </main>
       <SiteFooter lang={lang} t={t} />
+      <FloatingNav lang={lang} t={t} bookHref="#book" />
       <StickyBook href="#book" label={t.pill.book} />
       <LightSwitch />
     </div>

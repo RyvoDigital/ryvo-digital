@@ -1,5 +1,6 @@
 import type { Dictionary } from "@/i18n";
 import styles from "./About.module.css";
+import WordReveal, { Words } from "@/components/chrome/WordReveal";
 
 export default function About({ t }: { t: Dictionary["about"] }) {
   const tiles = [
@@ -21,7 +22,7 @@ export default function About({ t }: { t: Dictionary["about"] }) {
             <span className="chrome-text">{t.proof}</span>
             <span className={styles.proofLabel}>{t.proofLabel}</span>
           </div>
-          <p className={styles.body}>{t.body}</p>
+          <WordReveal as="p" className={styles.body}><Words text={t.body} /></WordReveal>
         </div>
         <div className={styles.tiles}>
           {tiles.map((tile) => (

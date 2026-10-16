@@ -38,7 +38,6 @@
   background:
     radial-gradient(70% 45% at 50% 75%, rgba(205, 209, 217, 0.2), transparent 72%),
     linear-gradient(180deg, #0e0f12 0%, #0a0b0d 100%);
-  box-shadow: 0 60px 140px rgba(0, 0, 0, 0.55);
   /* Geometry the visual reads */
   --vis-h: 500px;
   --vis-top: 346px;
@@ -55,10 +54,107 @@
     background:
       radial-gradient(42% 52% at 50% 70%, rgba(205, 209, 217, 0.2), transparent 72%),
       linear-gradient(180deg, #0e0f12 0%, #0a0b0d 100%);
-    --vis-h: 790px;
-    --vis-top: 414px;
+    height: 940px;
+    --vis-h: 720px;
+    --vis-top: 438px;
   }
 }
+
+/* The notch: the card minus a concave cut-out at its top centre, from the width
+   at which it clears the bar's right-hand cluster (data-notch-at, per language). */
+@media (min-width: 1280px) {
+  .wrap[data-notch-at="1280"] .card {
+    -webkit-mask: var(--notch) center top / var(--notch-w) var(--notch-h) no-repeat, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: var(--notch) center top / var(--notch-w) var(--notch-h) no-repeat exclude, linear-gradient(#000 0 0);
+  }
+}
+
+@media (min-width: 1440px) {
+  .wrap[data-notch-at="1440"] .card {
+    -webkit-mask: var(--notch) center top / var(--notch-w) var(--notch-h) no-repeat, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: var(--notch) center top / var(--notch-w) var(--notch-h) no-repeat exclude, linear-gradient(#000 0 0);
+  }
+}
+
+.cardShadow {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .cardShadow {
+    display: block;
+    position: absolute;
+    z-index: 1;
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 18px;
+    max-width: 1392px;
+    height: 940px;
+    margin: 0 auto;
+    border-radius: 34px;
+    box-shadow: 0 60px 140px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+  }
+}
+
+/* The links in the notch, and the notch's hairline edge (same tone as the card's border).
+   Below the notch width the links sit inline in the card's bar instead. */
+.notchNav, .notchEdge { display: none; }
+
+@media (min-width: 1024px) {
+  .inlineLinks { display: flex; }
+}
+
+@media (min-width: 1280px) {
+  .wrap[data-notch-at="1280"] .inlineLinks { display: none; }
+  .wrap[data-notch-at="1280"] .notchNav { display: flex; }
+  .wrap[data-notch-at="1280"] .notchEdge { display: block; }
+}
+
+@media (min-width: 1440px) {
+  .wrap[data-notch-at="1440"] .inlineLinks { display: none; }
+  .wrap[data-notch-at="1440"] .notchNav { display: flex; }
+  .wrap[data-notch-at="1440"] .notchEdge { display: block; }
+}
+
+@media (min-width: 1024px) {
+  .notchNav {
+    position: absolute;
+    z-index: 6;
+    left: 50%;
+    top: 18px;
+    height: var(--notch-h);
+    transform: translateX(-50%);
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    padding-bottom: 6px;
+  }
+
+  .notchEdge {
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    top: 18px;
+    transform: translateX(-50%);
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .notchEdge path { fill: none; stroke: #1f2125; stroke-width: 1px; }
+}
+
+.notchLink {
+  font-size: 14px;
+  color: var(--color-body);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.3s var(--ease-out-expo);
+}
+
+.notchLink:hover { color: var(--color-text); }
 
 .nav {
   position: absolute;
@@ -74,7 +170,7 @@
   position: absolute;
   left: 18px;
   right: 18px;
-  top: 84px;
+  top: 82px;
   z-index: 4;
   display: flex;
   flex-direction: column;
@@ -82,11 +178,49 @@
 }
 
 @media (min-width: 768px) {
-  .headline { left: 32px; right: 32px; top: 104px; gap: 20px; }
+  .headline { left: 32px; right: 32px; top: 104px; }
 }
 
 @media (min-width: 1024px) {
-  .headline { left: 44px; right: auto; top: 108px; gap: 16px; }
+  .headline { left: 44px; right: auto; top: 150px; gap: 0; }
+}
+
+.deskOnly { display: none; }
+
+@media (min-width: 1024px) {
+  .deskOnly { display: flex; flex-direction: column; gap: 24px; margin-top: 28px; }
+}
+
+.sub { margin: 0; max-width: 420px; font-size: 17px; line-height: 1.55; color: var(--color-body); }
+
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; }
+
+/* The quiet secondary action: text with a fine underline that draws on hover. */
+.textLink {
+  position: relative;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  font-size: 14px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.textLink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 11px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.35;
+  transform-origin: left;
+  transition: opacity 0.4s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+
+@media (hover: hover) {
+  .textLink:hover::after { opacity: 1; }
 }
 
 .h1 {
@@ -104,23 +238,6 @@
 
 @media (min-width: 1024px) {
   .h1 { font-size: clamp(56px, 5.1vw, 74px); line-height: 0.94; font-stretch: 114%; }
-}
-
-.aside {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .aside {
-    position: absolute;
-    right: 44px;
-    top: 150px;
-    width: 320px;
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
 }
 
 .wordmark {
@@ -147,7 +264,7 @@
 }
 
 @media (min-width: 1024px) {
-  .wordmark { top: 500px; font-size: clamp(250px, 27.8vw, 400px); }
+  .wordmark { top: 520px; font-size: clamp(250px, 27.8vw, 400px); }
 }
 
 /* The cut-out: its screen centre sits on the card's centre line. Geometry comes
@@ -231,35 +348,14 @@
   border: 1px solid rgba(205, 209, 217, 0.16);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-  opacity: 0;
-  transform: translateY(10px) scale(0.98);
-  transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
 }
-
-.chip[data-on="true"] { opacity: 1; transform: none; }
 
 @media (min-width: 768px) {
   .chip { right: auto; left: calc(50% + 170px); top: 430px; }
 }
 
 @media (min-width: 1024px) {
-  .chip { left: calc(50% + 196px); top: 534px; padding: 13px 16px; border-radius: 16px; gap: 4px; }
-}
-
-.corner {
-  position: absolute;
-  z-index: 4;
-  bottom: 30px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  line-height: 1.7;
-  color: var(--color-steel);
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .corner { display: block; }
+  .chip { left: calc(50% + 190px); top: 560px; padding: 13px 16px; border-radius: 16px; gap: 4px; }
 }
 
 /* The panel tucked under the card, fading into the page (Manuel's note 1). */

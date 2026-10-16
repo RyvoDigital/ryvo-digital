@@ -1,6 +1,7 @@
 import type { Dictionary } from "@/i18n";
 import { ArrowRight } from "@/components/chrome/Icons";
 import NightShiftMotion from "./NightShiftMotion";
+import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import styles from "./NightShift.module.css";
 
 export default function NightShift({ t }: { t: Dictionary["night"] }) {
@@ -12,18 +13,18 @@ export default function NightShift({ t }: { t: Dictionary["night"] }) {
         <span className="lg:hidden"> </span>
         {t.label[1]}
       </span>
-      <h2 id="night-title" className={styles.title}>
-        <span className={styles.l1} data-line>{t.line1}</span>{" "}
-        <span className={styles.l2} data-line>
-          {t.line2a}{" "}
+      <WordReveal as="h2" id="night-title" className={styles.title}>
+        <span className={styles.l1}><Words text={t.line1} /></span>{" "}
+        <span className={styles.l2}>
+          <Words text={t.line2a} />{" "}
           <span className={styles.dots} role="img" aria-label={t.typing}>
             <i /><i /><i />
           </span>{" "}
-          {t.line2b}
+          <Words text={t.line2b} />
         </span>{" "}
-        <span className={styles.l3} data-line>{t.line3}</span>{" "}
-        <span className={styles.l4} data-line><span className="chrome-text">{t.line4}</span></span>
-      </h2>
+        <span className={styles.l3}><Words text={t.line3} /></span>{" "}
+        <span className={styles.l4}><Words text={t.line4} className="chrome-text" /></span>
+      </WordReveal>
       <div className={styles.pills} data-pills>
         <span className={styles.pill} data-pill="0">{t.pills[0]}</span>
         <span className={`${styles.pill} ${styles.chrome} chrome-bg`} data-pill="1">{t.pills[1]}</span>

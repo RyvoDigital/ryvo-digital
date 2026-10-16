@@ -175,24 +175,34 @@ body {
   .btn-ghost:hover { background: rgba(241, 242, 244, 0.08); border-color: #3d4045; }
 }
 
-/* Hero intro: hidden only when JS is on and motion is allowed, and never for
-   longer than 2.5s even if the script fails. The phone only moves. */
+/* Floating nav pill: lifts in with a soft blur, never bounces. */
+.floating-nav > nav {
+  opacity: 0;
+  transform: translateY(-14px) scale(0.94);
+  filter: blur(6px);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.8s var(--ease-out-expo), filter 0.6s var(--ease-out-expo);
+}
+.floating-nav[data-show="true"] > nav { opacity: 1; transform: none; filter: none; }
+
+/* Hero intro, first visit per session only (html.intro-seen skips it). Pure CSS,
+   so it starts on the very first paint. The phone never fades: it rises out of
+   the glow and sharpens, so the largest paint is not delayed. Total ≤ 1.6s. */
 @media (prefers-reduced-motion: no-preference) {
-  html.js [data-hero]:not(.is-in) :is([data-reveal], [data-reveal-line], [data-wordmark]) {
-    opacity: 0;
-    animation: hero-failsafe 0.6s ease 2.5s forwards;
-  }
-  [data-hero].is-in [data-wordmark] { animation: hero-wordmark 1.6s var(--ease-out-expo) both; }
-  [data-hero].is-in [data-hero-visual] { animation: hero-rise 1.5s var(--ease-out-expo) 0.05s both; }
-  [data-hero].is-in [data-reveal-line] { animation: hero-line 1.1s var(--ease-out-expo) both; animation-delay: calc(0.15s + var(--i, 0) * 0.09s); }
-  [data-hero].is-in [data-reveal] { animation: hero-fade 1s var(--ease-out-expo) both; animation-delay: calc(0.35s + var(--i, 0) * 0.06s); }
+  html.js:not(.intro-seen) [data-hero] [data-hero-visual] { animation: hero-phone 0.8s var(--ease-out-expo) both; }
+  html.js:not(.intro-seen) [data-hero] [data-wordmark] { animation: hero-fade 0.8s var(--ease-out-expo) 0.35s both; }
+  html.js:not(.intro-seen) [data-hero] [data-reveal-line] { animation: hero-slide 0.75s var(--ease-out-expo) both; animation-delay: calc(0.55s + var(--i, 0) * 0.08s); }
+  html.js:not(.intro-seen) [data-hero] [data-reveal] { animation: hero-fade 0.7s var(--ease-out-expo) both; animation-delay: calc(0.85s + var(--i, 0) * 0.06s); }
+  html.js:not(.intro-seen) [data-hero] [data-chip] { animation: hero-fade 0.6s var(--ease-out-expo) 1s both; }
 }
 
-@keyframes hero-failsafe { to { opacity: 1; } }
-@keyframes hero-wordmark { from { opacity: 0; translate: 0 70px; filter: blur(18px); } }
-@keyframes hero-rise { from { translate: 0 90px; } }
-@keyframes hero-line { from { opacity: 0; translate: 0 35%; } }
-@keyframes hero-fade { from { opacity: 0; translate: 0 14px; } }
+@keyframes hero-phone { from { translate: 0 36px; filter: blur(8px); } }
+@keyframes hero-fade { from { opacity: 0; translate: 0 16px; } }
+@keyframes hero-slide { from { opacity: 0; translate: -32px 0; } }
+
+/* Scroll word reveal: grey until lit (WordReveal). Chrome words light to chrome. */
+[data-reveal-words] [data-word] { color: var(--color-steel); transition: color 0.35s var(--ease-out-expo); }
+[data-reveal-words] [data-word][data-lit] { color: var(--color-text); }
+[data-reveal-words] [data-word].chrome-text:not([data-lit]) { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--color-steel); }
 
 .sr-only {
   position: absolute;

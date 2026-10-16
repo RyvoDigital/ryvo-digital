@@ -127,6 +127,7 @@ export default function HowWeWork({ t }: { t: T }) {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const block = useRef<HTMLDivElement>(null);
+  const outer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = root.current;
@@ -137,18 +138,42 @@ export default function HowWeWork({ t }: { t: T }) {
       // Desktop: the stage pins and the steps change in place as you scroll.
       mm.add("(min-width: 1024px)", () => {
         setActive(0);
+        // When it locks, the whole block is visible and centred between the
+        // floating nav and the bottom edge: scaled down to fit short windows,
+        // and the pin starts at the offset that centres it.
+        const box = outer.current!;
+        const TOP = 76, BOTTOM = 24;
+        let offset = TOP;
+        const fit = () => {
+          st.style.transform = "none";
+          const natural = st.offsetHeight;
+          const avail = innerHeight - TOP - BOTTOM;
+          const scale = Math.min(1, avail / natural);
+          st.style.transform = scale < 1 ? `scale(${scale})` : "none";
+          st.style.transformOrigin = "top center";
+          box.style.height = `${natural * scale}px`;
+          offset = TOP + Math.max(0, (avail - natural * scale) / 2);
+        };
+        fit();
+        ScrollTrigger.addEventListener("refreshInit", fit);
         const trigger = ScrollTrigger.create({
-          trigger: st,
-          start: "top 2%",
+          trigger: box,
+          start: () => `top ${offset}px`,
           end: "+=170%",
           pin: true,
           pinSpacing: true,
           scrub: true,
+          invalidateOnRefresh: true,
           onUpdate: (self) => {
             setActive(Math.min(2, Math.floor(self.progress * 3)));
             },
         });
-        return () => trigger.kill();
+        return () => {
+          trigger.kill();
+          ScrollTrigger.removeEventListener("refreshInit", fit);
+          st.style.transform = "";
+          box.style.height = "";
+        };
       });
       // Phones: no pinning; the panel cycles calmly while the section is in view.
       mm.add("(max-width: 1023px)", () => {
@@ -166,6 +191,7 @@ export default function HowWeWork({ t }: { t: T }) {
 
   return (
     <section ref={root} id="how" className={styles.section} aria-labelledby="how-title">
+      <div ref={outer}>
       <div ref={block} className={styles.inner}>
         <div className="flex flex-col gap-[18px]">
           <span className="mono-label">{t.label}</span>
@@ -195,6 +221,7 @@ export default function HowWeWork({ t }: { t: T }) {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

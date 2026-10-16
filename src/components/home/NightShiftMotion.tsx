@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import { prefersReducedMotion, withMotion } from "@/lib/gsap";
 
-// The headline arrives line by line; on desktop the arrow travels along the pill
-// row, revealing Answer and Qualify as it passes, and Book appears as it lands.
+// On desktop the arrow travels along the pill row, revealing Answer and Qualify
+// as it passes, and Book appears as it lands. (The headline uses WordReveal.)
 export default function NightShiftMotion() {
   useEffect(() => {
     const root = document.querySelector<HTMLElement>("[data-night]");
@@ -12,14 +12,6 @@ export default function NightShiftMotion() {
     return withMotion(({ gsap }) => {
       const q = gsap.utils.selector(root);
       const ctx = gsap.context(() => {
-        gsap.from(q("[data-line]"), {
-          yPercent: 40,
-          opacity: 0,
-          duration: 1.1,
-          stagger: 0.12,
-          scrollTrigger: { trigger: q("h2")[0], start: "top 80%" },
-        });
-
         const mm = gsap.matchMedia();
         mm.add("(min-width: 1024px)", () => {
           const row = q("[data-pills]")[0] as HTMLElement;

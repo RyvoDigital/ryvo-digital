@@ -17,7 +17,7 @@ const AGENCY: Record<ChatLang, string> = { PT: "A sua agência", EN: "Your agenc
 
 export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] }) {
   const [chatLang, setChatLang] = useState<ChatLang>(lang.toUpperCase() as ChatLang);
-  const [step, setStep] = useState(4); // bubbles shown; replays on language change
+  const [step, setStep] = useState(6); // bubbles shown; replays on language change
   const key = useViewingKey();
   const root = useRef<HTMLElement>(null);
   const seen = useRef(false);
@@ -32,9 +32,9 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
   // Play the conversation: once when it first comes into view, then on each language tap.
   const play = useCallback(() => {
     timers.current.forEach(clearTimeout);
-    if (prefersReducedMotion()) return setStep(4);
+    if (prefersReducedMotion()) return setStep(6);
     setStep(0);
-    timers.current = [1, 2, 3, 4].map((n, i) => window.setTimeout(() => setStep(n), 250 + i * 650));
+    timers.current = [1, 2, 3, 4, 5, 6].map((n, i) => window.setTimeout(() => setStep(n), 250 + i * 600));
   }, []);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
     return () => { io.disconnect(); stop(); pending.forEach(clearTimeout); };
   }, [play]);
 
-  const bubbles: [string, "lead" | "agent"][] = [[chat.l1, "lead"], [chat.a1, "agent"], [chat.l2, "lead"], [chat.a2, "agent"]];
+  const bubbles: [string, "lead" | "agent"][] = [[chat.l1, "lead"], [chat.a1, "agent"], [chat.lp, "lead"], [chat.ap, "agent"], [chat.l2, "lead"], [chat.a2, "agent"]];
 
   return (
     <section ref={root} id="demo" className={styles.section} aria-labelledby="demo-title">
@@ -120,6 +120,12 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
                         {text}
                       </p>
                     ))}
+                  </div>
+                  <div className={styles.composer} aria-hidden="true">
+                    <span className={styles.composerField}>{chat.composer}</span>
+                    <span className={styles.send}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+                    </span>
                   </div>
                 </div>
               </ScreenFit>
