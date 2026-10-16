@@ -10,9 +10,11 @@ import styles from "./PhoneStory.module.css";
 // chip flicks through languages and locks on the buyer's → one large reply
 // writes itself → a big "11:00" is picked → a big "Viewing booked ✓" → the
 // handover card for the consultant, which lifts off the screen and flies to the
-// "Viewing booked" chip. Exactly one card flies: the screen's card hides on the
-// frame the flying copy (same markup, same size) takes its place.
-// Only while on screen. Reduced motion (or no script): the booked scene, still.
+// "Viewing booked" chip's spot, where it turns into the chip (hidden until then;
+// it stays ~3 s, then the loop resets). Exactly one card flies: the screen's card
+// hides on the frame the flying copy (same markup, same size) takes its place.
+// Only while on screen. Reduced motion (or no script): the booked scene and the
+// chip, still.
 
 // Only the five languages the assistant answers in.
 const ROLL = ["PT", "EN", "ES", "FR", "DE"] as const;
@@ -67,6 +69,8 @@ export default function PhoneStory({ chat, story, langCode, slotShort }: Props) 
         tl = gsap.timeline({ repeat: -1, paused: true, defaults: { ease: "power3.out" } });
         // 0 · the lock screen at 23:47 (everything reset for every loop)
         tl.set(one("lock"), { autoAlpha: 1, y: 0 }, 0)
+          .set(chip ?? {}, { autoAlpha: 0, scale: 1, boxShadow: "0 0 0 rgba(205, 209, 217, 0)" }, 0)
+          .set(fly ?? {}, { autoAlpha: 0 }, 0)
           .set(scenes, { autoAlpha: 0, y: 30, scale: 0.96 }, 0)
           .set(reel, { y: 0 }, 0)
           .set(one("pill"), { attr: { "data-on": "false" } }, 0)
@@ -116,14 +120,45 @@ export default function PhoneStory({ chat, story, langCode, slotShort }: Props) 
           .to(one("booked"), enter, b + 0.3)
           .to(ring, { strokeDashoffset: 0, duration: 0.55, ease: "power2.inOut" }, b + 0.4)
           .to(check, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, b + 0.85);
-        // the handover card forms, then lifts off and flies out to the chip
+        // the handover card forms, then lifts off and flies to the chip's spot,
+        // where it turns into the chip: the chip shows only from here. The flight
+        // is part of this timeline (measured afresh each loop), so the card's fade
+        // and the chip's reveal share one clock and never overlap more than a beat.
         const h = b + 2.0;
+        const f = h + 2.0, land = f + 1.17;
         tl.to(one("booked"), leave, h)
           .to(one("hand"), enter, h + 0.3)
-          .to(q("[data-row]"), { autoAlpha: 1, x: 0, duration: 0.4, stagger: 0.1 }, h + 0.55)
-          .call(() => flyOut(gsap, one("hand"), fly, chip, hero), undefined, h + 2.0);
-        // hold, then back to the lock screen for a seamless loop
-        const end = h + 3.4;
+          .to(q("[data-row]"), { autoAlpha: 1, x: 0, duration: 0.4, stagger: 0.1 }, h + 0.55);
+        if (fly && chip && hero) {
+          const g = { sx: 0, sy: 0, ex: 0, ey: 0, s0: 1, s1: 0.5 };
+          const measure = () => {
+            const card = one("handcard"), box = hero.querySelector("section")!.getBoundingClientRect();
+            const a = card.getBoundingClientRect(), c = chip.getBoundingClientRect();
+            const w = card.offsetWidth;
+            fly.style.width = `${w}px`;
+            const hh = fly.offsetHeight || card.offsetHeight;
+            Object.assign(g, {
+              s0: a.width / w, s1: Math.min(1, (c.width / w) * 1.05),
+              sx: a.left + a.width / 2 - box.left - w / 2, sy: a.top + a.height / 2 - box.top - hh / 2,
+              ex: c.left + c.width / 2 - box.left - w / 2, ey: c.top + c.height / 2 - box.top - hh / 2,
+            });
+          };
+          tl.call(measure, undefined, f - 0.02)
+            // the same card takes the screen card's exact place on the frame it hides
+            .set(fly, { x: () => g.sx, y: () => g.sy, scale: () => g.s0, rotate: 0, autoAlpha: 1 }, f)
+            .set(one("hand"), { autoAlpha: 0 }, f)
+            .to(fly, { y: () => g.sy - 14 * g.s0, scale: () => g.s0 * 1.04, rotate: -2, duration: 0.3, ease: "power2.out" }, f)
+            .to(fly, { x: () => g.ex, y: () => g.ey, scale: () => g.s1, rotate: 0, duration: 0.95, ease: "power3.inOut" }, f + 0.22)
+            // on the chip's spot: the card dissolves as the chip appears
+            .to(fly, { autoAlpha: 0, scale: () => g.s1 * 0.92, duration: 0.18, ease: "power2.in" }, land)
+            .fromTo(chip, { autoAlpha: 0, scale: 0.9 }, { autoAlpha: 1, scale: 1, duration: 0.35, ease: "power3.out", immediateRender: false }, land + 0.1)
+            .fromTo(chip, { boxShadow: "0 0 0 rgba(205, 209, 217, 0)" }, { boxShadow: "0 0 34px rgba(205, 209, 217, 0.45)", duration: 0.35, yoyo: true, repeat: 1, immediateRender: false }, land + 0.2);
+          // positions are read again on every loop (the layout may have changed)
+          tl.eventCallback("onRepeat", () => tl?.getTweensOf(fly).forEach((t) => t.invalidate()));
+        }
+        // the chip stays ~3 s, then everything resets: chip hidden, lock screen back
+        const end = land + 0.45 + 3.0;
+        if (chip) tl.to(chip, { autoAlpha: 0, scale: 0.96, duration: 0.45, ease: "power2.in" }, end);
         tl.to(one("lock"), { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, end)
           .set({}, {}, end + 1.0);
       }, el);
@@ -207,28 +242,4 @@ export default function PhoneStory({ chat, story, langCode, slotShort }: Props) 
       </div>
     </div>
   );
-}
-
-// The handover card leaves the phone. The flying layer holds the same card; it
-// takes the screen card's exact place and size on the frame the screen card is
-// hidden, so one card lifts off and travels to the "Viewing booked" chip.
-function flyOut(gsap: typeof import("gsap").gsap, scene: HTMLElement, fly?: HTMLElement | null, chip?: HTMLElement | null, hero?: HTMLElement | null) {
-  const card = scene.querySelector<HTMLElement>("[data-s=handcard]");
-  if (!fly || !chip || !hero || !card) return;
-  const box = hero.querySelector("section")!.getBoundingClientRect();
-  const a = card.getBoundingClientRect(), c = chip.getBoundingClientRect();
-  const w = card.offsetWidth;
-  fly.style.width = `${w}px`;
-  const hgt = fly.offsetHeight || card.offsetHeight;
-  const s0 = a.width / w, s1 = Math.min(1, (c.width / w) * 1.05);
-  const sx = a.left + a.width / 2 - box.left - w / 2, sy = a.top + a.height / 2 - box.top - hgt / 2;
-  const ex = c.left + c.width / 2 - box.left - w / 2, ey = c.top + c.height / 2 - box.top - hgt / 2;
-  gsap.set(fly, { x: sx, y: sy, scale: s0, rotate: 0, autoAlpha: 1 });
-  gsap.set(scene, { autoAlpha: 0 });
-  gsap.timeline()
-    .to(fly, { y: sy - 14 * s0, scale: s0 * 1.04, rotate: -2, duration: 0.3, ease: "power2.out" })
-    .to(fly, { x: ex, y: ey, scale: s1, rotate: 0, duration: 0.95, ease: "power3.inOut" }, 0.22)
-    .to(fly, { autoAlpha: 0, scale: s1 * 0.88, duration: 0.3, ease: "power2.in" }, 0.95)
-    .fromTo(chip, { scale: 1 }, { scale: 1.06, duration: 0.22, ease: "power2.out", yoyo: true, repeat: 1 }, 1.05)
-    .fromTo(chip, { boxShadow: "0 0 0 rgba(205, 209, 217, 0)" }, { boxShadow: "0 0 34px rgba(205, 209, 217, 0.45)", duration: 0.3, yoyo: true, repeat: 1 }, 1.05);
 }

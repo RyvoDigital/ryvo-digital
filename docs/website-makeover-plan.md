@@ -853,6 +853,13 @@ Sources are in `~/ryvo-automation-platform` unless marked.
 7. **Keyboard order:** RYVO, then the nav links, then the languages and Book (where the notch shows, the logo sits outside the card, before the notch).
 8. **Booking live:** Manuel set up Google (OAuth client, refresh token, calendar id in .env.local); BOOKING_MOCK removed from .env.local. Vercel still needs the same four variables, added by Manuel by hand.
 
+**17 Oct 2026 (Manuel), final changes, then the homepage and /websites are LOCKED:**
+
+1. **Hero "Viewing booked" chip:** hidden throughout the story. It appears only at the end, on the frame the flying handover card reaches its spot (the card dissolves as the chip appears there: one card, one chip, never together), stays ~3 s, then hides as everything resets and the loop restarts. Reduced motion or no script: the final frame (the booked scene and the chip), still.
+2. **/about copy:** no "small" framing anywhere (EN/PT/ES). The proof line leads (3,600+ automated tests on every change), then "Built in-house. Lisbon & Madrid." / "Feito em casa. Lisboa e Madrid." / "Hecho en casa. Lisboa y Madrid.", and a paragraph that claims nothing about team size: two lines of work from Lisbon and Madrid, each with its own people, everything designed, built and run by us, so you speak to the people who do the work.
+
+**🔒 LOCKED (Manuel, 17 Oct 2026): the homepage (`/en`, `/pt`, `/es`) and `/websites`.** No further changes to them, their sections or their copy unless Manuel asks. Shared components they use (nav, footer, booking, pricing, hero) are changed only for a bug, and then checked on the locked pages too.
+
 **17 Oct 2026 (Manuel), homepage review round 8, and the inner pages (stop point 4):**
 
 1. **Bottom dark:** a deep gradient under the hand, full black on the card's edge and falling off softly to ~42% of the card's height (25% on phones, where RYVO is small), so RYVO rises out of darkness.

@@ -434,6 +434,12 @@
   backdrop-filter: blur(16px);
 }
 
+/* With motion, the chip is hidden from the first paint: it appears only when the
+   handover card lands on its spot (PhoneStory). Reduced motion or no script: shown. */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .chip { opacity: 0; visibility: hidden; }
+}
+
 @media (min-width: 1024px) {
   /* Next to the phone: just over its right edge, low, clear of the screen's scenes. */
   .chip { left: calc(var(--ax) + var(--aw) * 0.5718 + 6px); top: calc(var(--ay) + var(--ah) * 0.6); padding: 13px 16px; border-radius: 16px; gap: 4px; }
