@@ -6,6 +6,8 @@ import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { prefersReducedMotion, withMotion } from "@/lib/gsap";
 import { ArrowUpRight } from "@/components/chrome/Icons";
+import WordReveal, { Words } from "@/components/chrome/WordReveal";
+import type { Rings } from "./rings-scene";
 import styles from "./Automations.module.css";
 
 // Five nodes on the hairline orbit around the chrome loop (pentagon, 01 on top).
@@ -14,37 +16,53 @@ const ORBIT = { rx: 44, ry: 31 }; // % of the stage
 
 function LoopStage({ active, note }: { active: number; note: string[] }) {
   const stage = useRef<HTMLDivElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
-  const [ready, setReady] = useState(false);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [live, setLive] = useState(false);
 
-  // The ring turns on its own in a seamless endless loop (first and last frames
-  // match). It loads when about to be seen, pauses off-screen, and never loads
-  // with reduced motion (the still stays).
+  // The rings are real-time 3D (three.js), fetched only when the section is
+  // near, rendered only while it is on screen, never with reduced motion (the
+  // still poster stays). ?ringsPoster renders one opaque frame for the poster.
   useEffect(() => {
     const el = stage.current;
-    const v = video.current;
-    if (!el || !v || prefersReducedMotion()) return;
-    let loaded = false;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        if (!loaded) { loaded = true; v.src = "/media/loop/loop-turn.mp4"; v.load(); }
-        v.play().catch(() => {});
-      } else if (loaded) v.pause();
-    }, { rootMargin: "200px 0px" });
-    io.observe(el);
-    const onReady = () => setReady(true);
-    v.addEventListener("loadeddata", onReady);
-    return () => { io.disconnect(); v.removeEventListener("loadeddata", onReady); };
+    const cv = canvas.current;
+    if (!el || !cv || prefersReducedMotion()) return;
+    const posterMode = new URLSearchParams(location.search).has("ringsPoster");
+    let rings: Rings | null = null;
+    let onScreen = false;
+    let gone = false;
+    const run = () => { if (!rings) return; if (onScreen && !document.hidden) rings.start(); else rings.stop(); };
+    const load = async () => {
+      try {
+        const { createRings } = await import("./rings-scene");
+        if (gone) return;
+        rings = createRings(cv, { opaque: posterMode });
+        if (posterMode) rings.renderAt(0);
+        else run();
+        setLive(true);
+      } catch {
+        // No WebGL: the poster stays.
+      }
+    };
+    const near = new IntersectionObserver(([e]) => { if (e.isIntersecting) { near.disconnect(); load(); } }, { rootMargin: "800px 0px" });
+    const seen = new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; if (!posterMode) run(); });
+    near.observe(el);
+    seen.observe(el);
+    const ro = new ResizeObserver(() => rings?.resize());
+    ro.observe(cv);
+    const onVis = () => !posterMode && run();
+    document.addEventListener("visibilitychange", onVis);
+    return () => { gone = true; near.disconnect(); seen.disconnect(); ro.disconnect(); document.removeEventListener("visibilitychange", onVis); rings?.dispose(); };
   }, []);
 
   return (
     <div ref={stage} className={styles.stage}>
       <div aria-hidden="true" className={styles.glow} />
+      <div aria-hidden="true" className={styles.floor} />
       <picture>
-        <source type="image/avif" srcSet="/media/loop/loop-640.avif 640w, /media/loop/loop-960.avif 960w, /media/loop/loop-1280.avif 1280w" sizes="(min-width: 1024px) 540px, 90vw" />
-        <img src="/media/loop/loop-960.webp" srcSet="/media/loop/loop-640.webp 640w, /media/loop/loop-960.webp 960w, /media/loop/loop-1280.webp 1280w" sizes="(min-width: 1024px) 540px, 90vw" alt="" width={1280} height={1280} loading="lazy" decoding="async" className={styles.media} />
+        <source type="image/avif" srcSet="/media/loop/rings-640.avif 640w, /media/loop/rings-960.avif 960w, /media/loop/rings-1080.avif 1080w" sizes="(min-width: 1200px) 540px, 90vw" />
+        <img src="/media/loop/rings-960.webp" srcSet="/media/loop/rings-640.webp 640w, /media/loop/rings-960.webp 960w, /media/loop/rings-1080.webp 1080w" sizes="(min-width: 1200px) 540px, 90vw" alt="" width={1080} height={1202} loading="lazy" decoding="async" className={styles.poster} style={{ opacity: live ? 0 : 1 }} />
       </picture>
-      <video ref={video} className={styles.media} style={{ opacity: ready ? 1 : 0 }} muted playsInline loop preload="none" aria-hidden="true" />
+      <canvas ref={canvas} className={styles.canvas} style={{ opacity: live ? 1 : 0 }} aria-hidden="true" />
       <svg className={styles.orbit} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         <ellipse cx="50" cy="50" rx={ORBIT.rx} ry={ORBIT.ry} />
       </svg>
@@ -96,13 +114,13 @@ export default function Automations({ lang, t, names }: { lang: Locale; t: Dicti
         <div className={styles.copy}>
           <div className={`flex flex-col gap-[18px] ${styles.header}`}>
             <span className="mono-label">{t.label}</span>
-            <h2 id="automations-title" className={`display ${styles.title}`}>
-              {t.titleA}{" "}
-              <span className="text-steel">
-                <span className="hidden md:inline">{t.titleB}</span>
-                <span className="md:hidden">{t.titleBShort}</span>
+            <WordReveal as="h2" id="automations-title" className={`display ${styles.title}`} end="bottom 55%">
+              <Words text={t.titleA} />{" "}
+              <span className="text-steel" style={{ ["--word-on" as string]: "var(--color-silver)" }}>
+                <span className="hidden md:inline"><Words text={t.titleB} /></span>
+                <span className="md:hidden"><Words text={t.titleBShort} /></span>
               </span>
-            </h2>
+            </WordReveal>
           </div>
           <div ref={listRef} className={styles.list}>
             {names.map((name, i) => {

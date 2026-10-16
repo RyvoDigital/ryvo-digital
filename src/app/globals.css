@@ -199,10 +199,18 @@ body {
 @keyframes hero-fade { from { opacity: 0; translate: 0 16px; } }
 @keyframes hero-slide { from { opacity: 0; translate: -32px 0; } }
 
-/* Scroll word reveal: grey until lit (WordReveal). Chrome words light to chrome. */
-[data-reveal-words] [data-word] { color: var(--color-steel); transition: color 0.35s var(--ease-out-expo); }
-[data-reveal-words] [data-word][data-lit] { color: var(--color-text); }
-[data-reveal-words] [data-word].chrome-text:not([data-lit]) { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--color-steel); }
+/* Scroll word reveal (WordReveal): each word blends from steel to its final
+   colour as --lit goes 0 → 1, scrubbed to the scroll. Unset, --lit is 1, so
+   without script every word shows in its final colour. --word-on sets the final
+   colour (inherited, so a wrapper can set it for its words). Chrome words keep
+   the chrome and fade a steel fill away over it. */
+[data-reveal-words] [data-word] {
+  color: color-mix(in oklab, var(--word-on, var(--color-text)) calc(var(--lit, 1) * 100%), var(--color-steel));
+}
+[data-reveal-words] [data-word].chrome-text {
+  color: transparent;
+  -webkit-text-fill-color: color-mix(in oklab, var(--color-steel) calc((1 - var(--lit, 1)) * 100%), transparent);
+}
 
 .sr-only {
   position: absolute;

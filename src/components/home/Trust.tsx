@@ -1,56 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { Dictionary } from "@/i18n";
-import { prefersReducedMotion } from "@/lib/gsap";
+import ChatThread, { useChatPlayer, type Who } from "@/components/chrome/ChatThread";
 import styles from "./Trust.module.css";
 
-type Beat = 0 | 1 | 2 | 3; // nothing · first message landed · typing · reply landed
-
-// Each rule is proven by a mini chat that plays like real messaging when its row
-// enters view: the message lands, the assistant types, the reply lands. Calm:
-// fades and a few pixels of rise, no bounce. Every bubble reserves its space
-// from the start, so nothing moves around it.
-function useBeats(hasLead: boolean) {
+// Each rule is proven by a mini chat that plays like iMessage when its row
+// enters view (ChatThread): the message lands, "Delivered", the assistant types,
+// the reply lands. Every bubble keeps its place from the start.
+function MiniChat({ lead, reply, caption, delivered }: { lead?: string; reply: React.ReactNode; caption?: string; delivered: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [beat, setBeat] = useState<Beat>(0);
+  const whos: Who[] = lead ? ["lead", "agent"] : ["agent"];
+  const { state, play } = useChatPlayer(whos);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const timers: number[] = [];
     const io = new IntersectionObserver(([e]) => {
       if (!e.isIntersecting) return;
       io.disconnect();
-      if (prefersReducedMotion()) { timers.push(window.setTimeout(() => setBeat(3), 0)); return; }
-      const t0 = hasLead ? 250 : 0;
-      if (hasLead) timers.push(window.setTimeout(() => setBeat(1), t0));
-      timers.push(window.setTimeout(() => setBeat(2), t0 + 700));
-      timers.push(window.setTimeout(() => setBeat(3), t0 + 2000));
+      play(250);
     }, { threshold: 0.6 });
     io.observe(el);
-    return () => { io.disconnect(); timers.forEach(clearTimeout); };
-  }, [hasLead]);
-  return { ref, beat };
-}
-
-function Typing({ on }: { on: boolean }) {
-  return (
-    <span aria-hidden="true" className={styles.typing} data-on={on}>
-      <i /><i /><i />
-    </span>
-  );
-}
-
-function MiniChat({ lead, reply, caption }: { lead?: string; reply: React.ReactNode; caption?: string }) {
-  const { ref, beat } = useBeats(Boolean(lead));
+    return () => io.disconnect();
+  }, [play]);
+  const done = state.shown === whos.length;
+  const items = [...(lead ? [{ who: "lead" as Who, content: lead }] : []), { who: "agent" as Who, content: reply }];
   return (
     <div ref={ref} className={styles.chat} data-no-pill>
-      {lead && <span className={styles.lead} data-on={beat >= 1}>{lead}</span>}
-      <span className={styles.replyWrap}>
-        <Typing on={beat === 2} />
-        <span className={styles.agent} data-on={beat >= 3}>{reply}</span>
-      </span>
-      {caption && <span className={styles.caption} data-on={beat >= 3}>{caption}</span>}
+      <ChatThread items={items} state={state} deliveredLabel={delivered} classes={{ lead: styles.lead, agent: styles.agent }} />
+      {caption && <span className={styles.caption} data-on={done}>{caption}</span>}
     </div>
   );
 }
@@ -70,7 +48,7 @@ export default function Trust({ t }: { t: Dictionary["trust"] }) {
             <span className={styles.ruleN}>{r1.n}</span>
             <span className={styles.ruleTitle}>{r1.title[0]} <br className="hidden lg:block" />{r1.title[1]}</span>
           </span>
-          <MiniChat lead={r1.lead} reply={r1.reply} />
+          <MiniChat lead={r1.lead} reply={r1.reply} delivered={t.delivered} />
         </div>
 
         <div className={styles.rule}>
@@ -78,7 +56,7 @@ export default function Trust({ t }: { t: Dictionary["trust"] }) {
             <span className={styles.ruleN}>{r2.n}</span>
             <span className={styles.ruleTitle}>{r2.title[0]} <br className="hidden lg:block" /><span className="text-steel">{r2.title[1]}</span></span>
           </span>
-          <MiniChat reply={<><strong className="font-semibold text-text">{r2.greeting}</strong>{r2.rest}</>} caption={r2.caption} />
+          <MiniChat reply={<><strong className="font-semibold text-text">{r2.greeting}</strong>{r2.rest}</>} caption={r2.caption} delivered={t.delivered} />
         </div>
 
         <div className={`${styles.rule} ${styles.last}`}>
@@ -86,7 +64,7 @@ export default function Trust({ t }: { t: Dictionary["trust"] }) {
             <span className={styles.ruleN}>{r3.n}</span>
             <span className={styles.ruleTitle}>{r3.title[0]} <br className="hidden lg:block" />{r3.title[1]}</span>
           </span>
-          <MiniChat lead={r3.lead} reply={r3.reply} />
+          <MiniChat lead={r3.lead} reply={r3.reply} delivered={t.delivered} />
         </div>
 
         <ul className={styles.facts}>

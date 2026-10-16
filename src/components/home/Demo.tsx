@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { prefersReducedMotion, withMotion } from "@/lib/gsap";
@@ -8,20 +8,22 @@ import { nextThursday, useViewingKey } from "@/lib/viewing-date";
 import { CHATS, CHAT_LANGS, LANG_NAME, chatDates, type ChatLang } from "./demo-chats";
 import styles from "./Demo.module.css";
 import ScreenFit from "@/components/chrome/ScreenFit";
+import ChatThread, { useChatPlayer, type Who } from "@/components/chrome/ChatThread";
 
 // The floating phone (Kie.ai, GPT Image 2.5, background removed) and its screen's
 // four true corners, edge-fitted (% of the image); the chat takes its perspective.
 const PHONE = { corners: { TL: [5.92, -0.76], TR: [71.27, 5.97], BR: [101.45, 98.52], BL: [34.12, 97.09] } as const, aspect: 2.17, radius: 0.16 };
 
+const WHOS: Who[] = ["lead", "agent", "lead", "agent", "lead", "agent"];
+
 const AGENCY: Record<ChatLang, string> = { PT: "A sua agência", EN: "Your agency", ES: "Su agencia", FR: "Votre agence", DE: "Ihre Agentur" };
 
 export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] }) {
   const [chatLang, setChatLang] = useState<ChatLang>(lang.toUpperCase() as ChatLang);
-  const [step, setStep] = useState(6); // bubbles shown; replays on language change
   const key = useViewingKey();
   const root = useRef<HTMLElement>(null);
   const seen = useRef(false);
-  const timers = useRef<number[]>([]);
+  const { state, play } = useChatPlayer(WHOS, { initial: "full" });
 
   const chat = useMemo(() => {
     const c = CHATS[chatLang];
@@ -29,13 +31,7 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
     return { ...c, a1: c.a1.replace("{a}", d.a), a2: c.a2.replace("{b}", d.b) };
   }, [chatLang, key]);
 
-  // Play the conversation: once when it first comes into view, then on each language tap.
-  const play = useCallback(() => {
-    timers.current.forEach(clearTimeout);
-    if (prefersReducedMotion()) return setStep(6);
-    setStep(0);
-    timers.current = [1, 2, 3, 4, 5, 6].map((n, i) => window.setTimeout(() => setStep(n), 250 + i * 600));
-  }, []);
+  // The conversation plays once when it first comes into view, then on each language tap.
 
   useEffect(() => {
     const el = root.current;
@@ -51,11 +47,10 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
       }, el);
       return () => ctx.revert();
     });
-    const pending = timers.current;
-    return () => { io.disconnect(); stop(); pending.forEach(clearTimeout); };
+    return () => { io.disconnect(); stop(); };
   }, [play]);
 
-  const bubbles: [string, "lead" | "agent"][] = [[chat.l1, "lead"], [chat.a1, "agent"], [chat.lp, "lead"], [chat.ap, "agent"], [chat.l2, "lead"], [chat.a2, "agent"]];
+  const items = [chat.l1, chat.a1, chat.lp, chat.ap, chat.l2, chat.a2].map((content, i) => ({ who: WHOS[i], content }));
 
   return (
     <section ref={root} id="demo" className={styles.section} aria-labelledby="demo-title">
@@ -115,11 +110,7 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
                     </span>
                   </div>
                   <div className={styles.thread} aria-live="polite">
-                    {bubbles.map(([text, who], i) => (
-                      <p key={`${chatLang}-${i}`} className={who === "lead" ? styles.lead : styles.agent} data-on={step > i}>
-                        {text}
-                      </p>
-                    ))}
+                    <ChatThread key={chatLang} items={items} state={state} deliveredLabel={chat.delivered} classes={{ lead: styles.lead, agent: styles.agent }} />
                   </div>
                   <div className={styles.composer} aria-hidden="true">
                     <span className={styles.composerField}>{chat.composer}</span>

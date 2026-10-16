@@ -12,19 +12,27 @@
   gap: 28px;
 }
 
+/* Desktop: the heading and the steps share the left column, so the panel gets
+   the full pinned height and nothing needs scaling down. */
 @media (min-width: 1024px) {
-  .inner { gap: 56px; }
+  .inner {
+    display: grid;
+    grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 56px;
+    row-gap: 30px;
+  }
 }
 
 .title { margin: 0; font-size: 36px; line-height: 0.98; }
 
 @media (min-width: 768px) { .title { font-size: 52px; } }
-@media (min-width: 1024px) { .title { font-size: clamp(48px, 4.45vw, 64px); line-height: 0.96; } }
+@media (min-width: 1024px) { .title { font-size: clamp(36px, 3vw, 44px); line-height: 0.98; } }
 
-.indent { padding-left: 40px; }
+.indent { display: inline-block; padding-left: 40px; }
 
 @media (min-width: 1024px) {
-  .indent { padding-left: 120px; }
+  .indent { padding-left: 40px; }
 }
 
 .stage {
@@ -47,9 +55,6 @@
   flex-direction: column;
 }
 
-@media (min-width: 1024px) {
-  .steps { flex: 0 0 420px; }
-}
 
 .step {
   position: relative;
@@ -63,7 +68,7 @@
 .step:last-child { border-bottom: 1px solid #24272b; }
 
 @media (min-width: 1024px) {
-  .step { gap: 24px; padding: 26px 0; opacity: 0.62; }
+  .step { gap: 22px; padding: 20px 0; opacity: 0.62; }
   .step[data-on="true"] { opacity: 1; }
   .step[data-on="true"]::before {
     content: "";
@@ -96,12 +101,14 @@
   .stepTitle { font-size: 22px; }
 }
 
-.stepText { font-size: 14px; line-height: 1.55; color: var(--color-body); }
+.stepText { font-size: 15px; line-height: 1.5; color: var(--color-body); }
 
 /* ── The object panel: calendar → supervised chat → weekly report ────────── */
+/* The three panels share one grid cell, so the panel is as tall as the tallest. */
 .object {
   position: relative;
-  min-height: 560px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   border-radius: 24px;
   border: 1px solid #1f2125;
   background: radial-gradient(70% 80% at 50% 0%, rgba(205, 209, 217, 0.14), transparent 70%), #0e0f12;
@@ -109,12 +116,12 @@
 }
 
 @media (min-width: 1024px) {
-  .object { flex: 1 1 auto; min-width: 0; min-height: 580px; border-radius: 30px; }
+  .object { min-width: 0; border-radius: 30px; }
 }
 
 .layer {
-  position: absolute;
-  inset: 0;
+  grid-area: 1 / 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,7 +130,7 @@
 }
 
 @media (min-width: 1024px) {
-  .layer { padding: 48px; }
+  .layer { padding: 40px; }
 }
 
 .layer[data-state="on"] { opacity: 1; transform: none; filter: none; }
@@ -131,12 +138,12 @@
 .layer[data-state="next"] { opacity: 0; transform: translateY(28px) rotate(2deg) scale(0.96); filter: blur(6px); pointer-events: none; }
 
 .card {
-  width: min(440px, 100%);
+  width: min(480px, 100%);
   border-radius: 20px;
   padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   box-shadow: 0 50px 100px rgba(0, 0, 0, 0.6);
   transform: rotate(-3deg);
 }
@@ -144,51 +151,57 @@
 .light { background: #f1f2f4; color: #0b0c0e; overflow: hidden; }
 .dark { background: linear-gradient(180deg, #121317, #0d0e11); border: 1px solid #2e3136; transform: rotate(2deg); }
 
-.cardHead { display: flex; align-items: center; justify-content: space-between; }
+.cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* Minimum sizes (Manuel, round 4): body ≥ 15 px, labels ≥ 12 px, headings ≥ 20 px. */
+.cardTitle { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; font-stretch: 108%; }
+.tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; color: #5e636b; }
+.small { font-size: 12px; line-height: 1.35; color: #5e636b; }
 
 .rows { margin: 0; display: flex; flex-direction: column; }
 
-.row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #e3e5e8; font-size: 12px; }
+.row { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid #e3e5e8; font-size: 15px; line-height: 1.35; }
 
 .row dt { color: #5e636b; }
 .row dd { margin: 0; font-weight: 600; text-align: right; }
 
-.consultant { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 6px 8px; border-radius: 10px; background: #e7e9ec; }
+.consultant { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 15px; padding: 8px 10px; border-radius: 12px; background: #e7e9ec; }
 
-.initial { width: 20px; height: 20px; border-radius: 50%; background: #0b0c0e; color: #f1f2f4; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
+.initial { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: #0b0c0e; color: #f1f2f4; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
 
 .locked {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 11px;
-  border-radius: 11px;
+  padding: 10px 12px;
+  border-radius: 12px;
   background: #0b0c0e;
   color: #f1f2f4;
-  font-size: 12px;
+  font-size: 15px;
 }
 
-.pair { position: relative; width: min(470px, 100%); display: flex; flex-direction: column; align-items: flex-start; }
+.pair { position: relative; width: min(500px, 100%); display: flex; flex-direction: column; align-items: flex-start; }
 
 .convo { width: 86%; transform: rotate(-2deg); z-index: 1; }
 
-.handover { width: 82%; align-self: flex-end; margin-top: -26px; transform: rotate(1.5deg); z-index: 2; padding: 16px 18px; gap: 10px; }
+.handover { width: 90%; align-self: flex-end; margin-top: -18px; transform: rotate(1.5deg); z-index: 2; padding: 18px 20px; gap: 8px; }
 
-.bLead { align-self: flex-end; max-width: 82%; padding: 8px 10px; border-radius: 14px 14px 4px 14px; background: #eceef1; color: #0b0c0e; }
-.bAgent { align-self: flex-start; max-width: 86%; padding: 8px 10px; border-radius: 14px 14px 14px 4px; background: #1c1e22; }
+.convoBody { display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.4; }
+.bLead { align-self: flex-end; max-width: 82%; padding: 9px 12px; border-radius: 14px 14px 4px 14px; background: #eceef1; color: #0b0c0e; }
+.bAgent { align-self: flex-start; max-width: 88%; padding: 9px 12px; border-radius: 14px 14px 14px 4px; background: #1c1e22; }
 
-.cardRows { margin: 0; display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; line-height: 1.45; }
+.cardRows { margin: 0; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.4; }
 .cardRows dt { display: inline; font-weight: 700; }
 .cardRows dd { display: inline; margin: 0; color: #3d4045; }
 
-.caption { margin-top: 14px; align-self: center; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: var(--color-steel); text-align: center; }
+.caption { margin-top: 14px; align-self: center; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; color: var(--color-steel); text-align: center; }
 
-.report { width: min(470px, 100%); }
+.report { width: min(500px, 100%); }
 
-.sections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding-top: 10px; border-top: 1px solid #dadde2; }
+.sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding-top: 12px; border-top: 1px solid #dadde2; }
 
 @media (max-width: 520px) {
-  .sections { grid-template-columns: 1fr 1fr; }
+  .sections { grid-template-columns: 1fr; gap: 12px; }
 }
 
 .share { display: flex; height: 8px; border-radius: 999px; overflow: hidden; gap: 2px; }
@@ -210,4 +223,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .layer { transition: none; }
+}
+
+/* Desktop grid placement (kept last so it wins over the base rules above). */
+@media (min-width: 1024px) {
+  .head { grid-column: 1; grid-row: 1; }
+  .stage { display: contents; }
+  .steps { grid-column: 1; grid-row: 2; }
+  .object { grid-column: 2; grid-row: 1 / 3; }
 }

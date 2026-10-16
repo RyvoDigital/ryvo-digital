@@ -66,21 +66,29 @@
   background: radial-gradient(50% 50% at 50% 55%, rgba(205, 209, 217, 0.12), transparent 70%);
 }
 
-/* The render is chrome on black: "screen" lets the black fall away into the page. */
-.media {
+/* The poster is the same render on black: "screen" lets the black fall away. */
+.poster, .canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  /* The ring sits at (50.6%, 46%) of its frame: centre it on the orbit. */
-  translate: -0.6% 4%;
-  mix-blend-mode: screen;
-  /* Video black is never quite black: crush it, and feather the edges so no box shows. */
-  filter: brightness(0.97) contrast(1.12);
-  -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 98%);
-  mask-image: radial-gradient(closest-side, #000 62%, transparent 98%);
   transition: opacity 0.8s var(--ease-out-expo);
+}
+
+.poster { object-fit: contain; mix-blend-mode: screen; }
+.canvas { display: block; }
+
+/* A soft reflection under the object, like light pooling on a dark floor. */
+.floor {
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 13%;
+  height: 9%;
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(205, 209, 217, 0.22), rgba(205, 209, 217, 0.06) 55%, transparent 72%);
+  filter: blur(10px);
+  pointer-events: none;
 }
 
 .orbit {

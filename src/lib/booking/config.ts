@@ -1,7 +1,6 @@
-// Booking rules. Hours are Europe/Madrid wall time and mirror the current Google
-// appointment schedules as published on 16 Oct 2026 (read from the public pages):
-// Mon–Fri 09:00–14:00 and 19:00–23:00; Saturday differs per call. Confirm with
-// Manuel before launch.
+// Booking rules. Hours are Europe/Madrid wall time, confirmed by Manuel on
+// 16 Oct 2026: Mon–Fri 09:00–14:00 and 19:00–23:00; Saturday 10:30–17:00 for
+// automations calls only; no Sundays.
 
 export type Kind = "automations" | "websites";
 export const KINDS: Kind[] = ["automations", "websites"];
@@ -13,7 +12,7 @@ const WEEKDAYS: Window[] = [["09:00", "14:00"], ["19:00", "23:00"]];
 
 export const HOURS: Record<Kind, Week> = {
   automations: { 1: WEEKDAYS, 2: WEEKDAYS, 3: WEEKDAYS, 4: WEEKDAYS, 5: WEEKDAYS, 6: [["10:30", "17:00"]] },
-  websites: { 1: WEEKDAYS, 2: WEEKDAYS, 3: WEEKDAYS, 4: WEEKDAYS, 5: WEEKDAYS, 6: WEEKDAYS },
+  websites: { 1: WEEKDAYS, 2: WEEKDAYS, 3: WEEKDAYS, 4: WEEKDAYS, 5: WEEKDAYS },
 };
 
 export const RULES = {

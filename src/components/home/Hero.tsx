@@ -80,9 +80,9 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
           </span>
         </div>
         {/* Desktop: the five automation names. */}
-        <ol className="hidden grid-cols-5 gap-6 lg:grid">
+        <ol className="mx-auto hidden w-full max-w-[1180px] grid-cols-5 gap-6 lg:grid">
           {t.automationNames.map((name, i) => (
-            <li key={name} className="flex flex-col gap-2">
+            <li key={name} className="flex min-w-0 flex-col items-center gap-2 text-center">
               <span className={`font-mono text-[11px] ${i === 0 ? "text-text" : "text-steel"}`}>0{i + 1}</span>
               <span className={`text-[15px] ${i === 0 ? "text-text" : "text-body"}`}>{name}</span>
             </li>

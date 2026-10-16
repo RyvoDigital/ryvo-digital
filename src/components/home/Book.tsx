@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { Dictionary } from "@/i18n";
 import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import { ArrowUpRight } from "@/components/chrome/Icons";
@@ -28,6 +28,7 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
   const [slots, setSlots] = useState<Record<string, string[]>>({});
   const [stage, setStage] = useState<Stage>({ s: "loading" });
   const [day, setDay] = useState<string | null>(null);
+  const [week, setWeek] = useState(0);
   const [near, setNear] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
   const tz = useMemo(() => (typeof window === "undefined" ? "UTC" : Intl.DateTimeFormat().resolvedOptions().timeZone), []);
@@ -49,6 +50,7 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
       const json = (await res.json()) as { slots: string[] };
       setSlots((p) => ({ ...p, [k]: json.slots }));
       setDay(null);
+      setWeek(0);
       setStage({ s: "pick" });
     } catch {
       setStage({ s: "error" });
@@ -72,17 +74,28 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
     return map;
   }, [slots, kind, tz]);
   const days = [...byDay.keys()];
-  const activeDay = day && byDay.has(day) ? day : days[0];
+  const dayKey = days.join();
+  const weeks = useMemo(() => toWeeks(dayKey ? dayKey.split(",") : []), [dayKey]);
+  const weekIdx = Math.min(week, Math.max(0, weeks.length - 1));
+  const firstOpen = (w: string[] | undefined) => w?.find((k) => byDay.has(k));
+  const activeDay = day && byDay.has(day) ? day : firstOpen(weeks[weekIdx]) ?? days[0];
 
   const fmtDay = (key: string) => {
     const d = new Date(`${key}T12:00:00`);
     return {
-      wd: new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d).replace(/\.$/, ""),
+      // Three letters in every language (pt-PT's "short" weekday is the whole word).
+      wd: new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d).replace(/\.$/, "").slice(0, 3),
       n: d.getDate(),
-      mon: new Intl.DateTimeFormat(locale, { month: "short" }).format(d).replace(/\.$/, ""),
       full: new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(d),
     };
   };
+  // "19–24 Oct", or "27 Oct – 1 Nov" across months, in every language.
+  const fmtWeek = (w: string[]) => {
+    const a = new Date(`${w[0]}T12:00:00`), b = new Date(`${w[w.length - 1]}T12:00:00`);
+    const mon = (d: Date) => new Intl.DateTimeFormat(locale, { month: "short" }).format(d).replace(/\.$/, "");
+    return a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${mon(b)}` : `${a.getDate()} ${mon(a)} – ${b.getDate()} ${mon(b)}`;
+  };
+  const goWeek = (i: number) => { setWeek(i); setDay(firstOpen(weeks[i]) ?? null); };
   const fmtTime = (iso: string) => new Intl.DateTimeFormat(locale, { timeZone: tz, hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
   const fmtFull = (iso: string) =>
     new Intl.DateTimeFormat(locale, { timeZone: tz, weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
@@ -101,9 +114,8 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
         <div className={styles.copy}>
           <span className="mono-label">{t.label}</span>
           <h2 id="book-title" className={`display ${styles.title}`}>
-            {t.title[0]}
-            <br className="hidden lg:block" /> {t.title[1]} <span className="chrome-text">{t.title[2]}</span>
-            <br className="hidden lg:block" /> <span className={`chrome-text ${styles.indent}`}>{t.title[3]}</span>
+            <span className={styles.titleLine}>{t.title[0]} {t.title[1]}</span>{" "}
+            <span className={`chrome-text ${styles.titleLine}`}>{t.title[2]} {t.title[3]}</span>
           </h2>
           <p className={styles.body}>
             {t.body} <a href="mailto:hello@ryvodigital.com" className="text-text underline underline-offset-4">hello@ryvodigital.com</a>.
@@ -136,23 +148,39 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
               <div className={styles.center}><p className="m-0 max-w-[340px] text-[14px] text-body">{t.empty}</p></div>
             ) : (
               <>
-                <div className={styles.daysHead}>
-                  <span className="text-[14px] font-medium">{t.pickTime}</span>
-                  <span className="font-mono text-[10px] text-steel">{t.timesIn} {tz.replace(/_/g, " ")}</span>
+                <div className={styles.weekHead}>
+                  <span className="flex flex-col gap-[2px]">
+                    <span className="text-[15px] font-medium">{t.pickTime}</span>
+                    <span className="font-mono text-[10.5px] text-steel">{t.timesIn} {tz.replace(/_/g, " ")}</span>
+                  </span>
+                  <span className={styles.weekNav}>
+                    <button type="button" className={styles.arrow} aria-label={t.prevWeek} disabled={weekIdx === 0} onClick={() => goWeek(weekIdx - 1)}>
+                      <Chevron dir="left" />
+                    </button>
+                    <span className={styles.weekLabel} aria-live="polite">{weeks[weekIdx] && fmtWeek(weeks[weekIdx])}</span>
+                    <button type="button" className={styles.arrow} aria-label={t.nextWeek} disabled={weekIdx >= weeks.length - 1} onClick={() => goWeek(weekIdx + 1)}>
+                      <Chevron dir="right" />
+                    </button>
+                  </span>
                 </div>
-                <div className={styles.days} role="group" aria-label={t.pickTime}>
-                  {days.map((k) => {
+                <WeekStrip
+                  weeks={weeks}
+                  index={weekIdx}
+                  onIndex={(i) => { setWeek(i); }}
+                  label={t.pickTime}
+                  firstDay={days[0]}
+                  render={(k) => {
                     const f = fmtDay(k);
+                    const open = byDay.has(k);
                     return (
-                      <button key={k} type="button" aria-pressed={k === activeDay} aria-label={f.full} onClick={() => setDay(k)} className={styles.day}>
-                        <span className="text-[11px] uppercase text-steel">{f.wd}</span>
-                        <span className="tnum text-[20px] font-semibold leading-none">{f.n}</span>
-                        <span className="text-[11px] text-steel">{f.mon}</span>
+                      <button key={k} type="button" data-day={k} aria-pressed={k === activeDay} aria-label={f.full} disabled={!open} onClick={() => setDay(k)} className={styles.day}>
+                        <span className={styles.dayWd}>{f.wd}</span>
+                        <span className={styles.dayN}>{f.n}</span>
                       </button>
                     );
-                  })}
-                </div>
-                <div className={styles.times}>
+                  }}
+                />
+                <div className={styles.times} key={activeDay}>
                   {(byDay.get(activeDay!) ?? []).map((iso) => (
                     <button key={iso} type="button" onClick={() => setStage({ s: "form", slot: iso })} className={styles.time}>
                       {fmtTime(iso)}
@@ -191,6 +219,92 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
         </div>
       </div>
     </section>
+  );
+}
+
+// Weeks starting on Monday, from the first day with times to the last. Sunday is
+// a column only when some visitor's local time puts a slot on one.
+function toWeeks(days: string[]) {
+  if (!days.length) return [];
+  const key = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const withSunday = days.some((k) => new Date(`${k}T12:00:00`).getDay() === 0);
+  const first = new Date(`${days[0]}T12:00:00`);
+  const last = days[days.length - 1];
+  const monday = new Date(first);
+  monday.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+  const out: string[][] = [];
+  for (const d = new Date(monday); key(d) <= last; d.setDate(d.getDate() + 7)) {
+    out.push(Array.from({ length: withSunday ? 7 : 6 }, (_, i) => {
+      const x = new Date(d);
+      x.setDate(d.getDate() + i);
+      return key(x);
+    }));
+  }
+  return out;
+}
+
+const useDesk = () =>
+  useSyncExternalStore(
+    (cb) => { const m = matchMedia("(min-width: 1024px)"); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); },
+    () => matchMedia("(min-width: 1024px)").matches,
+    () => true,
+  );
+
+// Desktop: one week at a time, sliding between weeks with the arrows.
+// Phones: every day in one swipeable row with edge fades; the arrows jump a week
+// and the label follows the swipe.
+function WeekStrip({ weeks, index, onIndex, label, firstDay, render }: {
+  weeks: string[][]; index: number; onIndex: (i: number) => void; label: string; firstDay: string; render: (k: string) => React.ReactNode;
+}) {
+  const desk = useDesk();
+  const row = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: true, end: false });
+  const fromScroll = useRef(false);
+
+  // Phones: follow the arrows by scrolling to the week's first day.
+  useEffect(() => {
+    const el = row.current;
+    if (desk || !el) return;
+    if (fromScroll.current) { fromScroll.current = false; return; }
+    const first = (weeks[index] ?? []).map((k) => el.querySelector<HTMLElement>(`[data-day="${k}"]`)).find(Boolean);
+    if (first) el.scrollTo({ left: first.offsetLeft - el.offsetLeft - 16, behavior: "smooth" });
+  }, [desk, index, weeks]);
+
+  const onScroll = () => {
+    const el = row.current;
+    if (!el) return;
+    setEdges({ start: el.scrollLeft < 4, end: el.scrollLeft + el.clientWidth > el.scrollWidth - 4 });
+    const chips = [...el.querySelectorAll<HTMLElement>("[data-day]")];
+    const firstVisible = chips.find((c) => c.offsetLeft - el.offsetLeft + c.offsetWidth / 2 >= el.scrollLeft);
+    const w = weeks.findIndex((wk) => wk.includes(firstVisible?.dataset.day ?? ""));
+    if (w >= 0 && w !== index) { fromScroll.current = true; onIndex(w); }
+  };
+
+  if (desk) {
+    return (
+      <div className={styles.weekViewport} role="group" aria-label={label}>
+        <div className={styles.weekTrack} style={{ transform: `translateX(${-index * 100}%)` }}>
+          {weeks.map((w, i) => (
+            <div key={w[0]} className={styles.weekPage} style={{ gridTemplateColumns: `repeat(${w.length}, minmax(0, 1fr))` }} inert={i !== index}>
+              {w.map(render)}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div ref={row} className={styles.dayRow} role="group" aria-label={label} onScroll={onScroll} data-start={edges.start} data-end={edges.end}>
+      {weeks.flat().filter((k) => k >= firstDay).map(render)}
+    </div>
+  );
+}
+
+function Chevron({ dir }: { dir: "left" | "right" }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={dir === "left" ? "M15 18l-6-6 6-6" : "M9 18l6-6-6-6"} />
+    </svg>
   );
 }
 

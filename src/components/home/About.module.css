@@ -47,7 +47,7 @@
 .title { margin: 0; font-size: 36px; line-height: 0.98; }
 
 @media (min-width: 768px) { .title { font-size: 52px; } }
-@media (min-width: 1024px) { .title { font-size: clamp(48px, 4.45vw, 64px); line-height: 0.96; } }
+@media (min-width: 1024px) { .title { font-size: clamp(40px, 3.8vw, 56px); line-height: 0.96; } }
 
 .indent { padding-left: 50px; color: var(--color-steel); }
 
@@ -74,7 +74,7 @@
 .tiles { display: flex; gap: 12px; align-items: flex-end; }
 
 @media (min-width: 1024px) {
-  .tiles { flex: 0 0 600px; gap: 16px; }
+  .tiles { flex: 0 1 560px; width: clamp(380px, 40%, 560px); min-width: 0; gap: 16px; }
 }
 
 .tile {
@@ -114,3 +114,7 @@
 }
 
 .tile figcaption { z-index: 1; }
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .indent { padding-left: 40px; }
+}

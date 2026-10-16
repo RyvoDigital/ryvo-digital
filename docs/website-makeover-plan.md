@@ -820,10 +820,20 @@ Sources are in `~/ryvo-automation-platform` unless marked.
 4. **Own booking UI** (pick → form → confirmation) on the Calendar API, with the Google pages as the fallback (§ launch checklist).
 5. **Scroll word reveal** on the night-shift headline and the About body. **How we work** scales to fit the viewport while pinned.
 
+**16 Oct 2026 (Manuel), homepage review round 4:**
+
+1. **Hero cut-out re-matted** from the full-resolution still B with BiRefNet HR-matting (MIT, run locally; Kie offers only Recraft's remover, which made the old one). Defringed, choked ~0.5 px, feathered ~1 px, a faint silver rim and film grain over the edge. Same framing, so the screen corners are unchanged.
+2. **01–05 row:** five equal columns, each number centred over its name, the row centred under the card.
+3. **Chats (hero, demo, trust) play like iMessage** (`ChatThread`): bubbles grow from their tail corner, the stack glides up (transform only, so CLS stays 0), breathing dots, "Delivered" under the last sent message. Reduced motion: simply there. The hero no longer types character by character.
+4. **Word reveal** on GSAP ScrollTrigger scrub (night shift, the Automations heading, the About proof line). It is a colour change, not movement, so it also runs with reduced motion on.
+5. **Booking:** copy ~40% / panel ~60%; one week at a time with arrows; phones swipe every day with edge fades; the call types read "Automations" / "Websites".
+6. **01 object:** the Seedance video is replaced by two interlocking chrome rings in real-time 3D (three.js 0.186.1), loaded near the section, rendered only on screen; the poster is a frame of the same scene.
+7. **How we work:** no scaling; minimum sizes (body 15 px, labels 12 px, headings 20 px); the heading joins the steps' column; panels show fewer rows (settings 4 of 6, the handover card without "Timeframe", the report's two main sections).
+
 **Launch checklist (before the Vercel preview works):**
 
 - [ ] Booking on hello@'s calendar (own UI, replaces the Google embed): follow `docs/booking-google-setup.md`. Then in Vercel → Project → Settings → Environment Variables (Preview and Production), add by hand: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`, `BOOKING_CALENDAR_ID` = hello@ryvodigital.com. Never set `BOOKING_MOCK` in Vercel. Until these are set, the site shows buttons to the Google booking pages (the short links are in `src/lib/booking/config.ts`, so the `NEXT_PUBLIC_BOOKING_*` variables are no longer needed).
-- [ ] Confirm the booking hours in `src/lib/booking/config.ts` (read from the public schedules on 16 Oct: Mon–Fri 09:00–14:00 and 19:00–23:00 Madrid time; Saturday automations 10:30–17:00, websites 09:00–14:00 and 19:00–23:00).
+- [x] Booking hours confirmed by Manuel (round 4, 16 Oct): Mon–Fri 09:00–14:00 and 19:00–23:00, Saturday 10:30–17:00 for automations calls only, no Sundays, Madrid time (`src/lib/booking/config.ts`). The Google appointment schedules should match these for the fallback links.
 - [ ] Move the project to Vercel Pro and turn on Web Analytics (custom events).
 - [ ] The privacy policy names Google Calendar appointment schedules and Vercel Web Analytics (text change for Manuel and the lawyer).
 - [ ] FR/DE replies are live in the product before the site says "PT · EN · ES · FR · DE".

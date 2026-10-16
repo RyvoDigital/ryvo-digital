@@ -35,10 +35,10 @@
 }
 
 @media (min-width: 1024px) {
-  .title { width: min(1040px, calc(100% - 190px)); margin: 0 0 0 auto; font-size: clamp(44px, 4.2vw, 64px); line-height: 1.02; }
+  .title { width: min(1040px, calc(100% - 190px)); margin: 0 0 0 auto; font-size: clamp(40px, 3.6vw, 56px); line-height: 1.02; }
   .l1, .l3, .l4 { display: block; }
   .l1, .l3, .l4 { white-space: nowrap; }
-  .l2 { display: flex; flex-wrap: wrap; align-items: center; gap: 0 18px; padding-left: 120px; }
+  .l2 { display: flex; flex-wrap: wrap; align-items: center; gap: 0 18px; padding-left: 64px; }
   .l3 { padding-left: 40px; }
   .l4 { padding-left: 300px; }
 }
@@ -116,3 +116,12 @@
 }
 
 .ghost { background: rgba(241, 242, 244, 0.04); color: var(--color-steel); }
+
+/* 1024–1279: the side label sits above, so the headline has the full width. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .label { position: static; display: block; margin-bottom: 28px; }
+  .title { width: 100%; margin: 0; }
+  .l2 { padding-left: 64px; }
+  .l3 { padding-left: 0; }
+  .l4 { padding-left: 180px; }
+}
