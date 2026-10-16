@@ -176,15 +176,23 @@ body {
 }
 
 /* Hero intro: hidden only when JS is on and motion is allowed, and never for
-   longer than 2.5s even if the script fails. */
+   longer than 2.5s even if the script fails. The phone only moves. */
 @media (prefers-reduced-motion: no-preference) {
   html.js [data-hero]:not(.is-in) :is([data-reveal], [data-reveal-line], [data-wordmark]) {
     opacity: 0;
     animation: hero-failsafe 0.6s ease 2.5s forwards;
   }
+  [data-hero].is-in [data-wordmark] { animation: hero-wordmark 1.6s var(--ease-out-expo) both; }
+  [data-hero].is-in [data-hero-visual] { animation: hero-rise 1.5s var(--ease-out-expo) 0.05s both; }
+  [data-hero].is-in [data-reveal-line] { animation: hero-line 1.1s var(--ease-out-expo) both; animation-delay: calc(0.15s + var(--i, 0) * 0.09s); }
+  [data-hero].is-in [data-reveal] { animation: hero-fade 1s var(--ease-out-expo) both; animation-delay: calc(0.35s + var(--i, 0) * 0.06s); }
 }
 
 @keyframes hero-failsafe { to { opacity: 1; } }
+@keyframes hero-wordmark { from { opacity: 0; translate: 0 70px; filter: blur(18px); } }
+@keyframes hero-rise { from { translate: 0 90px; } }
+@keyframes hero-line { from { opacity: 0; translate: 0 35%; } }
+@keyframes hero-fade { from { opacity: 0; translate: 0 14px; } }
 
 .sr-only {
   position: absolute;

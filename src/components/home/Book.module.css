@@ -1,0 +1,102 @@
+.section { position: relative; padding: 40px 20px 56px; }
+
+@media (min-width: 1024px) {
+  .section { padding: 120px 24px; }
+}
+
+.glow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(1200px, 100%);
+  height: 800px;
+  transform: translateX(-50%);
+  background: radial-gradient(50% 50% at 50% 50%, rgba(205, 209, 217, 0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.inner { position: relative; max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+@media (min-width: 1024px) {
+  .inner { flex-direction: row; align-items: center; gap: 64px; }
+}
+
+.copy { display: flex; flex-direction: column; gap: 18px; flex: 1 1 auto; min-width: 0; }
+
+@media (min-width: 1024px) {
+  .copy { gap: 24px; }
+}
+
+.title { margin: 0; font-size: 44px; line-height: 0.94; letter-spacing: -0.05em; }
+
+@media (min-width: 768px) { .title { font-size: 64px; } }
+@media (min-width: 1024px) { .title { font-size: clamp(64px, 5.85vw, 84px); line-height: 0.92; font-stretch: 114%; } }
+
+.indent { padding-left: 0; }
+
+@media (min-width: 1024px) {
+  .indent { padding-left: 140px; }
+}
+
+.body { margin: 0; font-size: 15px; line-height: 1.6; color: var(--color-body); max-width: 420px; }
+
+@media (min-width: 1024px) {
+  .body { font-size: 16px; }
+}
+
+.panel {
+  border-radius: 24px;
+  background: rgba(19, 20, 24, 0.8);
+  border: 1px solid #2e3136;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (min-width: 1024px) {
+  .panel { flex: 0 0 560px; border-radius: 28px; padding: 24px; }
+}
+
+.kinds { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: #0b0c0e; border: 1px solid #24272b; }
+
+.kind {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.5s var(--ease-out-expo), color 0.5s var(--ease-out-expo);
+}
+
+.kind[aria-selected="true"] { background: var(--color-text); color: #0b0c0e; font-weight: 600; }
+
+/* Google's booking page has its own light styling; it sits inside our glass. */
+.frame { width: 100%; height: 640px; border: 0; border-radius: 16px; background: #fff; }
+
+.placeholder {
+  min-height: 360px;
+  border-radius: 18px;
+  border: 1px dashed #2e3136;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.ring {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 6px solid transparent;
+  background: linear-gradient(#131418, #131418) padding-box, var(--chrome) border-box;
+  margin-bottom: 8px;
+}

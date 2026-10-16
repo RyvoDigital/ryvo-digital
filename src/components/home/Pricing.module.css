@@ -1,0 +1,170 @@
+.section { padding: 20px 10px 56px; }
+
+@media (min-width: 1024px) {
+  .section { padding: 60px 24px 140px; }
+}
+
+.card {
+  max-width: 1280px;
+  margin: 0 auto;
+  border-radius: 26px;
+  border: 1px solid #1f2125;
+  background: radial-gradient(80% 60% at 20% 100%, rgba(205, 209, 217, 0.12), transparent 70%), linear-gradient(180deg, #101114, #0b0c0e);
+  padding: 28px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+@media (min-width: 1024px) {
+  .card { border-radius: 34px; padding: 64px; flex-direction: row; gap: 64px; background: radial-gradient(55% 80% at 20% 100%, rgba(205, 209, 217, 0.12), transparent 70%), linear-gradient(180deg, #101114, #0b0c0e); }
+}
+
+.left { display: flex; flex-direction: column; gap: 18px; flex: 1 1 auto; min-width: 0; }
+
+@media (min-width: 1024px) {
+  .left { gap: 28px; }
+}
+
+/* The 3-stop control: a thumb slides under the chosen stop. */
+.control {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 4px;
+  border-radius: 999px;
+  background: #131418;
+  border: 1px solid #24272b;
+  align-self: stretch;
+}
+
+@media (min-width: 1024px) {
+  .control { align-self: flex-start; padding: 5px; grid-template-columns: repeat(3, auto); }
+}
+
+.thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 3);
+  border-radius: 999px;
+  background: var(--color-text);
+  transform: translateX(calc(var(--i) * 100%));
+  transition: transform 0.6s var(--ease-out-expo);
+}
+
+@media (min-width: 1024px) {
+  .thumb { top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / 3); }
+  .control { grid-template-columns: repeat(3, 1fr); }
+}
+
+.option {
+  position: relative;
+  z-index: 1;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-body);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.5s var(--ease-out-expo);
+}
+
+@media (min-width: 1024px) {
+  .option { min-height: 36px; padding: 0 18px; font-size: 14px; }
+}
+
+.option[aria-checked="true"] { color: #0b0c0e; font-weight: 600; }
+
+.priceRow { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+
+@media (min-width: 1024px) {
+  .priceRow { gap: 14px; }
+}
+
+.unit { font-size: 13px; color: var(--color-steel); }
+
+@media (min-width: 1024px) {
+  .unit { font-size: 18px; }
+}
+
+/* Chrome on rolling digits: white glyphs + the chrome gradient blended "darken". */
+.price {
+  position: relative;
+  display: inline-flex;
+  font-size: 72px;
+  font-weight: 600;
+  font-stretch: 116%;
+  letter-spacing: -0.05em;
+  color: #fff;
+  line-height: 0.95;
+}
+
+.price::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--chrome);
+  mix-blend-mode: darken;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .price { font-size: clamp(110px, 10.4vw, 150px); line-height: 0.9; letter-spacing: -0.055em; }
+}
+
+.blurb { margin: 0; font-size: 14px; line-height: 1.55; color: var(--color-body); max-width: 460px; min-height: 3.1em; }
+
+@media (min-width: 1024px) {
+  .blurb { font-size: 17px; line-height: 1.6; }
+}
+
+.cta { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: auto; }
+
+.right { display: flex; flex-direction: column; }
+
+@media (min-width: 1024px) {
+  .right { flex: 0 0 420px; justify-content: center; border-left: 1px solid #24272b; padding-left: 56px; }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 0;
+  border-bottom: 1px solid #1a1c1f;
+  opacity: 0.35;
+  transition: opacity 0.6s var(--ease-out-expo);
+}
+
+@media (min-width: 1024px) {
+  .item { padding: 16px 0; }
+}
+
+.item[data-on="true"] { opacity: 1; border-bottom-color: #24272b; }
+
+.tick {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid #4a4e54;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: background 0.5s var(--ease-out-expo), color 0.5s var(--ease-out-expo), border-color 0.5s var(--ease-out-expo);
+}
+
+.item[data-on="true"] .tick { background: var(--color-text); color: #0b0c0e; border-color: transparent; }
+
+.itemName { font-size: 16px; }
+
+@media (min-width: 1024px) {
+  .itemName { font-size: 19px; }
+}

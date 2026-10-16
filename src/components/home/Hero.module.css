@@ -40,8 +40,8 @@
     linear-gradient(180deg, #0e0f12 0%, #0a0b0d 100%);
   box-shadow: 0 60px 140px rgba(0, 0, 0, 0.55);
   /* Geometry the visual reads */
-  --vis-h: 520px;
-  --vis-top: 296px;
+  --vis-h: 500px;
+  --vis-top: 346px;
 }
 
 @media (min-width: 768px) {
@@ -56,7 +56,7 @@
       radial-gradient(42% 52% at 50% 70%, rgba(205, 209, 217, 0.2), transparent 72%),
       linear-gradient(180deg, #0e0f12 0%, #0a0b0d 100%);
     --vis-h: 790px;
-    --vis-top: 392px;
+    --vis-top: 414px;
   }
 }
 
@@ -86,12 +86,12 @@
 }
 
 @media (min-width: 1024px) {
-  .headline { left: 44px; right: auto; top: 124px; gap: 22px; }
+  .headline { left: 44px; right: auto; top: 108px; gap: 16px; }
 }
 
 .h1 {
   margin: 0;
-  font-size: 40px;
+  font-size: 36px;
   line-height: 0.95;
   font-weight: 500;
   font-stretch: 112%;
@@ -150,15 +150,16 @@
   .wordmark { top: 500px; font-size: clamp(250px, 27.8vw, 400px); }
 }
 
-/* The cut-out: its screen centre sits on the card's centre line. */
+/* The cut-out: its screen centre sits on the card's centre line. Geometry comes
+   from the still's measured screen (HeroVisual). */
 .visual {
   position: absolute;
   z-index: 3;
   left: 50%;
   top: var(--vis-top);
-  height: var(--vis-h);
-  aspect-ratio: 2210 / 2072;
-  transform: translateX(-76.65%);
+  height: calc(var(--vis-h) * var(--vis-scale, 1));
+  aspect-ratio: var(--img-ar);
+  transform: translateX(calc(-1 * var(--cx)));
 }
 
 .image {
@@ -187,8 +188,8 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  -webkit-mask: url(/media/hero/hand-phone-760.webp) center / 100% 100% no-repeat;
-  mask: url(/media/hero/hand-phone-760.webp) center / 100% 100% no-repeat;
+  -webkit-mask: var(--mask) center / 100% 100% no-repeat;
+  mask: var(--mask) center / 100% 100% no-repeat;
   background: linear-gradient(104deg, transparent 42%, rgba(255, 255, 255, 0.55) 50%, transparent 58%) 0 0 / 320% 100% no-repeat;
   mix-blend-mode: overlay;
   animation: sweep 9s cubic-bezier(0.45, 0, 0.2, 1) 1.2s infinite;
@@ -203,15 +204,23 @@
 
 .screen {
   position: absolute;
-  left: 76.65%;
-  top: 41.85%;
-  width: 33.26%;
-  height: 82.29%;
-  transform: translate(-50%, -50%) rotate(6.9deg);
+  left: var(--cx);
+  top: var(--cy);
+  width: var(--sw);
+  height: var(--sh);
+  transform: translate(-50%, -50%) rotate(var(--rot));
   border-radius: 15% / 6.5%;
   overflow: hidden;
   container-type: size;
   color: var(--color-text);
+}
+
+.dim {
+  position: absolute;
+  inset: 0;
+  background: #08090b;
+  opacity: var(--dim, 0);
+  pointer-events: none;
 }
 
 .glass {
@@ -225,7 +234,7 @@
   position: absolute;
   z-index: 4;
   right: 10px;
-  top: 330px;
+  top: 376px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -247,7 +256,7 @@
 }
 
 @media (min-width: 1024px) {
-  .chip { left: calc(50% + 196px); top: 512px; padding: 13px 16px; border-radius: 16px; gap: 4px; }
+  .chip { left: calc(50% + 196px); top: 534px; padding: 13px 16px; border-radius: 16px; gap: 4px; }
 }
 
 .corner {

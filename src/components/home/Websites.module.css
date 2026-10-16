@@ -1,0 +1,177 @@
+.section {
+  position: relative;
+  color: #0b0c0e;
+  background: #eef0f2;
+  padding: 150px 20px 64px;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .section { padding: 240px 24px 140px; }
+}
+
+/* Static fallback (no JS / reduced motion): the design's gradient. With JS the
+   layer becomes solid obsidian and its opacity follows the scroll. */
+.night {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #07080a 0%, #2a2d32 12%, rgba(201, 205, 211, 0.6) 26%, rgba(238, 240, 242, 0) 36%);
+}
+
+@media (min-width: 1024px) {
+  .night { background: linear-gradient(180deg, #07080a 0%, #2a2d32 9%, rgba(201, 205, 211, 0.6) 20%, rgba(238, 240, 242, 0) 30%); }
+}
+
+.section[data-scrub="true"] .night { background: #07080a; }
+
+/* The seam with the dark page above stays soft whatever the scroll position. */
+.section[data-scrub="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 130px;
+  background: linear-gradient(180deg, #07080a, rgba(7, 8, 10, 0));
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .section[data-scrub="true"]::before { height: 220px; }
+}
+
+.inner {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+@media (min-width: 1024px) {
+  .inner { flex-direction: row; align-items: center; gap: 72px; }
+}
+
+.copy { display: flex; flex-direction: column; gap: 18px; flex: 1 1 auto; min-width: 0; }
+
+@media (min-width: 1024px) {
+  .copy { gap: 26px; }
+}
+
+.title { margin: 0; font-size: 40px; line-height: 0.95; letter-spacing: -0.05em; }
+
+@media (min-width: 768px) { .title { font-size: 60px; } }
+@media (min-width: 1024px) { .title { font-size: clamp(56px, 5.3vw, 76px); line-height: 0.94; font-stretch: 114%; } }
+
+/* #7E838B on #EEF0F2 is 3.3:1, AA for large type (the design's #8E939B was 2.8:1). */
+.indent { padding-left: 50px; color: #7e838b; }
+
+@media (min-width: 1024px) {
+  .indent { padding-left: 110px; }
+}
+
+.body { margin: 0; font-size: 15px; line-height: 1.55; color: #3d4045; max-width: 460px; }
+
+@media (min-width: 1024px) {
+  .body { font-size: 17px; line-height: 1.6; }
+}
+
+.prices { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 20px 28px; }
+
+@media (min-width: 1024px) {
+  .prices { gap: 48px; }
+}
+
+.figure { font-size: 30px; font-weight: 600; font-stretch: 112%; letter-spacing: -0.04em; white-space: nowrap; }
+
+@media (min-width: 1024px) {
+  .figure { font-size: 44px; }
+}
+
+.dark { background: #0b0c0e; color: #f1f2f4; width: 100%; }
+
+.dark :global(.btn-arrow) { background: #f1f2f4; color: #0b0c0e; }
+
+.dark::after { background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.18) 50%, transparent 65%); }
+
+@media (min-width: 1024px) {
+  .dark { width: auto; }
+}
+
+/* ── Browser + phone mock with the Kie.ai gallery image ─────────────────── */
+.mock { position: relative; height: 300px; }
+
+@media (min-width: 768px) { .mock { height: 380px; } }
+
+@media (min-width: 1024px) {
+  .mock { flex: 0 0 560px; height: 420px; }
+}
+
+.browser {
+  position: absolute;
+  left: 0;
+  top: 20px;
+  width: 88%;
+  aspect-ratio: 500 / 330;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 40px 90px rgba(11, 12, 14, 0.18);
+  overflow: hidden;
+  transform: rotate(-2deg);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .browser { top: 40px; width: 500px; border-radius: 18px; }
+}
+
+.bar {
+  height: 30px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e3e5e8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+}
+
+.bar span { width: 9px; height: 9px; border-radius: 50%; background: #d3d6db; }
+
+.bar em {
+  margin-left: 10px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: #f1f2f4;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-style: normal;
+  color: #6a6f77;
+}
+
+@media (min-width: 1024px) {
+  .bar { height: 34px; padding: 0 14px; }
+}
+
+.shot { display: block; width: 100%; flex: 1 1 auto; min-height: 0; object-fit: cover; }
+
+.phone {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 30%;
+  aspect-ratio: 1 / 2;
+  border-radius: 24px;
+  background: #0b0c0e;
+  padding: 5px;
+  box-shadow: 0 30px 70px rgba(11, 12, 14, 0.3);
+  transform: rotate(4deg);
+}
+
+@media (min-width: 1024px) {
+  .phone { width: 150px; border-radius: 28px; padding: 6px; }
+}
+
+.phoneShot { display: block; width: 100%; height: 100%; border-radius: 20px; object-fit: cover; object-position: 30% 50%; }

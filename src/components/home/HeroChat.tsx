@@ -87,7 +87,7 @@ export default function HeroChat({ chat, onBooked }: { chat: Dictionary["hero"][
   };
 
   return (
-    <div className="flex h-full flex-col" style={{ fontSize: "4.3cqw" }}>
+    <div className="relative flex h-full flex-col" style={{ fontSize: "4.3cqw" }}>
       <style>{`@keyframes dot{0%,80%,100%{opacity:.35;transform:translateY(0)}40%{opacity:1;transform:translateY(-0.18em)}}`}</style>
       <div className="flex items-center gap-[0.8em] border-b border-surface-2/80 px-[1.2em] pb-[0.85em] pt-[3.9em]">
         <span className="flex h-[2.7em] w-[2.7em] items-center justify-center rounded-full bg-surface-2 text-[0.85em] font-semibold text-silver">YA</span>

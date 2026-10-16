@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // First-time visitors from LinkedIn and email: styles arrive with the HTML, no render-blocking request.
+  experimental: { inlineCss: true },
   async redirects() {
     // Keep links to the old single-language legal pages working.
     return [

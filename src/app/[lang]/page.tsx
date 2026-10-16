@@ -4,6 +4,16 @@ import { getDictionary } from "@/i18n";
 import Hero from "@/components/home/Hero";
 import NightShift from "@/components/home/NightShift";
 import Calculator from "@/components/home/Calculator";
+import Automations from "@/components/home/Automations";
+import Demo from "@/components/home/Demo";
+import HowWeWork from "@/components/home/HowWeWork";
+import Trust from "@/components/home/Trust";
+import Pricing from "@/components/home/Pricing";
+import Websites from "@/components/home/Websites";
+import About from "@/components/home/About";
+import Book from "@/components/home/Book";
+import LightSwitch from "@/components/home/LightSwitch";
+import Thread from "@/components/home/Thread";
 import SiteFooter from "@/components/chrome/SiteFooter";
 import StickyBook from "@/components/chrome/StickyBook";
 
@@ -13,16 +23,24 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const t = getDictionary(lang);
 
   return (
-    <>
+    <div className="relative">
       <Hero lang={lang} t={t} />
       <main>
         <NightShift t={t.night} />
         <Calculator lang={lang} t={t.calc} />
-        {/* Next stage: 01 Automations · 02 See it answer · 03 How we work · 04 Trust ·
-            05 Pricing · 06 Websites · 07 About · 08 Book a call */}
+        <Automations lang={lang} t={t.automations} names={t.automationNames} />
+        <Demo lang={lang} t={t.demo} />
+        <HowWeWork t={t.how} />
+        <Trust t={t.trust} />
+        <Pricing lang={lang} t={t.pricing} names={t.automationNames} />
+        <Websites lang={lang} t={t.websites} />
+        <About t={t.about} />
+        <Book t={t.book} />
       </main>
       <SiteFooter lang={lang} t={t} />
       <StickyBook href="#book" label={t.pill.book} />
-    </>
+      <LightSwitch />
+      <Thread />
+    </div>
   );
 }

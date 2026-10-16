@@ -1,0 +1,119 @@
+.section {
+  position: relative;
+  background: #07080a;
+  padding: 150px 20px 56px;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .section { padding: 260px 24px 120px; }
+}
+
+/* Static fallback: the design's light → dark gradient. With JS the layer is
+   solid silver and fades as you scroll, turning the page back to night. */
+.day {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #eef0f2 0%, #c9cdd3 14%, rgba(42, 45, 50, 0.6) 30%, rgba(7, 8, 10, 0) 44%);
+}
+
+.section[data-scrub="true"] .day { background: #eef0f2; }
+
+/* Meets the silver Websites section above without an edge. */
+.section[data-scrub="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 130px;
+  background: linear-gradient(180deg, #eef0f2, rgba(201, 205, 211, 0.5) 45%, rgba(7, 8, 10, 0));
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .section[data-scrub="true"]::before { height: 230px; }
+}
+
+.inner {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+@media (min-width: 1024px) {
+  .inner { flex-direction: row; align-items: flex-end; gap: 64px; }
+}
+
+.copy { display: flex; flex-direction: column; gap: 18px; flex: 1 1 auto; min-width: 0; }
+
+@media (min-width: 1024px) {
+  .copy { gap: 22px; }
+}
+
+.title { margin: 0; font-size: 36px; line-height: 0.98; }
+
+@media (min-width: 768px) { .title { font-size: 52px; } }
+@media (min-width: 1024px) { .title { font-size: clamp(48px, 4.45vw, 64px); line-height: 0.96; } }
+
+.indent { padding-left: 50px; color: var(--color-steel); }
+
+@media (min-width: 1024px) {
+  .indent { padding-left: 90px; }
+}
+
+.body { margin: 0; font-size: 15px; line-height: 1.6; color: var(--color-body); max-width: 440px; }
+
+@media (min-width: 1024px) {
+  .body { font-size: 16px; }
+}
+
+.people { margin: 0; padding: 12px 0 0; list-style: none; display: flex; flex-wrap: wrap; gap: 24px 40px; }
+
+.tiles { display: flex; gap: 12px; align-items: flex-end; }
+
+@media (min-width: 1024px) {
+  .tiles { flex: 0 0 600px; gap: 16px; }
+}
+
+.tile {
+  position: relative;
+  flex: 1;
+  margin: 0;
+  height: 260px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #24272b;
+  background: #0f1013;
+}
+
+.tall { height: 320px; }
+
+@media (min-width: 1024px) {
+  .tile { height: 340px; border-radius: 24px; }
+  .tall { height: 420px; }
+}
+
+.tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.tile figcaption {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  color: #f1f2f4;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(7, 8, 10, 0.55));
+  pointer-events: none;
+}
+
+.tile figcaption { z-index: 1; }
