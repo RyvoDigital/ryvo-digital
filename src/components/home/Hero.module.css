@@ -64,42 +64,6 @@
 }
 
 
-/* The notch: the card minus a concave cut-out at its top centre, from the width
-   at which it clears the bar's right-hand cluster (data-notch-at, per language). */
-@media (min-width: 1280px) {
-  .wrap[data-notch-at="1280"] .card {
-    -webkit-mask:
-      var(--cap-l) calc(50% - (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
-      var(--cap-r) calc(50% + (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
-      linear-gradient(#000 0 0) 50% 0 / calc(var(--W) - var(--nr) * 4) var(--nh) no-repeat,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor, xor, xor;
-    mask:
-      var(--cap-l) calc(50% - (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
-      var(--cap-r) calc(50% + (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
-      linear-gradient(#000 0 0) 50% 0 / calc(var(--W) - var(--nr) * 4) var(--nh) no-repeat,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude, exclude, exclude;
-  }
-}
-
-@media (min-width: 1440px) {
-  .wrap[data-notch-at="1440"] .card {
-    -webkit-mask:
-      var(--cap-l) calc(50% - (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
-      var(--cap-r) calc(50% + (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
-      linear-gradient(#000 0 0) 50% 0 / calc(var(--W) - var(--nr) * 4) var(--nh) no-repeat,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor, xor, xor;
-    mask:
-      var(--cap-l) calc(50% - (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
-      var(--cap-r) calc(50% + (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
-      linear-gradient(#000 0 0) 50% 0 / calc(var(--W) - var(--nr) * 4) var(--nh) no-repeat,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude, exclude, exclude;
-  }
-}
-
 .cardShadow {
   display: none;
 }
@@ -123,7 +87,7 @@
 
 /* The links in the notch, and the notch's hairline edge (same tone as the card's border).
    Below the notch width the links sit inline in the card's bar instead. */
-.notchNav, .notchEdge { display: none; }
+.notchNav, .notchFill { display: none; }
 
 @media (min-width: 1024px) {
   .inlineLinks { display: flex; }
@@ -160,13 +124,13 @@
 @media (min-width: 1280px) {
   .wrap[data-notch-at="1280"] .inlineLinks { display: none; }
   .wrap[data-notch-at="1280"] .notchNav { display: flex; }
-  .wrap[data-notch-at="1280"] .notchEdge { display: block; }
+  .wrap[data-notch-at="1280"] .notchFill { display: block; }
 }
 
 @media (min-width: 1440px) {
   .wrap[data-notch-at="1440"] .inlineLinks { display: none; }
   .wrap[data-notch-at="1440"] .notchNav { display: flex; }
-  .wrap[data-notch-at="1440"] .notchEdge { display: block; }
+  .wrap[data-notch-at="1440"] .notchFill { display: block; }
 }
 
 @media (min-width: 1024px) {
@@ -179,15 +143,16 @@
     transform: translateX(-50%);
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    padding: 0 26px 6px; /* clear of the rounded inner corners */
+    gap: 6px;
+    padding: 0 34px 6px; /* clear of the rounded inner corners */
   }
 
-  .notchEdge { position: absolute; z-index: 3; top: 18px; overflow: visible; pointer-events: none; }
-  .edgeL { left: calc(50% - var(--W) / 2); }
-  .edgeR { left: calc(50% + var(--W) / 2 - var(--nr) * 2); }
-  .edgeM { left: calc(50% - var(--W) / 2 + var(--nr) * 2); width: calc(var(--W) - var(--nr) * 4); top: calc(18px + var(--nh) - 1px); height: 1px; background: #1f2125; }
-  .notchEdge path { fill: none; stroke: #1f2125; stroke-width: 1px; }
+  /* The notch: page-coloured pieces over the card's top centre (NotchNav). */
+  .notchFill { position: absolute; z-index: 5; top: 18px; height: var(--nh); pointer-events: none; }
+  .fillL { left: calc(50% - var(--W) / 2); }
+  .fillR { left: calc(50% + var(--W) / 2 - var(--nr) * 2); }
+  .fillM { left: calc(50% - var(--W) / 2 + var(--nr) * 2 - 1px); width: calc(var(--W) - var(--nr) * 4 + 2px); background: var(--color-page); }
+  .notchFill path { fill: var(--color-page); }
 }
 
 /* An icon that opens into icon + label (a 0fr → 1fr grid column, so no measuring
@@ -196,7 +161,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding: 0 12px;
+  padding: 0 14px;
   border-radius: 999px;
   font-size: 14px;
   color: var(--color-body);
@@ -213,13 +178,16 @@
   grid-template-columns: 0fr;
   margin-left: 0;
   opacity: 0;
-  transition: grid-template-columns 0.6s cubic-bezier(0.22, 1, 0.36, 1), margin-left 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+  transition: grid-template-columns 0.6s cubic-bezier(0.22, 1, 0.36, 1), margin-left 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
 }
 
 .notchLabel > span { overflow: hidden; min-width: 0; }
 
+/* Opening: the room opens first and the words fade in once there is space for
+   them, so no cut-off text shows on the way. */
 .wrap[data-nav-open="true"] .notchLabel,
-.wrap[data-nav-measure="open"] .notchLabel { grid-template-columns: 1fr; margin-left: 8px; opacity: 1; }
+.wrap[data-nav-measure="open"] .notchLabel { grid-template-columns: 1fr; margin-left: 10px; opacity: 1; }
+.wrap[data-nav-open="true"] .notchLabel { transition: grid-template-columns 0.6s cubic-bezier(0.22, 1, 0.36, 1), margin-left 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease 0.28s; }
 
 .wrap[data-nav-measure] .notchLabel { transition: none; }
 .wrap[data-nav-measure="closed"] .notchLabel { grid-template-columns: 0fr; margin-left: 0; }
@@ -256,16 +224,21 @@
 @media (min-width: 1024px) {
   /* As wide as the space left of the phone's screen (from the art box), so it
      wraps before it can reach the phone, in every language. */
-  .headline { left: 44px; right: auto; top: 150px; gap: 0; max-width: calc(var(--ax) + var(--aw) * 0.409 - 84px); }
+  /* Left of the phone, on a clear grid: the card's 44 px margin to 48 px short of
+     the screen's left edge (from the art box). */
+  .headline { left: 44px; right: auto; top: 150px; gap: 0; width: calc(var(--ax) + var(--aw) * 0.4282 - 92px); }
 }
 
 .deskOnly { display: none; }
 
 @media (min-width: 1024px) {
-  .deskOnly { display: flex; flex-direction: column; gap: 24px; margin-top: 28px; }
+  .deskOnly { display: flex; flex-direction: column; gap: 24px; }
+
+  /* Right of the phone: from 48 px clear of the screen to the card's margin. */
+  .rightCol { position: absolute; z-index: 4; top: 156px; left: calc(var(--ax) + var(--aw) * 0.5718 + 48px); right: 44px; }
 }
 
-.sub { margin: 0; max-width: 420px; font-size: 17px; line-height: 1.55; color: var(--color-body); }
+.sub { margin: 0; max-width: 400px; font-size: 17px; line-height: 1.55; color: var(--color-text); }
 
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; }
 
@@ -339,18 +312,22 @@
   .artBg::after { display: none; }
 }
 
-/* Desktop: a soft darkening behind the headline, so it reads on the glow (the
-   glass letters below stay untouched). */
-.scrim { display: none; }
+/* Soft darkening where the text sits, so every line reads on the light (the
+   light comes from the upper left): behind the headline on the left, a lighter
+   one behind the subline on the right; on phones, at the top. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 5, 6, 0.92) 0%, rgba(5, 5, 6, 0.86) 28%, rgba(5, 5, 6, 0.5) 40%, rgba(5, 5, 6, 0) 52%);
+}
 
 @media (min-width: 1024px) {
   .scrim {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-    background: radial-gradient(48% 52% at 14% 30%, rgba(5, 5, 6, 0.82) 0%, rgba(5, 5, 6, 0.6) 45%, rgba(5, 5, 6, 0) 100%);
+    background:
+      radial-gradient(42% 46% at 15% 30%, rgba(5, 5, 6, 0.9) 0%, rgba(5, 5, 6, 0.72) 50%, rgba(5, 5, 6, 0) 100%),
+      radial-gradient(34% 40% at 84% 26%, rgba(5, 5, 6, 0.62) 0%, rgba(5, 5, 6, 0.3) 55%, rgba(5, 5, 6, 0) 100%);
   }
 }
 
@@ -361,10 +338,10 @@
 .artImg { display: block; width: 100%; height: 100%; }
 
 /* The silhouette crop, placed by its box in the photo (hero-media.ts). */
-.handImg { position: absolute; display: block; left: 26.859%; top: 17.925%; width: 36.808%; height: 82.075%; }
+.handImg { position: absolute; display: block; left: 38.845%; top: 22.229%; width: 32.12%; height: 77.771%; }
 
 @media (max-width: 1023px) {
-  .handImg { left: 14.682%; top: 28.461%; width: 56.309%; height: 71.539%; }
+  .handImg { left: 29.068%; top: 28.758%; width: 56.958%; height: 71.242%; }
 }
 
 .screenDesk, .screenMob { position: absolute; inset: 0; }
@@ -390,11 +367,15 @@
    the letters on its bottom edge, slightly cut, full width. */
 .glassWord { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: hidden; pointer-events: none; user-select: none; }
 
+/* The letters stretched a little taller, from the card's bottom edge. */
 .glassText {
   font-family: var(--font-sans);
   font-weight: 700;
   font-stretch: 125%;
   letter-spacing: -0.055em;
+  transform: scaleY(1.22);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
   font-size: 29cqw;
 }
 
@@ -409,6 +390,17 @@
   .glassDesk { display: inline; }
   .glassMob { display: none; }
 }
+
+/* The handover card in flight (positioned by PhoneStory with transforms). */
+.fly {
+  position: absolute; left: 0; top: 0; z-index: 6; width: 180px;
+  display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 14px;
+  background: #eceef1; color: #0b0c0e; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  opacity: 0; visibility: hidden; pointer-events: none; transform-origin: 50% 50%;
+}
+.flyT { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #5e636b; }
+.flyRow { display: flex; justify-content: space-between; gap: 8px; font-size: 10.5px; }
+.flyRow span { color: #5e636b; }
 
 /* The chip, to the right of the phone (positions in the art box). */
 .chip {
@@ -428,7 +420,8 @@
 }
 
 @media (min-width: 1024px) {
-  .chip { left: calc(var(--ax) + var(--aw) * 0.591 + 32px); top: calc(var(--ay) + var(--ah) * 0.38); padding: 13px 16px; border-radius: 16px; gap: 4px; }
+  /* Near the phone: over its right edge, low on the screen. */
+  .chip { left: calc(var(--ax) + var(--aw) * 0.5718 - 44px); top: calc(var(--ay) + var(--ah) * 0.6); padding: 13px 16px; border-radius: 16px; gap: 4px; }
 }
 
 /* The panel tucked under the card, fading into the page (Manuel's note 1). */
@@ -460,3 +453,6 @@
 @media (min-width: 1024px) {
   :global(html[lang="pt-PT"]) .h1, :global(html[lang="es-ES"]) .h1 { font-size: clamp(36px, 3.5vw, 52px); }
 }
+
+/* The grey words of the headline, a touch lighter so they keep AA on the light. */
+.h1 :global(.text-steel) { color: #969ba3; }

@@ -6,7 +6,7 @@ import type { Locale } from "@/i18n/config";
 import SiteNav from "@/components/chrome/SiteNav";
 import { BookButton } from "@/components/chrome/Icons";
 import { navLinks } from "@/components/chrome/nav-links";
-import { NOTCH, NOTCH_AT, NOTCH_W_CLOSED, NOTCH_W_OPEN, capMaskUrl } from "@/components/chrome/notch";
+import { NOTCH, NOTCH_AT, NOTCH_W_CLOSED, NOTCH_W_OPEN } from "@/components/chrome/notch";
 import NotchNav from "@/components/chrome/NotchNav";
 import HeroVisual from "./HeroVisual";
 import { ART, DESK_MEDIA, MOB_MEDIA, srcSet } from "./hero-media";
@@ -24,7 +24,7 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
   }
 
   const notch = {
-    "--cap-l": capMaskUrl("left"), "--cap-r": capMaskUrl("right"), "--nr": `${NOTCH.r}px`, "--nh": `${NOTCH.h}px`,
+    "--nr": `${NOTCH.r}px`, "--nh": `${NOTCH.h}px`,
     "--W-closed": `${NOTCH_W_CLOSED}px`, "--W-open": `${NOTCH_W_OPEN[lang]}px`,
   } as CSSProperties;
 
@@ -57,13 +57,15 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
               <span className="text-steel">{h.titleD}</span> {h.titleE}
             </span>
           </h1>
-          <div className={styles.deskOnly}>
-            <p className={styles.sub} data-reveal style={{ ["--i" as string]: 0 }}>{h.body}</p>
-            <span className={styles.actions} data-reveal style={{ ["--i" as string]: 1 }}>
-              <BookButton href="#book" label={h.primary} />
-              <a href="#demo" className={styles.textLink}>{h.secondary}</a>
-            </span>
-          </div>
+        </div>
+
+        {/* Desktop: the subline and the two actions sit to the right of the phone. */}
+        <div className={`${styles.deskOnly} ${styles.rightCol}`}>
+          <p className={styles.sub} data-reveal style={{ ["--i" as string]: 0 }}>{h.body}</p>
+          <span className={styles.actions} data-reveal style={{ ["--i" as string]: 1 }}>
+            <BookButton href="#book" label={h.primary} />
+            <a href="#demo" className={styles.textLink}>{h.secondary}</a>
+          </span>
         </div>
 
         <HeroVisual lang={lang} t={h} />

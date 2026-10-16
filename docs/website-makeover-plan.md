@@ -853,6 +853,27 @@ Sources are in `~/ryvo-automation-platform` unless marked.
 7. **Keyboard order:** RYVO, then the nav links, then the languages and Book (where the notch shows, the logo sits outside the card, before the notch).
 8. **Booking live:** Manuel set up Google (OAuth client, refresh token, calendar id in .env.local); BOOKING_MOCK removed from .env.local. Vercel still needs the same four variables, added by Manuel by hand.
 
+**17 Oct 2026 (Manuel), homepage review round 7:**
+
+1. **The phone screen tells the whole story** (PhoneStory, GSAP, a ~14 s seamless loop on the agency's phone; only while on screen; reduced motion or no script: the booked final frame, still). Storyboard:
+   - 0.0 s · lock screen, 23:47.
+   - 0.5 s · a new enquiry drops in (blur to sharp, expo ease): "+351 9•• ••• •78", the buyer's first lines.
+   - 1.8 s · it opens into the conversation; the buyer's message grows from its corner.
+   - 2.9 s · language detected: a chrome light flicks across PT EN ES FR DE and locks on the buyer's.
+   - 4.6 s · the AI reply (tagged "AI assistant") appears with dots, then writes itself word by word.
+   - ~7 s · free times from the calendar appear (10:00, 11:00); the buyer answers "11:00"; that time snaps into chrome.
+   - ~9.5 s · "Viewing booked" forms, its check drawing in.
+   - ~11 s · the handover card (contact · language · looking for · budget) builds row by row, lifts off and flies out of the phone into the "Viewing booked" chip, which glows.
+   - ~14 s · back to the lock screen, seamlessly.
+   The buyer's message in the story states the budget, so the handover card only carries what was said.
+2. **Hero light:** a new photo (Nano Banana Pro) with a soft, wide light spread from the upper left, no hot spot, dimmed ~15% and dithered (fine grain) against banding; versioned hero7-… files.
+3. **Text on both sides of the phone:** headline left, subline + Book a call + See it answer right, each 48 px clear of the screen; the chip on the phone's right edge.
+4. **Notch:** drawn in the page colour over the card in overlapping opaque pieces (no seams, no edge lines); the labels fade in once the room is open; more padding.
+5. **RYVO glass:** darker body (the light seen through it at ~0.72), 5% tint, a slight refraction, crisp luminous edge, letters 22% taller.
+6. **Booking:** the panel no longer clips the last row (its padding was not counted); every slot inside the hours is shown, the ones the calendar has taken struck through, disabled and labelled "unavailable".
+7. **Top bar:** RYVO left, languages + Book right, in every state.
+8. **Contrast:** soft scrims where the text sits and a lighter grey in the headline; measured AA for every hero text at 1024–1920 and 390 in EN/PT/ES.
+
 **Launch checklist (before the Vercel preview works):**
 
 - [ ] Booking on hello@'s calendar (own UI, replaces the Google embed): follow `docs/booking-google-setup.md`. Then in Vercel → Project → Settings → Environment Variables (Preview and Production), add by hand: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`, `BOOKING_CALENDAR_ID` = hello@ryvodigital.com. Never set `BOOKING_MOCK` in Vercel. Until these are set, the site shows buttons to the Google booking pages (the short links are in `src/lib/booking/config.ts`, so the `NEXT_PUBLIC_BOOKING_*` variables are no longer needed).

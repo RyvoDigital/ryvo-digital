@@ -1,5 +1,5 @@
 // The hero art (Kie.ai, Nano Banana Pro, 17 Oct 2026; the phone upright and
-// centred): one backlit photo per layout, a silhouette layer cut from it (BiRefNet matte) that sits above the
+// centred, a soft light spread from the upper left): one backlit photo per layout, a silhouette layer cut from it (BiRefNet matte) that sits above the
 // glass wordmark, and the phone screen's four corners (% of the image, fitted
 // with a minimum-area rectangle), its height ÷ width and its corner radius.
 // Shared by the server (preload) and the client so both ask for the same files.
@@ -15,16 +15,16 @@ export type Art = {
 
 export const ART: Record<"desk" | "mob", Art> = {
   desk: {
-    bg: "/media/hero/hero6-bg", hand: "/media/hero/hero6-hand", widths: [1440, 2160, 2880], w: 5056, h: 3392,
+    bg: "/media/hero/hero7-bg", hand: "/media/hero/hero7-hand", widths: [1440, 2160, 2880], w: 5056, h: 3392,
     sizes: "1440px",
-    handBox: [26.859, 17.925, 36.808, 82.075], handWidths: [480, 960, 1440], handSizes: "520px", handW: 1861, handH: 2784,
-    corners: { TL: [40.902, 19.517], TR: [59.098, 19.517], BR: [59.098, 78.833], BL: [40.902, 78.833] }, aspect: 2.187, radius: 0.1469,
+    handBox: [38.845, 22.229, 32.12, 77.771], handWidths: [480, 960, 1440], handSizes: "460px", handW: 1624, handH: 2638,
+    corners: { TL: [42.82, 23.496], TR: [57.18, 23.496], BR: [57.18, 71.728], BL: [42.82, 71.728] }, aspect: 2.2534, radius: 0.1555,
   },
   mob: {
-    bg: "/media/hero/hero6-bg-m", hand: "/media/hero/hero6-hand-m", widths: [600, 900, 1200], w: 3392, h: 5056,
+    bg: "/media/hero/hero7-bg-m", hand: "/media/hero/hero7-hand-m", widths: [600, 900, 1200], w: 3392, h: 5056,
     sizes: "(min-width: 768px) 740px, 540px",
-    handBox: [14.682, 28.461, 56.309, 71.539], handWidths: [320, 640, 960], handSizes: "(min-width: 768px) 420px, 300px", handW: 1910, handH: 3617,
-    corners: { TL: [37.028, 29.47], TR: [63.267, 29.47], BR: [63.267, 68.592], BL: [37.028, 68.592] }, aspect: 2.2225, radius: 0.1628,
+    handBox: [29.068, 28.758, 56.958, 71.242], handWidths: [320, 640, 960], handSizes: "(min-width: 768px) 420px, 300px", handW: 1932, handH: 3602,
+    corners: { TL: [36.409, 29.806], TR: [63.532, 29.806], BR: [63.532, 70.431], BL: [36.409, 70.431] }, aspect: 2.2326, radius: 0.1517,
   },
 };
 

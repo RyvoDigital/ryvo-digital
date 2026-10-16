@@ -31,14 +31,12 @@ function zonedDate(timeZone: string, at: Date) {
 
 const overlaps = (a0: number, a1: number, b0: number, b1: number) => a0 < b1 && b0 < a1;
 
-/** Every bookable 30-minute start (UTC ISO) for a call type, given the calendar's busy blocks. */
-export function availableSlots(kind: Kind, busy: Busy[], now = new Date()) {
-  const { timeZone, durationMin, stepMin, bufferMin, minNoticeHours, horizonDays } = RULES;
+/** Every 30-minute start (UTC ISO) inside the published hours, the notice and the horizon, busy or not. */
+export function candidateSlots(kind: Kind, now = new Date()) {
+  const { timeZone, durationMin, stepMin, minNoticeHours, horizonDays } = RULES;
   const earliest = now.getTime() + minNoticeHours * 60 * MIN;
   const latest = now.getTime() + horizonDays * 24 * 60 * MIN;
-  const blocks = busy.map((b) => [Date.parse(b.start), Date.parse(b.end)] as const);
   const out: string[] = [];
-
   for (let day = 0; day <= horizonDays; day++) {
     const ref = new Date(now.getTime() + day * 24 * 60 * MIN);
     const { y, m, d, wd } = zonedDate(timeZone, ref);
@@ -47,15 +45,29 @@ export function availableSlots(kind: Kind, busy: Busy[], now = new Date()) {
       const [th, tm] = to.split(":").map(Number);
       for (let mins = fh * 60 + fm; mins + durationMin <= th * 60 + tm; mins += stepMin) {
         const start = zonedToUtc(timeZone, y, m, d, Math.floor(mins / 60), mins % 60).getTime();
-        const end = start + durationMin * MIN;
         if (start < earliest || start > latest) continue;
-        const guard0 = start - bufferMin * MIN, guard1 = end + bufferMin * MIN;
-        if (blocks.some(([b0, b1]) => overlaps(guard0, guard1, b0, b1))) continue;
         out.push(new Date(start).toISOString());
       }
     }
   }
   return [...new Set(out)].sort();
+}
+
+/** Every bookable 30-minute start (UTC ISO) for a call type, given the calendar's busy blocks. */
+export function availableSlots(kind: Kind, busy: Busy[], now = new Date()) {
+  const { durationMin, bufferMin } = RULES;
+  const blocks = busy.map((b) => [Date.parse(b.start), Date.parse(b.end)] as const);
+  return candidateSlots(kind, now).filter((iso) => {
+    const start = Date.parse(iso), end = start + durationMin * MIN;
+    const guard0 = start - bufferMin * MIN, guard1 = end + bufferMin * MIN;
+    return !blocks.some(([b0, b1]) => overlaps(guard0, guard1, b0, b1));
+  });
+}
+
+/** The starts inside the hours that the calendar already has taken (shown as unavailable, never bookable). */
+export function unavailableSlots(kind: Kind, busy: Busy[], now = new Date()) {
+  const free = new Set(availableSlots(kind, busy, now));
+  return candidateSlots(kind, now).filter((iso) => !free.has(iso));
 }
 
 export function isBookable(kind: Kind, startIso: string, busy: Busy[], now = new Date()) {

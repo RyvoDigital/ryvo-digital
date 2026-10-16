@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { KINDS, RULES, type Kind } from "@/lib/booking/config";
-import { availableSlots } from "@/lib/booking/slots";
+import { availableSlots, unavailableSlots } from "@/lib/booking/slots";
 import { freeBusy, mode } from "@/lib/booking/google";
 import { allow } from "@/lib/booking/guard";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/booking/slots?kind=automations → { slots: [ISO…], mode }
+// GET /api/booking/slots?kind=automations → { slots: [ISO…], unavailable: [ISO…], mode }
+// (unavailable: starts inside the hours the calendar has taken; times only, no details)
 export async function GET(req: NextRequest) {
   const kind = req.nextUrl.searchParams.get("kind") as Kind;
   if (!KINDS.includes(kind)) return NextResponse.json({ error: "kind" }, { status: 400 });
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     const now = new Date();
     const busy = await freeBusy(now, new Date(now.getTime() + (RULES.horizonDays + 1) * 86_400_000));
     return NextResponse.json(
-      { slots: availableSlots(kind, busy, now), timeZone: RULES.timeZone, mode: mode() },
+      { slots: availableSlots(kind, busy, now), unavailable: unavailableSlots(kind, busy, now), timeZone: RULES.timeZone, mode: mode() },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (err) {

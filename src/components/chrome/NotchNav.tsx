@@ -64,13 +64,15 @@ export default function NotchNav({ links, label }: { links: { href: string; labe
           </Link>
         ))}
       </nav>
-      {/* The notch's hairline edge, in three pieces that follow --W. */}
-      <svg aria-hidden="true" className={`${styles.notchEdge} ${styles.edgeL}`} width={2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${2 * NOTCH.r} ${NOTCH.h}`}>
-        <path d={capPath("left", false)} />
+      {/* The notch itself: the page colour laid over the card's top centre, in
+          three overlapping pieces (two rounded caps and a middle) that follow --W.
+          Opaque and overlapping, so no seam can show between them. */}
+      <svg aria-hidden="true" className={`${styles.notchFill} ${styles.fillL}`} width={2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${2 * NOTCH.r} ${NOTCH.h}`}>
+        <path d={capPath("left", true)} />
       </svg>
-      <span aria-hidden="true" className={`${styles.notchEdge} ${styles.edgeM}`} />
-      <svg aria-hidden="true" className={`${styles.notchEdge} ${styles.edgeR}`} width={2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${2 * NOTCH.r} ${NOTCH.h}`}>
-        <path d={capPath("right", false)} />
+      <span aria-hidden="true" className={`${styles.notchFill} ${styles.fillM}`} />
+      <svg aria-hidden="true" className={`${styles.notchFill} ${styles.fillR}`} width={2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${2 * NOTCH.r} ${NOTCH.h}`}>
+        <path d={capPath("right", true)} />
       </svg>
     </>
   );

@@ -1,0 +1,99 @@
+/* The phone screen's story (PhoneStory). The screen is laid out on ScreenFit's
+   300 px-wide rectangle and mapped onto the photo's glass. */
+.story {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 12px;
+  line-height: 1.38;
+  background: radial-gradient(120% 70% at 30% 0%, #1a1c21 0%, #0d0e11 55%, #0a0b0d 100%);
+}
+
+.status { position: absolute; top: 15px; left: 22px; right: 22px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; z-index: 3; }
+.bat { width: 20px; height: 9px; border-radius: 3px; border: 1px solid rgba(241, 242, 244, 0.7); position: relative; }
+.bat::after { content: ""; position: absolute; inset: 1.5px 5px 1.5px 1.5px; border-radius: 1px; background: rgba(241, 242, 244, 0.85); }
+
+/* 0 · the lock screen */
+.lock { position: absolute; left: 0; right: 0; top: 92px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.clock { font-size: 64px; font-weight: 600; letter-spacing: -0.04em; font-stretch: 110%; line-height: 1; font-variant-numeric: tabular-nums; }
+.day { font-size: 12px; color: var(--color-silver); letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* the notification */
+.notif {
+  position: absolute; left: 12px; right: 12px; top: 214px;
+  display: flex; gap: 10px; padding: 11px 12px; border-radius: 18px;
+  background: rgba(40, 42, 48, 0.72); border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  opacity: 0; visibility: hidden;
+}
+.appIcon { flex: 0 0 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: var(--chrome); color: #0b0c0e; }
+.notifBody { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.notifTop { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; }
+.notifTop span { color: var(--color-steel); font-size: 10px; }
+.notifFrom { font-size: 11px; color: var(--color-silver); }
+.notifText { font-size: 11.5px; color: var(--color-text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* the conversation, on the agency's phone */
+.thread { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; visibility: hidden; }
+.head { display: flex; align-items: center; gap: 9px; padding: 40px 14px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); background: rgba(13, 14, 17, 0.85); position: relative; z-index: 2; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #22252b; color: var(--color-silver); font-weight: 600; font-size: 12px; }
+.headText { display: flex; flex-direction: column; line-height: 1.25; font-size: 11.5px; }
+.headText span { font-size: 10px; color: var(--color-steel); }
+.view { position: relative; flex: 1 1 auto; overflow: hidden; }
+.stack { display: flex; flex-direction: column; gap: 9px; padding: 12px 12px 18px; will-change: transform; }
+
+.in, .out { margin: 0; max-width: 84%; padding: 9px 11px; border-radius: 16px; }
+.in { align-self: flex-start; background: #1f2126; border-bottom-left-radius: 5px; }
+.out { align-self: flex-end; position: relative; background: #eceef1; color: #0b0c0e; border-bottom-right-radius: 5px; }
+.outText { margin: 0; }
+.aiTag { display: block; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #5e636b; margin-bottom: 3px; }
+.dots { position: absolute; left: 12px; bottom: 10px; display: flex; gap: 4px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: #5e636b; animation: dot 1.2s ease-in-out infinite; }
+.dots i:nth-child(2) { animation-delay: 0.15s; }
+.dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dot { 0%, 100% { opacity: 0.35; transform: scale(0.8); } 45% { opacity: 1; transform: scale(1); } }
+
+/* language detection */
+.lang { align-self: flex-start; display: flex; flex-direction: column; gap: 5px; padding-left: 2px; }
+.langLbl { font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-steel); }
+.chips { position: relative; display: flex; gap: 4px; }
+.chip { position: relative; z-index: 1; width: 30px; height: 20px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--color-steel); transition: color 0.3s ease; }
+.chip[data-on="true"] { color: #0b0c0e; }
+.hl { position: absolute; left: 0; top: 0; width: 30px; height: 20px; border-radius: 999px; background: var(--chrome); box-shadow: 0 0 14px rgba(205, 209, 217, 0.4); }
+
+/* the calendar's free times */
+.slots { align-self: flex-end; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.slotsLbl { font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-steel); }
+.pills { display: flex; gap: 6px; }
+.pill { padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.04); white-space: nowrap; transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease; }
+.pill[data-on="true"] { background: var(--chrome); color: #0b0c0e; border-color: transparent; box-shadow: 0 6px 18px rgba(205, 209, 217, 0.25); }
+
+/* viewing booked */
+.booked { align-self: stretch; display: flex; gap: 10px; align-items: center; padding: 12px; border-radius: 16px; background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)); border: 1px solid rgba(255, 255, 255, 0.14); }
+.check { flex: 0 0 22px; fill: none; stroke: var(--color-text); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.check circle { stroke: rgba(241, 242, 244, 0.35); }
+.bookedText { display: flex; flex-direction: column; line-height: 1.3; }
+.bookedText b { font-size: 12.5px; }
+.bookedText span { font-size: 11.5px; }
+.bookedSub { color: var(--color-steel); font-size: 10px !important; }
+
+/* the handover card for the consultant */
+.hand { align-self: stretch; display: flex; flex-direction: column; gap: 4px; padding: 11px 12px; border-radius: 16px; background: #eceef1; color: #0b0c0e; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45); }
+.handT { font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #5e636b; margin-bottom: 2px; }
+.row { display: flex; justify-content: space-between; gap: 8px; font-size: 10.5px; }
+.row span { color: #5e636b; }
+.row b { font-weight: 600; text-align: right; }
+
+/* Reduced motion, or no script: the final frame, still: the reply, the booking
+   and the handover. */
+@media (prefers-reduced-motion: reduce) {
+  .lock, .notif { opacity: 0; visibility: hidden; }
+  .thread { opacity: 1; visibility: visible; }
+  .story [data-s="b1"], .story [data-s="lang"], .story [data-s="slots"], .dots { display: none !important; }
+}
+
+:global(html:not(.js)) .lock, :global(html:not(.js)) .notif { opacity: 0; visibility: hidden; }
+:global(html:not(.js)) .thread { opacity: 1; visibility: visible; }
+:global(html:not(.js)) .story [data-s="b1"], :global(html:not(.js)) .story [data-s="lang"], :global(html:not(.js)) .story [data-s="slots"], :global(html:not(.js)) .dots { display: none !important; }

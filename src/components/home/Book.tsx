@@ -25,7 +25,8 @@ const KIND_OF: Kind[] = ["automations", "websites"];
 export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictionary["book"]; initial?: 0 | 1 }) {
   const [kindIdx, setKindIdx] = useState<0 | 1>(initial);
   const kind = KIND_OF[kindIdx];
-  const [slots, setSlots] = useState<Record<string, string[]>>({});
+  // Per call type: every start inside the hours, each free or already taken.
+  const [slots, setSlots] = useState<Record<string, { iso: string; free: boolean }[]>>({});
   const [stage, setStage] = useState<Stage>({ s: "loading" });
   const [day, setDay] = useState<string | null>(null);
   const [week, setWeek] = useState(0);
@@ -48,8 +49,10 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
     try {
       const res = await fetch(`/api/booking/slots?kind=${k}`, { cache: "no-store" });
       if (!res.ok) throw new Error(String(res.status));
-      const json = (await res.json()) as { slots: string[] };
-      setSlots((p) => ({ ...p, [k]: json.slots }));
+      const json = (await res.json()) as { slots: string[]; unavailable?: string[] };
+      const all = [...json.slots.map((iso) => ({ iso, free: true })), ...(json.unavailable ?? []).map((iso) => ({ iso, free: false }))]
+        .sort((a, b) => a.iso.localeCompare(b.iso));
+      setSlots((p) => ({ ...p, [k]: all }));
       setDay(null);
       setWeek(0);
       setStage({ s: "pick" });
@@ -67,10 +70,10 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
   // Group the slots by day in the visitor's own time zone.
   const byDay = useMemo(() => {
     const keyFmt = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" });
-    const map = new Map<string, string[]>();
-    for (const iso of slots[kind] ?? []) {
-      const k = keyFmt.format(new Date(iso));
-      map.set(k, [...(map.get(k) ?? []), iso]);
+    const map = new Map<string, { iso: string; free: boolean }[]>();
+    for (const s of slots[kind] ?? []) {
+      const k = keyFmt.format(new Date(s.iso));
+      map.set(k, [...(map.get(k) ?? []), s]);
     }
     return map;
   }, [slots, kind, tz]);
@@ -181,7 +184,7 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
                   {(k) => {
                     const f = fmtDay(k);
                     return (
-                      <button key={k} type="button" aria-pressed={k === openDay} aria-expanded={k === openDay} aria-label={f.full} onClick={() => toggleDay(k)} className={styles.day}>
+                      <button key={k} type="button" aria-pressed={k === openDay} aria-expanded={k === openDay} aria-label={byDay.get(k)?.some((x) => x.free) ? f.full : `${f.full}, ${t.unavailable}`} data-full={!byDay.get(k)?.some((x) => x.free)} onClick={() => toggleDay(k)} className={styles.day}>
                         <span className={styles.dayWd}>{f.wd}</span>
                         <span className={styles.dayN}>{f.n}</span>
                         {k === todayKey && <span className={styles.today} aria-hidden="true" />}
@@ -194,10 +197,17 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
                   <div className={styles.expandInner}>
                     {shownDay && (
                       <div className={styles.times} key={shownDay} inert={!openDay}>
-                        {(byDay.get(shownDay) ?? []).map((iso) => (
-                          <button key={iso} type="button" onClick={() => setStage({ s: "form", slot: iso })} className={styles.time}>
-                            {fmtTime(iso)}
-                          </button>
+                        {/* Every time inside the hours; the ones already taken are shown, struck, and not bookable. */}
+                        {(byDay.get(shownDay) ?? []).map(({ iso, free }) => (
+                          free ? (
+                            <button key={iso} type="button" onClick={() => setStage({ s: "form", slot: iso })} className={styles.time}>
+                              {fmtTime(iso)}
+                            </button>
+                          ) : (
+                            <button key={iso} type="button" disabled aria-disabled="true" aria-label={`${fmtTime(iso)}, ${t.unavailable}`} className={`${styles.time} ${styles.taken}`}>
+                              {fmtTime(iso)}
+                            </button>
+                          )
                         ))}
                       </div>
                     )}
