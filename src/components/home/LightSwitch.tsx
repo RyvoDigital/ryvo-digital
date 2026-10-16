@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import { prefersReducedMotion, withMotion } from "@/lib/gsap";
 
-// The dark → light → dark transition around Websites follows the scroll. Each
-// section carries a full-bleed layer of the other colour whose opacity is
-// scrubbed; without JS (or with reduced motion) the CSS gradients stand in.
+// The dark → light → dark transition around Websites follows the scroll: each
+// section's layer is a gradient whose stops slide with --p (0 → 1). Without JS
+// or with reduced motion, --p stays 1: the design's static gradients.
 export default function LightSwitch() {
   useEffect(() => {
     if (prefersReducedMotion()) return;
@@ -14,16 +14,16 @@ export default function LightSwitch() {
         document.querySelectorAll<HTMLElement>("[data-switch]").forEach((section) => {
           const layer = section.querySelector<HTMLElement>("[data-switch-layer]");
           if (!layer) return;
-          section.dataset.scrub = "true";
+          const toLight = section.dataset.switch === "to-light";
           gsap.fromTo(
             layer,
-            { opacity: 1 },
+            { "--p": 0 },
             {
-              opacity: 0,
+              "--p": 1,
               ease: "none",
-              scrollTrigger: section.dataset.switch === "to-light"
-                ? { trigger: section, start: "top 80%", end: "top 25%", scrub: true }
-                : { trigger: section, start: "top 92%", end: "top 40%", scrub: true },
+              scrollTrigger: toLight
+                ? { trigger: section, start: "top 100%", end: "top 45%", scrub: true }
+                : { trigger: section, start: "top 100%", end: "top 55%", scrub: true },
             },
           );
         });

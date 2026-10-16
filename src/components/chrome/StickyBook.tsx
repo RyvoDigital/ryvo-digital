@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight } from "./Icons";
 
 // After the hero, a small glass "Book a call" pill waits bottom-centre. It steps
-// aside over the booking section and the footer, while anyone is typing in the
-// calculator, and — on phones — over the whole calculator.
+// aside over the booking section and the footer and while anyone is typing in
+// the calculator. On phones it also hides while scrolling down (back on scroll
+// up) and never sits over an open row or a chat ([data-no-pill]).
 export default function StickyBook({ href, label }: { href: string; label: string }) {
   const [pastHero, setPastHero] = useState(false);
   const [covered, setCovered] = useState(false);
   const [typing, setTyping] = useState(false);
+  const [phoneHide, setPhoneHide] = useState(false);
 
   useEffect(() => {
     const hero = document.querySelector("[data-hero]");
@@ -24,6 +26,23 @@ export default function StickyBook({ href, label }: { href: string; label: strin
     if (hero) heroIo.observe(hero);
     hideOver.forEach((el) => hideIo.observe(el));
 
+    // Phones: direction + what lies under the pill.
+    let lastY = scrollY;
+    let raf = 0;
+    const check = () => {
+      raf = 0;
+      if (!phone) return;
+      const y = scrollY;
+      const down = y > lastY + 2;
+      const up = y < lastY - 2;
+      lastY = y;
+      const px = innerWidth / 2, py = innerHeight - 40;
+      const under = document.elementsFromPoint(px, py).some((el) => el.closest("[data-no-pill]") && !el.closest("[data-sticky-book]"));
+      setPhoneHide((prev) => (under ? true : down ? true : up ? false : prev));
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
     const inCalc = (el: EventTarget | null) => el instanceof HTMLElement && !!el.closest("[data-calc]") && el.tagName === "INPUT";
     const onIn = (e: FocusEvent) => inCalc(e.target) && setTyping(true);
     const onOut = (e: FocusEvent) => inCalc(e.target) && !inCalc(e.relatedTarget) && setTyping(false);
@@ -35,12 +54,15 @@ export default function StickyBook({ href, label }: { href: string; label: strin
       hideIo.disconnect();
       document.removeEventListener("focusin", onIn);
       document.removeEventListener("focusout", onOut);
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
     };
   }, []);
 
-  const show = pastHero && !covered && !typing;
+  const show = pastHero && !covered && !typing && !phoneHide;
   return (
     <div
+      data-sticky-book
       className="pointer-events-none fixed inset-x-0 bottom-[max(16px,env(safe-area-inset-bottom))] z-50 flex justify-center transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]"
       style={{ opacity: show ? 1 : 0, transform: show ? "none" : "translateY(16px)" }}
     >

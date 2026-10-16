@@ -3,7 +3,6 @@ import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import SiteNav from "@/components/chrome/SiteNav";
 import { BookButton } from "@/components/chrome/Icons";
-import Ruler from "./Ruler";
 import HeroVisual from "./HeroVisual";
 import { HERO_SIZES, heroSrcSet } from "./hero-media";
 import HeroReveal from "./HeroReveal";
@@ -12,17 +11,16 @@ import styles from "./Hero.module.css";
 export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
   const h = t.hero;
   // The cut-out is the LCP element: fetch it first, at high priority.
-  preload("/media/hero/hand-phone-1160.avif", {
+  preload("/media/hero/hand-phone-b-1160.avif", {
     as: "image",
     type: "image/avif",
     fetchPriority: "high",
-    imageSrcSet: heroSrcSet("/media/hero/hand-phone", "avif"),
+    imageSrcSet: heroSrcSet("/media/hero/hand-phone-b", "avif"),
     imageSizes: HERO_SIZES,
   });
   return (
     <header className={styles.wrap} data-hero>
       <div aria-hidden="true" className={styles.spill} />
-      <Ruler t={t} />
 
       <section className={styles.card} aria-labelledby="hero-title">
         <div className={styles.nav}>

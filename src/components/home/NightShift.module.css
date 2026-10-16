@@ -36,10 +36,10 @@
 }
 
 @media (min-width: 1024px) {
-  .title { width: min(1040px, calc(100% - 190px)); margin: 0 0 0 auto; font-size: clamp(46px, 4.45vw, 64px); line-height: 1.02; }
+  .title { width: min(1040px, calc(100% - 190px)); margin: 0 0 0 auto; font-size: clamp(44px, 4.2vw, 64px); line-height: 1.02; }
   .l1, .l3, .l4 { display: block; }
-  .l1, .l2, .l3, .l4 { white-space: nowrap; }
-  .l2 { display: flex; align-items: center; gap: 18px; padding-left: 120px; }
+  .l1, .l3, .l4 { white-space: nowrap; }
+  .l2 { display: flex; flex-wrap: wrap; align-items: center; gap: 0 18px; padding-left: 120px; }
   .l3 { padding-left: 40px; }
   .l4 { padding-left: 300px; }
 }

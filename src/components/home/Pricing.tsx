@@ -6,13 +6,16 @@ import type { Locale } from "@/i18n/config";
 import DigitRoll from "@/components/chrome/DigitRoll";
 import { BookButton } from "@/components/chrome/Icons";
 import { euros } from "@/lib/numbers";
+import { monthly, setup } from "@/lib/pricing";
 import styles from "./Pricing.module.css";
 
+// Tick any automations: the monthly and the one-time setup roll to their new
+// values together. Default: 01 + 02 (the approved design's Core).
 export default function Pricing({ lang, t, names }: { lang: Locale; t: Dictionary["pricing"]; names: string[] }) {
-  const [tier, setTier] = useState(1); // Core, as in the approved design
+  const [chosen, setChosen] = useState<number[]>([0, 1]);
   const [seen, setSeen] = useState(false);
   const priceRef = useRef<HTMLSpanElement>(null);
-  const current = t.tiers[tier];
+  const none = chosen.length === 0;
 
   useEffect(() => {
     const el = priceRef.current;
@@ -22,61 +25,57 @@ export default function Pricing({ lang, t, names }: { lang: Locale; t: Dictionar
     return () => io.disconnect();
   }, []);
 
+  const toggle = (i: number) => setChosen((c) => (c.includes(i) ? c.filter((x) => x !== i) : [...c, i].sort()));
+
   return (
     <section id="pricing" className={styles.section} aria-labelledby="pricing-label">
       <div className={styles.card}>
         <div className={styles.left}>
           <span id="pricing-label" className="mono-label">{t.label}</span>
-          <div role="radiogroup" aria-label={t.choose} className={styles.control} style={{ ["--i" as string]: tier }}>
-            <span aria-hidden="true" className={styles.thumb} />
-            {t.tiers.map((x, i) => (
-              <button
-                key={x.name}
-                type="button"
-                role="radio"
-                aria-checked={i === tier}
-                tabIndex={i === tier ? 0 : -1}
-                onClick={() => setTier(i)}
-                onKeyDown={(e) => {
-                  if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); setTier((tier + 1) % 3); (e.currentTarget.parentElement!.children[((tier + 1) % 3) + 1] as HTMLElement).focus(); }
-                  if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); setTier((tier + 2) % 3); (e.currentTarget.parentElement!.children[((tier + 2) % 3) + 1] as HTMLElement).focus(); }
-                }}
-                className={styles.option}
-              >
-                {x.name}
-              </button>
-            ))}
-          </div>
-          <span className={styles.priceRow}>
-            <span className={styles.unit}>{t.from}</span>
-            <span ref={priceRef} className={styles.price}>
-              <DigitRoll value={euros(seen ? current.price : 0, lang)} />
+          <div aria-live="polite" className="flex flex-col gap-[18px] lg:gap-[22px]">
+            <span className={styles.priceRow}>
+              <span className={styles.unit}>{t.from}</span>
+              <span ref={priceRef} className={styles.price} data-none={none}>
+                {none ? <span className={styles.noneText}>{t.none}</span> : <DigitRoll value={euros(seen ? monthly(chosen) : 0, lang)} />}
+              </span>
+              {!none && <span className={styles.unit}>{t.perMonth} · {t.exVat}</span>}
             </span>
-            <span className={styles.unit}>{t.perMonth}</span>
-          </span>
-          <p className={styles.blurb} aria-live="polite">{current.blurb}</p>
+            {!none && (
+              <span className={styles.setup}>
+                <span className="text-steel">{t.setupLabel}</span>
+                <span className={styles.setupFigure}>
+                  <DigitRoll value={euros(seen ? setup(chosen) : 0, lang)} />
+                </span>
+                <span className="text-steel">{t.exVat}</span>
+                <span className="basis-full text-[13px] text-steel">{t.setupNote}</span>
+              </span>
+            )}
+          </div>
           <span className={styles.cta}>
             <BookButton href="#book" label={t.cta} />
-            <span className="max-w-[260px] text-[13px] leading-[1.5] text-steel">{t.note}</span>
           </span>
+          <ul className={styles.fine}>
+            {t.fine.map((f) => <li key={f}>{f}</li>)}
+          </ul>
         </div>
         <div className={styles.right}>
-          <span className="mono-label mb-[14px]">{t.included}</span>
-          <ul className="m-0 list-none p-0">
+          <span className="mono-label mb-[14px]">{t.choose}</span>
+          <div role="group" aria-label={t.choose}><ul className="m-0 list-none p-0">
             {names.map((name, i) => {
-              const on = i < current.count;
+              const on = chosen.includes(i);
               return (
-                <li key={name} className={styles.item} data-on={on} style={{ transitionDelay: `${on ? i * 70 : 0}ms` }}>
-                  <span className={styles.tick} aria-hidden="true">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-10" /></svg>
-                  </span>
-                  <span className="font-mono text-[12px] text-silver">0{i + 1}</span>
-                  <span className={styles.itemName}>{name}</span>
-                  <span className="sr-only">{on ? "✓" : "—"}</span>
+                <li key={name}>
+                  <button type="button" role="checkbox" aria-checked={on} onClick={() => toggle(i)} className={styles.item} data-on={on}>
+                    <span className={styles.tick} aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-10" /></svg>
+                    </span>
+                    <span className="font-mono text-[12px] text-silver">0{i + 1}</span>
+                    <span className={styles.itemName}>{name}</span>
+                  </button>
                 </li>
               );
             })}
-          </ul>
+          </ul></div>
         </div>
       </div>
     </section>

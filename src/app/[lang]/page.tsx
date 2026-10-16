@@ -13,7 +13,6 @@ import Websites from "@/components/home/Websites";
 import About from "@/components/home/About";
 import Book from "@/components/home/Book";
 import LightSwitch from "@/components/home/LightSwitch";
-import Thread from "@/components/home/Thread";
 import SiteFooter from "@/components/chrome/SiteFooter";
 import StickyBook from "@/components/chrome/StickyBook";
 
@@ -40,7 +39,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
       <SiteFooter lang={lang} t={t} />
       <StickyBook href="#book" label={t.pill.book} />
       <LightSwitch />
-      <Thread />
     </div>
   );
 }

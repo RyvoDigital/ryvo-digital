@@ -35,7 +35,7 @@ export default function Calculator({ lang, t }: { lang: Locale; t: Dictionary["c
   );
 
   return (
-    <section className={styles.section} aria-labelledby="calc-label" data-calc>
+    <section className={styles.section} aria-labelledby="calc-label" data-calc data-no-pill>
       <div className={styles.card}>
         <span id="calc-label" className="mono-label">
           <span className="hidden md:inline">{t.label}</span>

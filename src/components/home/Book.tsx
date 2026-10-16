@@ -2,18 +2,26 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Dictionary } from "@/i18n";
+import { ArrowUpRight } from "@/components/chrome/Icons";
 import styles from "./Book.module.css";
 
 // Two Google Calendar appointment schedules (automations call / website project),
-// embedded inline. Until Manuel supplies the embed links (env vars below), the
-// glass panel says so calmly and offers email instead.
-const SCHEDULES = [process.env.NEXT_PUBLIC_BOOKING_URL_AUTOMATIONS, process.env.NEXT_PUBLIC_BOOKING_URL_WEBSITES];
+// embedded inline in Google's embed form (?gv=true). If the embed has not loaded
+// within a few seconds, a clean button opens the booking page in a new tab.
+// Set in .env.local and in Vercel: NEXT_PUBLIC_BOOKING_URL_* (short links) and
+// NEXT_PUBLIC_BOOKING_EMBED_* (the resolved calendar.google.com embed URLs).
+const LINKS = [process.env.NEXT_PUBLIC_BOOKING_URL_AUTOMATIONS, process.env.NEXT_PUBLIC_BOOKING_URL_WEBSITES];
+const EMBEDS = [process.env.NEXT_PUBLIC_BOOKING_EMBED_AUTOMATIONS, process.env.NEXT_PUBLIC_BOOKING_EMBED_WEBSITES];
+const LOAD_TIMEOUT = 8000;
 
 export default function Book({ t, initial = 0 }: { t: Dictionary["book"]; initial?: 0 | 1 }) {
   const [kind, setKind] = useState<0 | 1>(initial);
   const [near, setNear] = useState(false);
+  const [state, setState] = useState<Record<number, "loading" | "ready" | "failed">>({});
   const panel = useRef<HTMLDivElement>(null);
-  const url = SCHEDULES[kind];
+  const link = LINKS[kind];
+  const embed = EMBEDS[kind];
+  const status = state[kind] ?? "loading";
 
   useEffect(() => {
     const el = panel.current;
@@ -22,6 +30,20 @@ export default function Book({ t, initial = 0 }: { t: Dictionary["book"]; initia
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  // If the frame has not loaded in time, fall back to the button.
+  useEffect(() => {
+    if (!near || !embed || status !== "loading") return;
+    const id = window.setTimeout(() => setState((s) => (s[kind] === "ready" ? s : { ...s, [kind]: "failed" })), LOAD_TIMEOUT);
+    return () => clearTimeout(id);
+  }, [near, embed, kind, status]);
+
+  const button = link && (
+    <a href={link} target="_blank" rel="noopener noreferrer" className="btn">
+      {t.open}
+      <span className="btn-arrow"><ArrowUpRight /></span>
+    </a>
+  );
 
   return (
     <section id="book" className={styles.section} aria-labelledby="book-title">
@@ -51,19 +73,43 @@ export default function Book({ t, initial = 0 }: { t: Dictionary["book"]; initia
             <span className="font-mono text-[10px] tracking-[0.12em] text-steel">{t.panelTag}</span>
           </div>
 
-          {url ? (
-            near && <iframe key={kind} src={url} title={t.frameTitle} className={styles.frame} loading="lazy" />
+          {embed && status !== "failed" ? (
+            <>
+              <div className={styles.frameWrap} data-ready={status === "ready"}>
+                {near && (
+                  <iframe
+                    key={kind}
+                    src={embed}
+                    title={t.frameTitle}
+                    className={styles.frame}
+                    onLoad={() => setState((s) => ({ ...s, [kind]: "ready" }))}
+                  />
+                )}
+              </div>
+              {link && (
+                <a href={link} target="_blank" rel="noopener noreferrer" className="self-center text-[12px] text-steel underline-offset-4 hover:text-text hover:underline">
+                  {t.newTab}
+                </a>
+              )}
+            </>
           ) : (
             <div className={styles.placeholder}>
               <span className={styles.ring} aria-hidden="true" />
-              <p className="m-0 text-[18px] font-medium">{t.placeholderTitle}</p>
-              <p className="m-0 max-w-[340px] text-[14px] leading-[1.6] text-body">{t.placeholderBody}</p>
-              <a href={`mailto:hello@ryvodigital.com?subject=${encodeURIComponent(t.kinds[kind])}`} className="btn mt-2">
-                {t.placeholderCta}
-                <span className="btn-arrow">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7" /><path d="M8 7h9v9" /></svg>
-                </span>
-              </a>
+              {link ? (
+                <>
+                  <p className="m-0 text-[18px] font-medium">{t.frameTitle}</p>
+                  {button}
+                </>
+              ) : (
+                <>
+                  <p className="m-0 text-[18px] font-medium">{t.placeholderTitle}</p>
+                  <p className="m-0 max-w-[340px] text-[14px] leading-[1.6] text-body">{t.placeholderBody}</p>
+                  <a href={`mailto:hello@ryvodigital.com?subject=${encodeURIComponent(t.kinds[kind])}`} className="btn mt-2">
+                    {t.placeholderCta}
+                    <span className="btn-arrow"><ArrowUpRight /></span>
+                  </a>
+                </>
+              )}
             </div>
           )}
         </div>

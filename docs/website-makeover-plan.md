@@ -799,6 +799,31 @@ Sources are in `~/ryvo-automation-platform` unless marked.
    - "EU consent rules (GDPR) built in" (trust line);
    - "Twenty minutes" stays, and both schedules are 20 minutes.
 
+**16 Oct 2026 (Manuel), homepage review round:**
+
+1. **Pricing model (replaces the three tiers).** Visitors tick any automations; default 01 + 02.
+   - **Monthly, from (excl. VAT):** €350 for the first automation; each added one: 02 +€300, 03 +€200, 04 +€200, 05 +€150, 01 +€300 when it is not the first. Formula: 350 + the add-ons of those chosen − the highest add-on among them. Checks: 01 = 350 · 01+02 = 650 · 01+02+03 = 850 · +04 = 1,050 · all five = 1,200 · 04+05 = 500.
+   - **One-time setup (excl. VAT):** €1,000 for the first automation, +€500 for Reactivation added to another, +€750 for each other extra. Checks: 01+02 = 1,500 · all five = 3,750 · 02 alone = 1,000.
+   - **Labels:** "from", "launch pricing", "excl. VAT", "Setup: half at signing, half at go-live".
+   - **Fine print:** "Reactivation includes 1,000 campaign messages a month; above that, Meta's message fee is passed on at cost." · "For agencies up to 8 consultants and one office; larger teams get a quote."
+   - This supersedes "No setup fee is shown" (setup is now shown live) and the earlier three-tier control.
+2. **Hero still B**, with the chat mapped onto the screen by its four corners (matrix3d).
+3. **No 24-hour ruler, no thread.** Minimal is the rule.
+4. **About leads with proof, not names.** Names move to /about (Manuel "Founder & Engineering"). The test figure is the real one, rounded down: 3,317 recorded on 13 Oct, so "3,300+".
+5. **Booking:** 30-minute calls ("Thirty minutes"); the two Google Calendar schedules are embedded, with a button fallback.
+
+**Launch checklist (before the Vercel preview works):**
+
+- [ ] Vercel → Project → Settings → Environment Variables, for Preview and Production:
+  - `NEXT_PUBLIC_BOOKING_URL_AUTOMATIONS` = https://calendar.app.google/B2oHRfo416JWU1UD8
+  - `NEXT_PUBLIC_BOOKING_URL_WEBSITES` = https://calendar.app.google/T4LvbW8jcoD855j98
+  - `NEXT_PUBLIC_BOOKING_EMBED_AUTOMATIONS` = https://calendar.google.com/calendar/appointments/schedules/AcZssZ2S2upbjph5P5wzZcAupGLE7pOzG_6avJCjbLvs3n3PhgTbKKnTbpkJd81j8YPIeZzTYk22b7tV?gv=true
+  - `NEXT_PUBLIC_BOOKING_EMBED_WEBSITES` = https://calendar.google.com/calendar/appointments/schedules/AcZssZ2PCB5k4OIpGto4wjLgrMSf-d-vai0Em2uvmxRBY-CfOgi99vJDnbFkUMce0fxQV0zPs8bfltqi?gv=true
+  - (`NEXT_PUBLIC_*` values are baked in at build time, so redeploy after setting them.)
+- [ ] Move the project to Vercel Pro and turn on Web Analytics (custom events).
+- [ ] The privacy policy names Google Calendar appointment schedules and Vercel Web Analytics (text change for Manuel and the lawyer).
+- [ ] FR/DE replies are live in the product before the site says "PT · EN · ES · FR · DE".
+
 **Earlier the same day (from the brief):**
 
 - one "from" price per offer;

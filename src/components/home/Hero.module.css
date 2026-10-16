@@ -202,19 +202,6 @@
   100% { background-position: -20% 0; }
 }
 
-.screen {
-  position: absolute;
-  left: var(--cx);
-  top: var(--cy);
-  width: var(--sw);
-  height: var(--sh);
-  transform: translate(-50%, -50%) rotate(var(--rot));
-  border-radius: 15% / 6.5%;
-  overflow: hidden;
-  container-type: size;
-  color: var(--color-text);
-}
-
 .dim {
   position: absolute;
   inset: 0;

@@ -77,7 +77,20 @@
 .kind[aria-selected="true"] { background: var(--color-text); color: #0b0c0e; font-weight: 600; }
 
 /* Google's booking page has its own light styling; it sits inside our glass. */
-.frame { width: 100%; height: 640px; border: 0; border-radius: 16px; background: #fff; }
+.frameWrap {
+  position: relative;
+  height: 640px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #131418 linear-gradient(110deg, transparent 30%, rgba(205, 209, 217, 0.06) 50%, transparent 70%) 0 0 / 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+.frameWrap[data-ready="true"] { animation: none; background: #fff; }
+
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.frame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
 
 .placeholder {
   min-height: 360px;

@@ -9,31 +9,20 @@
   .section { padding: 260px 24px 120px; }
 }
 
-/* Static fallback: the design's light → dark gradient. With JS the layer is
-   solid silver and fades as you scroll, turning the page back to night. */
+/* The way back to night: the same moving-stop gradient as Websites (--p, 0 → 1).
+   --p = 1 is the design's static light → dark gradient. */
 .day {
+  --p: 1;
+  --o: calc((1 - var(--p)) * 100%);
+  --s1: 40px; --s2: 90px; --s3: 140px; /* the blend stays inside the 150px top padding */
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, #eef0f2 0%, #c9cdd3 14%, rgba(42, 45, 50, 0.6) 30%, rgba(7, 8, 10, 0) 44%);
-}
-
-.section[data-scrub="true"] .day { background: #eef0f2; }
-
-/* Meets the silver Websites section above without an edge. */
-.section[data-scrub="true"]::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 130px;
-  background: linear-gradient(180deg, #eef0f2, rgba(201, 205, 211, 0.5) 45%, rgba(7, 8, 10, 0));
-  pointer-events: none;
+  background: linear-gradient(180deg, #eef0f2 0%, #eef0f2 var(--o), #c9cdd3 calc(var(--o) + var(--s1)), rgba(42, 45, 50, 0.6) calc(var(--o) + var(--s2)), rgba(7, 8, 10, 0) calc(var(--o) + var(--s3)));
 }
 
 @media (min-width: 1024px) {
-  .section[data-scrub="true"]::before { height: 230px; }
+  .day { --s1: 60px; --s2: 150px; --s3: 240px; } /* inside the 260px top padding */
 }
 
 .inner {
@@ -72,7 +61,15 @@
   .body { font-size: 16px; }
 }
 
-.people { margin: 0; padding: 12px 0 0; list-style: none; display: flex; flex-wrap: wrap; gap: 24px 40px; }
+.proof { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; padding-top: 6px; }
+
+.proof > span:first-child { font-size: 56px; font-weight: 600; font-stretch: 116%; letter-spacing: -0.05em; line-height: 0.9; white-space: nowrap; }
+
+@media (min-width: 1024px) {
+  .proof > span:first-child { font-size: 84px; }
+}
+
+.proofLabel { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-steel); max-width: 200px; }
 
 .tiles { display: flex; gap: 12px; align-items: flex-end; }
 

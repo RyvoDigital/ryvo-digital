@@ -34,7 +34,7 @@
 .i1 { padding-left: 90px; color: var(--color-steel); }
 .i2 { padding-left: 30px; }
 
-/* The timeline is part of the thread. */
+/* The timeline (a thin rail with four moments), as in the v2 design. */
 .timeline {
   position: relative;
   margin: 0;
@@ -109,23 +109,45 @@
   .langBtn[aria-pressed="false"]:hover { color: var(--color-text); }
 }
 
-.phone {
-  width: 100%;
-  border-radius: 24px;
-  background: linear-gradient(180deg, #121317, #0d0e11);
-  border: 1px solid #2e3136;
-  overflow: hidden;
-}
+/* The floating phone: a slow, gentle drift; still with reduced motion. */
+.stage { position: relative; width: 250px; aspect-ratio: 1198 / 2237; margin: 6px auto 4px; }
 
 @media (min-width: 1024px) {
-  .phone { width: 400px; border-radius: 30px; box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6); }
+  .stage { width: 320px; }
 }
 
-.phoneHead { display: flex; align-items: center; gap: 11px; padding: 14px 16px; border-bottom: 1px solid #1c1e22; }
-
-@media (min-width: 1024px) {
-  .phoneHead { padding: 16px 18px; }
+.shadow {
+  position: absolute;
+  left: 10%;
+  right: -6%;
+  bottom: -7%;
+  height: 12%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(205, 209, 217, 0.16), transparent 70%);
+  filter: blur(6px);
+  animation: shadow 7s ease-in-out infinite;
 }
+
+.float { position: absolute; inset: 0; animation: float 7s ease-in-out infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(0, -12px, 0) rotate(-0.8deg); }
+}
+
+@keyframes shadow {
+  0%, 100% { opacity: 1; transform: scaleX(1); }
+  50% { opacity: 0.7; transform: scaleX(0.92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float, .shadow { animation: none; }
+}
+
+.phoneImg { display: block; width: 100%; height: 100%; }
+
+.screen { position: absolute; inset: 0; background: #0d0e11; color: var(--color-text); }
+
+.phoneHead { display: flex; align-items: center; gap: 10px; padding: 46px 16px 12px; border-bottom: 1px solid #1c1e22; }
 
 .avatar {
   width: 34px;
@@ -144,14 +166,9 @@
   display: flex;
   flex-direction: column;
   gap: 9px;
-  padding: 16px 14px 20px;
-  font-size: 13px;
-  line-height: 1.45;
-  min-height: 300px;
-}
-
-@media (min-width: 1024px) {
-  .thread { gap: 10px; padding: 18px 16px 22px; font-size: 13.5px; min-height: 330px; }
+  padding: 16px 13px;
+  font-size: 12.5px;
+  line-height: 1.42;
 }
 
 .lead, .agent {

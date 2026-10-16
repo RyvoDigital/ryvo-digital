@@ -17,55 +17,28 @@ function LoopStage({ active, note }: { active: number; note: string[] }) {
   const video = useRef<HTMLVideoElement>(null);
   const [ready, setReady] = useState(false);
 
+  // The ring turns on its own in a seamless endless loop (first and last frames
+  // match). It loads when about to be seen, pauses off-screen, and never loads
+  // with reduced motion (the still stays).
   useEffect(() => {
     const el = stage.current;
     const v = video.current;
     if (!el || !v || prefersReducedMotion()) return;
-    const scrub = window.matchMedia("(min-width: 1024px) and (pointer: fine)").matches;
-
-    // Load the video only when the loop is about to be seen.
+    let loaded = false;
     const io = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      io.disconnect();
-      v.src = "/media/loop/loop-turn.mp4";
-      v.load();
-      if (!scrub) v.play().catch(() => {});
-    }, { rootMargin: "600px 0px" });
+      if (e.isIntersecting) {
+        if (!loaded) { loaded = true; v.src = "/media/loop/loop-turn.mp4"; v.load(); }
+        v.play().catch(() => {});
+      } else if (loaded) v.pause();
+    }, { rootMargin: "200px 0px" });
     io.observe(el);
     const onReady = () => setReady(true);
     v.addEventListener("loadeddata", onReady);
-
-    // On desktop the loop turns with the scroll: progress through the section maps to video time.
-    const stop = scrub
-      ? withMotion(({ ScrollTrigger }) => {
-          let target = 0;
-          let raf = 0;
-          const seek = () => {
-            raf = 0;
-            if (v.readyState >= 2 && Math.abs(v.currentTime - target) > 0.02) v.currentTime = target;
-          };
-          const st = ScrollTrigger.create({
-            trigger: el,
-            start: "top bottom",
-            end: "bottom top",
-            onUpdate: (self) => {
-              if (!v.duration) return;
-              target = self.progress * (v.duration - 0.05);
-              if (!raf) raf = requestAnimationFrame(seek);
-            },
-          });
-          return () => st.kill();
-        })
-      : undefined;
-    return () => {
-      io.disconnect();
-      v.removeEventListener("loadeddata", onReady);
-      stop?.();
-    };
+    return () => { io.disconnect(); v.removeEventListener("loadeddata", onReady); };
   }, []);
 
   return (
-    <div ref={stage} className={styles.stage} data-thread-loop>
+    <div ref={stage} className={styles.stage}>
       <div aria-hidden="true" className={styles.glow} />
       <picture>
         <source type="image/avif" srcSet="/media/loop/loop-640.avif 640w, /media/loop/loop-960.avif 960w, /media/loop/loop-1280.avif 1280w" sizes="(min-width: 1024px) 540px, 90vw" />
@@ -73,7 +46,7 @@ function LoopStage({ active, note }: { active: number; note: string[] }) {
       </picture>
       <video ref={video} className={styles.media} style={{ opacity: ready ? 1 : 0 }} muted playsInline loop preload="none" aria-hidden="true" />
       <svg className={styles.orbit} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <ellipse cx="50" cy="50" rx={ORBIT.rx} ry={ORBIT.ry} data-thread-orbit />
+        <ellipse cx="50" cy="50" rx={ORBIT.rx} ry={ORBIT.ry} />
       </svg>
       {NODE_ANGLES.map((deg, i) => {
         const r = (deg * Math.PI) / 180;
@@ -135,7 +108,7 @@ export default function Automations({ lang, t, names }: { lang: Locale; t: Dicti
             {names.map((name, i) => {
               const isOpen = open === i;
               return (
-                <div key={name} className={styles.row} data-row data-open={isOpen}>
+                <div key={name} className={styles.row} data-row data-open={isOpen} data-no-pill={isOpen ? "" : undefined}>
                   <h3 className="m-0">
                     <button
                       type="button"

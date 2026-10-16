@@ -1,28 +1,43 @@
 "use client";
 
-import { useCallback, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { fill, formatViewing, nextThursday, useViewingKey, weekdayOnly } from "@/lib/viewing-date";
 import HeroChat from "./HeroChat";
+import ScreenFit, { type Corners } from "@/components/chrome/ScreenFit";
 import { HERO_SIZES, heroSrcSet } from "./hero-media";
 import styles from "./Hero.module.css";
 
-// Kie.ai hand + phone cut-outs (background removed). Each carries its measured
-// screen: centre, size (as % of the image) and rotation, so the chat sits exactly
-// on the glass. A is the approved still; B (?still=b) is kept for comparison, its
-// lighter screen darkened in code to match A's contrast.
+// Kie.ai hand + phone cut-outs (background removed). Each carries the four true
+// corners of its screen (edge-fitted, % of the image), its height ÷ width and its
+// corner radius, so the chat takes the photo's own perspective and stays inside
+// the glass. B is the chosen still (16 Oct); A stays available at ?still=a.
+// cx is the screen centre's x, used to centre the phone in the card.
 const STILLS = {
-  a: { base: "/media/hero/hand-phone", ar: "2210 / 2072", cx: "76.65%", cy: "41.85%", sw: "33.26%", sh: "82.29%", rot: "6.9deg", scale: 1, dim: 0 },
-  b: { base: "/media/hero/hand-phone-b", ar: "2049 / 1883", cx: "77.0%", cy: "40.5%", sw: "29.3%", sh: "78.6%", rot: "5.4deg", scale: 1.047, dim: 0.55 },
-} as const;
+  b: {
+    base: "/media/hero/hand-phone-b", ar: "2049 / 1883", w: 2049, h: 1883, cx: "76.8%", scale: 1.047, dim: 0.5,
+    corners: { TL: [68.03, -0.03], TR: [96.32, 2.84], BR: [86.37, 80.49], BL: [56.53, 79.8] }, aspect: 2.17, radius: 0.13,
+  },
+  a: {
+    base: "/media/hero/hand-phone", ar: "2210 / 2072", w: 2210, h: 2072, cx: "76.5%", scale: 1, dim: 0,
+    corners: { TL: [63.97, -0.2], TR: [97.21, 4.12], BR: [90.56, 84.24], BL: [54.21, 79.61] }, aspect: 2.15, radius: 0.15,
+  },
+} satisfies Record<string, { corners: Corners } & Record<string, unknown>>;
 
 const noop = () => () => {};
 const useStill = () =>
-  useSyncExternalStore(noop, () => (new URLSearchParams(location.search).get("still") === "b" ? "b" : "a"), () => "a" as const);
+  useSyncExternalStore(noop, () => (new URLSearchParams(location.search).get("still") === "a" ? "a" : "b"), () => "b" as const);
 
 export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["hero"] }) {
   const [booked, setBooked] = useState(false);
+  const [loaded, setLoaded] = useState(false); // the light sweep waits for the page's load
+  useEffect(() => {
+    const go = () => setLoaded(true);
+    if (document.readyState === "complete") { const id = window.setTimeout(go, 0); return () => clearTimeout(id); }
+    window.addEventListener("load", go, { once: true });
+    return () => window.removeEventListener("load", go);
+  }, []);
   const onBooked = useCallback(() => setBooked(true), []);
   const still = STILLS[useStill()];
   const key = useViewingKey();
@@ -31,8 +46,7 @@ export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["h
   const chat = useMemo(() => ({ ...t.chat, a1: fill(t.chat.a1, date), a2: fill(t.chat.a2, date) }), [t.chat, date]);
 
   const vars = {
-    "--img-ar": still.ar, "--cx": still.cx, "--cy": still.cy, "--sw": still.sw, "--sh": still.sh,
-    "--rot": still.rot, "--vis-scale": still.scale, "--dim": still.dim, "--mask": `url(${still.base}-760.avif)`,
+    "--img-ar": still.ar, "--cx": still.cx, "--vis-scale": still.scale, "--dim": still.dim, ...(loaded ? { "--mask": `url(${still.base}-760.avif)` } : {}),
   } as CSSProperties;
 
   return (
@@ -44,19 +58,19 @@ export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["h
             src={`${still.base}-1160.webp`}
             srcSet={heroSrcSet(still.base, "webp")}
             sizes={HERO_SIZES}
-            width={2210}
-            height={2072}
+            width={still.w}
+            height={still.h}
             alt=""
             fetchPriority="high"
             className={styles.image}
           />
         </picture>
-        <div aria-hidden="true" className={styles.sweep} />
-        <div className={`${styles.screen} hero-chat`}>
+        {loaded && <div aria-hidden="true" className={styles.sweep} />}
+        <ScreenFit corners={still.corners as Corners} aspect={still.aspect} radius={still.radius} className="hero-chat">
           <div aria-hidden="true" className={styles.dim} />
           <HeroChat chat={chat} onBooked={onBooked} key={key ?? "ssr"} />
           <div aria-hidden="true" className={styles.glass} />
-        </div>
+        </ScreenFit>
       </div>
 
       <div className={styles.chip} data-on={booked} aria-hidden={!booked}>

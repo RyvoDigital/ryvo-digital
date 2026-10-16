@@ -3,7 +3,7 @@ import styles from "./About.module.css";
 
 export default function About({ t }: { t: Dictionary["about"] }) {
   const tiles = [
-    { key: "lisbon", label: t.cities[0], alt: t.alt[0], tall: true },
+    { key: "lisbon-tagus", label: t.cities[0], alt: t.alt[0], tall: true },
     { key: "madrid", label: t.cities[1], alt: t.alt[1], tall: false },
   ];
   return (
@@ -17,15 +17,11 @@ export default function About({ t }: { t: Dictionary["about"] }) {
             <br />
             <span className={styles.indent}>{t.titleB}</span>
           </h2>
+          <div className={styles.proof}>
+            <span className="chrome-text">{t.proof}</span>
+            <span className={styles.proofLabel}>{t.proofLabel}</span>
+          </div>
           <p className={styles.body}>{t.body}</p>
-          <ul className={styles.people}>
-            {t.people.map(([name, role]) => (
-              <li key={name} className="flex flex-col gap-1">
-                <span className="text-[18px] font-medium md:text-[20px]">{name}</span>
-                <span className="text-[13px] text-steel">{role}</span>
-              </li>
-            ))}
-          </ul>
         </div>
         <div className={styles.tiles}>
           {tiles.map((tile) => (

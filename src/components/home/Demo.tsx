@@ -7,6 +7,11 @@ import { prefersReducedMotion, withMotion } from "@/lib/gsap";
 import { nextThursday, useViewingKey } from "@/lib/viewing-date";
 import { CHATS, CHAT_LANGS, LANG_NAME, chatDates, type ChatLang } from "./demo-chats";
 import styles from "./Demo.module.css";
+import ScreenFit from "@/components/chrome/ScreenFit";
+
+// The floating phone (Kie.ai, GPT Image 2.5, background removed) and its screen's
+// four true corners, edge-fitted (% of the image); the chat takes its perspective.
+const PHONE = { corners: { TL: [5.92, -0.76], TR: [71.27, 5.97], BR: [101.45, 98.52], BL: [34.12, 97.09] } as const, aspect: 2.17, radius: 0.16 };
 
 const AGENCY: Record<ChatLang, string> = { PT: "A sua agência", EN: "Your agency", ES: "Su agencia", FR: "Votre agence", DE: "Ihre Agentur" };
 
@@ -65,7 +70,7 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
               {t.titleMobile[0]}<br /><span className="pl-[50px] text-steel">{t.titleMobile[1]}</span>
             </span>
           </h2>
-          <ol className={styles.timeline} data-timeline data-thread-timeline>
+          <ol className={styles.timeline} data-timeline>
             <span aria-hidden="true" className={styles.rail} />
             {t.timeline.map((row, i) => (
               <li key={i} className={styles.tl} data-tl>
@@ -77,7 +82,7 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
           </ol>
         </div>
 
-        <div className={styles.right}>
+        <div className={styles.right} data-no-pill>
           <div role="group" aria-label={t.switchLabel} className={styles.switch}>
             {CHAT_LANGS.map((l) => (
               <button
@@ -93,20 +98,31 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
               </button>
             ))}
           </div>
-          <div className={styles.phone} lang={chatLang.toLowerCase()}>
-            <div className={styles.phoneHead}>
-              <span className={styles.avatar} aria-hidden="true">YA</span>
-              <span className="flex flex-col gap-[2px] leading-tight">
-                <span className="text-[13px] font-semibold">{AGENCY[chatLang]}</span>
-                <span className="text-[10.5px] text-steel">{chat.status}</span>
-              </span>
-            </div>
-            <div className={styles.thread} aria-live="polite">
-              {bubbles.map(([text, who], i) => (
-                <p key={`${chatLang}-${i}`} className={who === "lead" ? styles.lead : styles.agent} data-on={step > i}>
-                  {text}
-                </p>
-              ))}
+          <div className={styles.stage}>
+            <div aria-hidden="true" className={styles.shadow} />
+            <div className={styles.float}>
+              <picture>
+                <source type="image/avif" srcSet="/media/demo/phone-400.avif 400w, /media/demo/phone-640.avif 640w, /media/demo/phone-900.avif 900w" sizes="(min-width: 1024px) 320px, 250px" />
+                <img src="/media/demo/phone-640.webp" srcSet="/media/demo/phone-400.webp 400w, /media/demo/phone-640.webp 640w, /media/demo/phone-900.webp 900w" sizes="(min-width: 1024px) 320px, 250px" alt="" width={1198} height={2237} loading="lazy" decoding="async" className={styles.phoneImg} />
+              </picture>
+              <ScreenFit corners={PHONE.corners as never} aspect={PHONE.aspect} radius={PHONE.radius}>
+                <div className={styles.screen} lang={chatLang.toLowerCase()}>
+                  <div className={styles.phoneHead}>
+                    <span className={styles.avatar} aria-hidden="true">YA</span>
+                    <span className="flex flex-col gap-[2px] leading-tight">
+                      <span className="text-[13px] font-semibold">{AGENCY[chatLang]}</span>
+                      <span className="text-[10.5px] text-steel">{chat.status}</span>
+                    </span>
+                  </div>
+                  <div className={styles.thread} aria-live="polite">
+                    {bubbles.map(([text, who], i) => (
+                      <p key={`${chatLang}-${i}`} className={who === "lead" ? styles.lead : styles.agent} data-on={step > i}>
+                        {text}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </ScreenFit>
             </div>
           </div>
           <span className="mono-label text-center !text-[10px]">

@@ -10,35 +10,21 @@
   .section { padding: 240px 24px 140px; }
 }
 
-/* Static fallback (no JS / reduced motion): the design's gradient. With JS the
-   layer becomes solid obsidian and its opacity follows the scroll. */
+/* The light switch: a gradient whose stops slide with the scroll (--p, 0 → 1,
+   driven by LightSwitch). It is a gradient at every moment, never a flat band or
+   a hard line; --p = 1 (no JS, reduced motion) is the design's static gradient. */
 .night {
+  --p: 1;
+  --o: calc((1 - var(--p)) * 100%);
+  --s1: 40px; --s2: 90px; --s3: 140px; /* the blend stays inside the 150px top padding */
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, #07080a 0%, #2a2d32 12%, rgba(201, 205, 211, 0.6) 26%, rgba(238, 240, 242, 0) 36%);
+  background: linear-gradient(180deg, #07080a 0%, #07080a var(--o), #2a2d32 calc(var(--o) + var(--s1)), rgba(201, 205, 211, 0.6) calc(var(--o) + var(--s2)), rgba(238, 240, 242, 0) calc(var(--o) + var(--s3)));
 }
 
 @media (min-width: 1024px) {
-  .night { background: linear-gradient(180deg, #07080a 0%, #2a2d32 9%, rgba(201, 205, 211, 0.6) 20%, rgba(238, 240, 242, 0) 30%); }
-}
-
-.section[data-scrub="true"] .night { background: #07080a; }
-
-/* The seam with the dark page above stays soft whatever the scroll position. */
-.section[data-scrub="true"]::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 130px;
-  background: linear-gradient(180deg, #07080a, rgba(7, 8, 10, 0));
-  pointer-events: none;
-}
-
-@media (min-width: 1024px) {
-  .section[data-scrub="true"]::before { height: 220px; }
+  .night { --s1: 60px; --s2: 140px; --s3: 220px; } /* inside the 240px top padding */
 }
 
 .inner {
@@ -163,15 +149,19 @@
   bottom: 0;
   width: 30%;
   aspect-ratio: 1 / 2;
-  border-radius: 24px;
-  background: #0b0c0e;
-  padding: 5px;
-  box-shadow: 0 30px 70px rgba(11, 12, 14, 0.3);
+  border-radius: 26px;
+  padding: 2px;
+  background: linear-gradient(135deg, #fafbfc 0%, #a9aeb6 38%, #eef0f2 58%, #8e939b 100%);
+  box-shadow: 0 30px 70px rgba(11, 12, 14, 0.28), 0 0 0 1px rgba(11, 12, 14, 0.06);
   transform: rotate(4deg);
 }
 
 @media (min-width: 1024px) {
-  .phone { width: 150px; border-radius: 28px; padding: 6px; }
+  .phone { width: 150px; border-radius: 30px; }
 }
 
-.phoneShot { display: block; width: 100%; height: 100%; border-radius: 20px; object-fit: cover; object-position: 30% 50%; }
+.phoneShot { display: block; width: 100%; height: 100%; border-radius: 24px; object-fit: cover; object-position: 30% 50%; }
+
+@media (min-width: 1024px) {
+  .phoneShot { border-radius: 28px; }
+}
