@@ -787,6 +787,18 @@ Sources are in `~/ryvo-automation-platform` unless marked.
 6. **The `www` certificate is fixed** (§1.2 item 6 closed).
 7. **The design is approved:** `docs/design/` (DESIGN-BRIEF.md, homepage v2 desktop and mobile, references). Where the v2 design copy differs from this plan, the design wins.
 
+**16 Oct 2026 (Manuel), the build go:**
+
+1. **Next.js 16** for the rebuild, so Archivo and Geist Mono both load from Google Fonts through `next/font`.
+2. **Placeholder booking links** until Manuel sends the two Google appointment-schedule embed links.
+3. **The English legal text** on `/pt` and `/es`, marked as English, until lawyer-reviewed translations exist.
+4. **The five corrections to the v2 design are approved:**
+   - keep today's footer text exactly;
+   - the real Google embed inside the glass panel;
+   - "in the first days" (How we work, step 02);
+   - "EU consent rules (GDPR) built in" (trust line);
+   - "Twenty minutes" stays, and both schedules are 20 minutes.
+
 **Earlier the same day (from the brief):**
 
 - one "from" price per offer;
