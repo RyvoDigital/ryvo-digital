@@ -1,0 +1,291 @@
+/* Hero card. Desktop numbers are the v2 design's (1392 × 900, radius 34);
+   tablet and mobile follow homepage-v2-mobile (radius 28, height 780). */
+
+.wrap {
+  position: relative;
+  padding: 10px 10px 0;
+  overflow-x: clip; /* the glow spills down onto the page, never sideways */
+}
+
+@media (min-width: 768px) {
+  .wrap { padding: 18px var(--gutter) 0; }
+}
+
+.spill {
+  position: absolute;
+  left: 50%;
+  top: 140px;
+  width: 790px;
+  height: 800px;
+  margin-left: -395px;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(205, 209, 217, 0.14), transparent 70%);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .spill { top: 120px; width: 1500px; height: 1100px; margin-left: -750px; background: radial-gradient(50% 50% at 50% 50%, rgba(205, 209, 217, 0.13), transparent 70%); }
+}
+
+.card {
+  position: relative;
+  z-index: 2;
+  max-width: 1392px;
+  height: 780px;
+  margin: 0 auto;
+  border-radius: 28px;
+  border: 1px solid #1f2125;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 45% at 50% 75%, rgba(205, 209, 217, 0.2), transparent 72%),
+    linear-gradient(180deg, #0e0f12 0%, #0a0b0d 100%);
+  box-shadow: 0 60px 140px rgba(0, 0, 0, 0.55);
+  /* Geometry the visual reads */
+  --vis-h: 520px;
+  --vis-top: 296px;
+}
+
+@media (min-width: 768px) {
+  .card { height: 860px; border-radius: 32px; --vis-h: 700px; --vis-top: 360px; }
+}
+
+@media (min-width: 1024px) {
+  .card {
+    height: 900px;
+    border-radius: 34px;
+    background:
+      radial-gradient(42% 52% at 50% 70%, rgba(205, 209, 217, 0.2), transparent 72%),
+      linear-gradient(180deg, #0e0f12 0%, #0a0b0d 100%);
+    --vis-h: 790px;
+    --vis-top: 392px;
+  }
+}
+
+.nav {
+  position: absolute;
+  inset: 14px 14px auto 18px;
+  z-index: 5;
+}
+
+@media (min-width: 1024px) {
+  .nav { inset: 28px 44px auto 44px; }
+}
+
+.headline {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 84px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .headline { left: 32px; right: 32px; top: 104px; gap: 20px; }
+}
+
+@media (min-width: 1024px) {
+  .headline { left: 44px; right: auto; top: 124px; gap: 22px; }
+}
+
+.h1 {
+  margin: 0;
+  font-size: 40px;
+  line-height: 0.95;
+  font-weight: 500;
+  font-stretch: 112%;
+  letter-spacing: -0.045em;
+}
+
+@media (min-width: 768px) {
+  .h1 { font-size: 60px; }
+}
+
+@media (min-width: 1024px) {
+  .h1 { font-size: clamp(56px, 5.1vw, 74px); line-height: 0.94; font-stretch: 114%; }
+}
+
+.aside {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .aside {
+    position: absolute;
+    right: 44px;
+    top: 150px;
+    width: 320px;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+.wordmark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 360px;
+  z-index: 1;
+  text-align: center;
+  font-size: 132px;
+  font-weight: 700;
+  font-stretch: 125%;
+  letter-spacing: -0.055em;
+  line-height: 0.8;
+  background: linear-gradient(180deg, rgba(241, 242, 244, 0.55) 0%, rgba(205, 209, 217, 0.22) 55%, rgba(126, 131, 139, 0.02) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .wordmark { top: 440px; font-size: 250px; }
+}
+
+@media (min-width: 1024px) {
+  .wordmark { top: 500px; font-size: clamp(250px, 27.8vw, 400px); }
+}
+
+/* The cut-out: its screen centre sits on the card's centre line. */
+.visual {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: var(--vis-top);
+  height: var(--vis-h);
+  aspect-ratio: 2210 / 2072;
+  transform: translateX(-76.65%);
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* A soft shadow behind the hand, pre-blurred by its gradient instead of a
+   drop-shadow filter on the cut-out (which is costly to paint). */
+.visual::before {
+  content: "";
+  position: absolute;
+  left: 38%;
+  top: 20%;
+  width: 70%;
+  height: 90%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0.55), transparent 70%);
+  transform: translate(-6%, 6%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Code-only light: a silver band that glides along the hand and the frame. */
+.sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-mask: url(/media/hero/hand-phone-760.webp) center / 100% 100% no-repeat;
+  mask: url(/media/hero/hand-phone-760.webp) center / 100% 100% no-repeat;
+  background: linear-gradient(104deg, transparent 42%, rgba(255, 255, 255, 0.55) 50%, transparent 58%) 0 0 / 320% 100% no-repeat;
+  mix-blend-mode: overlay;
+  animation: sweep 9s cubic-bezier(0.45, 0, 0.2, 1) 1.2s infinite;
+  background-position: 120% 0;
+}
+
+@keyframes sweep {
+  0% { background-position: 120% 0; }
+  45% { background-position: -20% 0; }
+  100% { background-position: -20% 0; }
+}
+
+.screen {
+  position: absolute;
+  left: 76.65%;
+  top: 41.85%;
+  width: 33.26%;
+  height: 82.29%;
+  transform: translate(-50%, -50%) rotate(6.9deg);
+  border-radius: 15% / 6.5%;
+  overflow: hidden;
+  container-type: size;
+  color: var(--color-text);
+}
+
+.glass {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.045) 46%, transparent 60%);
+}
+
+.chip {
+  position: absolute;
+  z-index: 4;
+  right: 10px;
+  top: 330px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 11px;
+  border-radius: 13px;
+  background: rgba(28, 30, 34, 0.6);
+  border: 1px solid rgba(205, 209, 217, 0.16);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+}
+
+.chip[data-on="true"] { opacity: 1; transform: none; }
+
+@media (min-width: 768px) {
+  .chip { right: auto; left: calc(50% + 170px); top: 430px; }
+}
+
+@media (min-width: 1024px) {
+  .chip { left: calc(50% + 196px); top: 512px; padding: 13px 16px; border-radius: 16px; gap: 4px; }
+}
+
+.corner {
+  position: absolute;
+  z-index: 4;
+  bottom: 30px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+  color: var(--color-steel);
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .corner { display: block; }
+}
+
+/* The panel tucked under the card, fading into the page (Manuel's note 1). */
+.panel {
+  position: relative;
+  z-index: 1;
+  margin: -30px 8px 0;
+  padding: 50px 16px 40px;
+  border-radius: 0 0 24px 24px;
+  background: linear-gradient(180deg, #15171b 0%, rgba(21, 23, 27, 0.5) 60%, rgba(7, 8, 10, 0) 100%);
+}
+
+@media (min-width: 1024px) {
+  .panel {
+    max-width: 1340px;
+    margin: -40px auto 0;
+    padding: 72px 52px 70px;
+    border-radius: 0 0 30px 30px;
+    background: linear-gradient(180deg, #15171b 0%, rgba(21, 23, 27, 0.55) 55%, rgba(7, 8, 10, 0) 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweep { animation: none; opacity: 0; }
+}

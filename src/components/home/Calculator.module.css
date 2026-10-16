@@ -1,0 +1,132 @@
+.section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 10px 56px;
+}
+
+@media (min-width: 768px) {
+  .section { padding: 40px var(--gutter) 100px; }
+}
+
+@media (min-width: 1024px) {
+  .section { padding: 60px 24px 120px; }
+}
+
+.card {
+  border-radius: 24px;
+  border: 1px solid #1c1e22;
+  background: linear-gradient(180deg, #0f1013, #0b0c0e);
+  padding: 26px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+@media (min-width: 1024px) {
+  .card {
+    border-radius: 30px;
+    padding: 64px 64px 56px;
+    gap: 48px;
+    background:
+      radial-gradient(60% 90% at 85% 100%, rgba(205, 209, 217, 0.1), transparent 70%),
+      linear-gradient(180deg, #0f1013, #0b0c0e);
+  }
+}
+
+.sentence {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.75;
+  font-stretch: 108%;
+  letter-spacing: -0.02em;
+  color: var(--color-steel);
+}
+
+@media (min-width: 768px) {
+  .sentence { font-size: 32px; line-height: 1.6; }
+}
+
+@media (min-width: 1024px) {
+  .sentence { font-size: clamp(32px, 3.05vw, 44px); line-height: 1.5; letter-spacing: -0.03em; }
+}
+
+.input {
+  min-height: 44px;
+  height: 1.45em;
+  margin: 0 0.04em 0 0.14em;
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid var(--color-steel);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  font-stretch: 112%;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  vertical-align: baseline;
+  transition: border-color 0.4s var(--ease-out-expo);
+}
+
+.input:hover { border-bottom-color: var(--color-silver); }
+
+.input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--color-text);
+  background: rgba(241, 242, 244, 0.04);
+  border-radius: 6px 6px 0 0;
+}
+
+.result {
+  border-top: 1px solid #24272b;
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (min-width: 1024px) {
+  .result { padding-top: 32px; flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 24px; }
+}
+
+/* Chrome on moving digits: white glyphs, then the chrome gradient blended with
+   "darken" — white becomes chrome, the dark card stays untouched. Robust in
+   Safari, where background-clip:text can drop transformed children. */
+.figure {
+  position: relative;
+  display: inline-flex;
+  align-self: flex-start;
+  font-size: 64px;
+  font-weight: 600;
+  font-stretch: 116%;
+  letter-spacing: -0.05em;
+  color: #fff;
+}
+
+.figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--chrome);
+  mix-blend-mode: darken;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .figure { font-size: 96px; }
+}
+
+@media (min-width: 1024px) {
+  .figure { font-size: clamp(96px, 8.3vw, 120px); }
+}
+
+.note {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--color-steel);
+}
+
+@media (min-width: 1024px) {
+  .note { font-size: 13px; max-width: 260px; text-align: right; }
+}

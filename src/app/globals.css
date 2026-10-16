@@ -1,43 +1,208 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --background: #080808;
-  --foreground: #ffffff;
-  --accent: #4F6EF7;
+/* ── Obsidian & Mercury (DESIGN-BRIEF.md, locked) ───────────────────────── */
+@theme {
+  --color-page: #07080a;
+  --color-obsidian: #0b0c0e;
+  --color-surface: #131418;
+  --color-surface-2: #1c1e22;
+  --color-line: #24272b;
+  --color-line-2: #2e3136;
+  --color-edge: #4a4e54;
+  --color-silver: #cdd1d9;
+  --color-steel: #7e838b;
+  --color-text: #f1f2f4;
+  --color-body: #c4c8ce;
+  --color-mist: #eef0f2;
 
-  /* shadcn-compatible tokens used by ui/button + ui/footer */
-  --primary: #ffffff;
-  --primary-foreground: #080808;
-  --secondary: rgba(255,255,255,0.08);
-  --secondary-foreground: #ffffff;
-  --muted-foreground: rgba(255,255,255,0.4);
-  --input: rgba(255,255,255,0.12);
-  --ring: rgba(255,255,255,0.3);
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: rgba(255,255,255,0.1);
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+:root {
+  --chrome: linear-gradient(135deg, #fafbfc 0%, #a9aeb6 38%, #eef0f2 58%, #8e939b 100%);
+  --gutter: 16px;
+  color-scheme: dark;
+}
+
+@media (min-width: 768px) {
+  :root { --gutter: 24px; }
 }
 
 html {
-  scroll-behavior: smooth;
+  background: var(--color-page);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-dm-sans), sans-serif;
-  overflow-x: hidden;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
 }
 
-/* Hide scrollbar but keep scroll functionality */
-::-webkit-scrollbar {
-  width: 0px;
+::selection { background: #cdd1d9; color: #0b0c0e; }
+
+:focus-visible {
+  outline: 2px solid var(--color-silver);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* ── Type ──────────────────────────────────────────────────────────────── */
+.display {
+  font-weight: 500;
+  font-stretch: 112%;
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+}
+
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 1.6;
+  color: var(--color-steel);
+  text-transform: uppercase;
+}
+
+@media (max-width: 767px) {
+  .mono-label { font-size: 10px; }
+}
+
+.tnum { font-variant-numeric: tabular-nums; }
+
+.chrome-text {
+  background: var(--chrome);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+
+.chrome-bg { background: var(--chrome); }
+
+/* ── Buttons: solid, calm, small. Shine only on hover. ─────────────────── */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 46px;
+  padding: 4px 4px 4px 18px;
+  border-radius: 999px;
+  background: var(--color-text);
+  color: var(--color-obsidian);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+
+@media (min-width: 1024px) {
+  .btn { min-height: 38px; }
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.9) 50%, transparent 65%);
+  transform: translateX(-110%);
+  transition: transform 1s var(--ease-out-expo);
+}
+
+@media (hover: hover) {
+  .btn:hover::after { transform: translateX(110%); }
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-obsidian);
+  color: var(--color-text);
+  flex-shrink: 0;
+  transition: transform 0.6s var(--ease-out-expo);
+}
+
+@media (max-width: 1023px) {
+  .btn-arrow { width: 38px; height: 38px; }
+}
+
+@media (hover: hover) {
+  .btn:hover .btn-arrow { transform: rotate(45deg); }
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgba(241, 242, 244, 0.04);
+  border: 1px solid var(--color-line-2);
+  color: var(--color-text);
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.4s var(--ease-out-expo), border-color 0.4s var(--ease-out-expo);
+}
+
+@media (min-width: 1024px) {
+  .btn-ghost { min-height: 38px; }
+}
+
+@media (hover: hover) {
+  .btn-ghost:hover { background: rgba(241, 242, 244, 0.08); border-color: #3d4045; }
+}
+
+/* Hero intro: hidden only when JS is on and motion is allowed, and never for
+   longer than 2.5s even if the script fails. */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-hero]:not(.is-in) :is([data-reveal], [data-reveal-line], [data-wordmark]) {
+    opacity: 0;
+    animation: hero-failsafe 0.6s ease 2.5s forwards;
+  }
+}
+
+@keyframes hero-failsafe { to { opacity: 1; } }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

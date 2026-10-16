@@ -1,0 +1,88 @@
+// European Portuguese. Formal "você" throughout ("a sua equipa"). Wording follows Martim's outreach email.
+import type { Dictionary } from "./en";
+
+const pt: Dictionary = {
+  meta: {
+    homeTitle: "Ryvo Digital · Automações de IA para imobiliário de luxo",
+    homeDescription:
+      "Cada pedido respondido em poucos segundos, no idioma do comprador, e a visita marcada. Automações do primeiro contacto até depois da escritura, para agências em Portugal e Espanha.",
+  },
+  nav: {
+    automations: "Automações",
+    websites: "Websites",
+    how: "Como trabalhamos",
+    about: "Sobre nós",
+    book: "Marcar uma chamada",
+    menu: "Abrir menu",
+    close: "Fechar menu",
+    main: "Principal",
+    language: "Idioma",
+  },
+  ruler: { answered: "23:47 · RESPONDIDO" },
+  hero: {
+    eyebrow: ["AUTOMAÇÕES DE IA", "PARA IMOBILIÁRIO DE LUXO/"],
+    titleA: "Cada pedido",
+    titleB: "respondido.",
+    titleC: "Em segundos,",
+    titleD: "no idioma do",
+    titleE: "comprador.",
+    body: "A Ryvo responde a cada novo contacto no seu WhatsApp, de dia e de noite, marca a visita na sua agenda e entrega o cliente ao consultor certo.",
+    primary: "Marcar uma chamada",
+    secondary: "Ver como responde",
+    cities: ["LISBOA", "MADRID"],
+    repliesIn: "RESPONDE EM",
+    chipLabel: "VISITA MARCADA",
+    chipValue: "Qui 22 out · 11:00",
+    chat: {
+      agency: "A sua agência",
+      status: "Assistente de IA · responde 24/7",
+      stamp: "HOJE · 23:47",
+      l1: "Olá! O T3 em Cascais ainda está disponível? Podia visitá-lo esta semana?",
+      a1: "Olá, sou o assistente de IA da agência. Sim, está disponível. Quinta-feira, 22 de outubro, às 10:00 ou às 11:00?",
+      l2: "Às 11:00, por favor",
+      a2: "Marcado: quinta-feira, 22 de outubro, às 11:00. Um consultor espera por si no local.",
+    },
+  },
+  automationNames: [
+    "Concierge de entrada",
+    "Reactivação de contactos",
+    "Acompanhamento de compradores",
+    "Lançamento de angariações",
+    "Pós-escritura",
+  ],
+  night: {
+    label: ["O TURNO", "DA NOITE/"],
+    line1: "Um comprador escreve às 23:47.",
+    line2a: "A Ryvo",
+    line2b: "responde em segundos.",
+    line3: "A sua equipa acorda com",
+    line4: "visitas marcadas.",
+    pills: ["Responder", "Qualificar", "Marcar"],
+    typing: "A escrever",
+  },
+  calc: {
+    label: "O CUSTO DE UMA RESPOSTA TARDIA · USE OS SEUS NÚMEROS",
+    labelShort: "O CUSTO DE UMA RESPOSTA TARDIA",
+    sentence: [
+      { t: "text", v: "Recebemos " },
+      { t: "input", key: "enq", label: "Pedidos por mês" },
+      { t: "text", v: " pedidos por mês. ", strong: true },
+      { t: "input", key: "after", label: "Percentagem que chega fora de horas" },
+      { t: "text", v: "%", strong: true },
+      { t: "text", v: " chegam fora de horas, e " },
+      { t: "input", key: "unans", label: "Percentagem desses respondida tarde" },
+      { t: "text", v: "%", strong: true },
+      { t: "text", v: " desses recebem resposta tarde. Cerca de " },
+      { t: "input", key: "close", label: "Percentagem que se torna venda" },
+      { t: "text", v: "%", strong: true },
+      { t: "text", v: " tornam-se venda, com uma comissão de " },
+      { t: "input", key: "comm", label: "Comissão por venda, em euros" },
+      { t: "text", v: " € cada.", strong: true },
+    ],
+    resultLabel: "COMISSÃO EM RISCO, TODOS OS MESES",
+    note: "Números de exemplo para começar. Uma estimativa a partir dos seus números, não uma promessa.",
+  },
+  pill: { book: "Marcar uma chamada" },
+};
+
+export default pt;
