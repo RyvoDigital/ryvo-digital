@@ -115,8 +115,8 @@ const es: Dictionary = {
   },
   how: {
     label: "03 / CÓMO TRABAJAMOS",
-    titleA: "Hecho para usted.",
-    titleB: "Vigilado por nosotros.",
+    titleA: "Hecho por ti.",
+    titleB: "Lo vigilamos nosotros.",
     steps: [
       { title: "Configuración", text: "Su WhatsApp, calendario y asesores conectados. Tono, idiomas y reglas ajustados a su agencia." },
       { title: "En marcha, supervisado", text: "En los primeros días leemos nosotros mismos cada conversación y ajustamos." },

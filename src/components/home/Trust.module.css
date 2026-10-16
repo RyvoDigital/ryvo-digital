@@ -1,4 +1,4 @@
-.section { position: relative; padding: 56px 20px; }
+.section { position: relative; padding: 56px 20px; overflow-x: clip; }
 
 @media (min-width: 1024px) {
   .section { padding: 100px 24px 130px; }
@@ -53,34 +53,33 @@
   .ruleTitle { font-size: clamp(32px, 2.95vw, 42px); line-height: 1.02; font-stretch: 112%; letter-spacing: -0.035em; }
 }
 
-.chat { display: flex; flex-direction: column; gap: 12px; --chat-gap: 9px; font-size: 13px; line-height: 1.45; }
+.chat { display: flex; flex-direction: column; gap: 9px; font-size: 13px; line-height: 1.45; }
 
 @media (min-width: 1024px) {
   .chat { flex: 0 0 440px; font-size: 13.5px; }
 }
 
-.lead { max-width: 80%; padding: 9px 11px; border-radius: 15px 15px 4px 15px; background: #eceef1; color: #0b0c0e; }
-.agent { max-width: 88%; padding: 9px 11px; border-radius: 15px 15px 15px 4px; background: #1c1e22; }
+.lead { align-self: flex-end; max-width: 80%; padding: 9px 11px; border-radius: 15px 15px 4px 15px; background: #eceef1; color: #0b0c0e; }
+.agent { align-self: flex-start; max-width: 88%; padding: 9px 11px; border-radius: 15px 15px 15px 4px; background: #1c1e22; }
 
 @media (min-width: 1024px) {
   .lead { max-width: 78%; padding: 10px 12px; border-radius: 16px 16px 4px 16px; }
   .agent { max-width: 84%; padding: 10px 12px; border-radius: 16px 16px 16px 4px; }
 }
 
-.caption {
-  align-self: flex-start;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  color: var(--color-steel);
-  opacity: 0;
-  transition: opacity 0.6s ease;
-}
+.caption { align-self: flex-start; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: var(--color-steel); }
 
-.caption[data-on="true"] { opacity: 1; }
+/* Glide in once, when the row comes into view: buyers from the right, replies
+   from the left. Hidden only once script has run (html.js), so nothing is lost
+   without it. */
+.fromRight, .fromLeft { transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+:global(html.js) .chat[data-in="false"] .fromRight { opacity: 0; transform: translate3d(40px, 0, 0); }
+:global(html.js) .chat[data-in="false"] .fromLeft { opacity: 0; transform: translate3d(-40px, 0, 0); }
 
 @media (prefers-reduced-motion: reduce) {
-  .caption { transition: none; }
+  .fromRight, .fromLeft { transition: none; }
+  :global(html.js) .chat[data-in="false"] .fromRight,
+  :global(html.js) .chat[data-in="false"] .fromLeft { opacity: 1; transform: none; }
 }
 
 .facts {

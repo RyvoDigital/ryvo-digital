@@ -35,46 +35,72 @@
   border-radius: 28px;
   border: 1px solid #1f2125;
   overflow: hidden;
-  background:
-    radial-gradient(70% 45% at 50% 75%, rgba(205, 209, 217, 0.2), transparent 72%),
-    linear-gradient(180deg, #0e0f12 0%, #0a0b0d 100%);
-  /* Geometry the visual reads */
-  --vis-h: 500px;
-  --vis-top: 346px;
+  background: #060508; /* the photo's own top edge */
+  /* The art box: the photo's cover rectangle, in container units, shared by
+     every layer (photo, silhouette, chat, glass letters, chip). */
+  container-type: size;
+  --ar: 0.6709; /* 3392 / 5056, the vertical photo */
+  --px: 0.5;    /* horizontal alignment, like object-position */
+  --aw: max(100cqw, 100cqh * var(--ar));
+  --ah: max(100cqh, 100cqw / var(--ar));
+  --sx: 0px;    /* extra shift, filled by the card's matching dark */
+  --sy: 40px;   /* phones: the phone sits a little lower, clear of the headline */
+  --ax: calc((100cqw - var(--aw)) * var(--px) + var(--sx));
+  --ay: calc((100cqh - var(--ah)) * 0.5 + var(--sy));
 }
 
 @media (min-width: 768px) {
-  .card { height: 860px; border-radius: 32px; --vis-h: 700px; --vis-top: 360px; }
+  .card { height: 860px; border-radius: 32px; }
 }
 
 @media (min-width: 1024px) {
   .card {
-    height: 900px;
-    border-radius: 34px;
-    background:
-      radial-gradient(42% 52% at 50% 70%, rgba(205, 209, 217, 0.2), transparent 72%),
-      linear-gradient(180deg, #0e0f12 0%, #0a0b0d 100%);
     height: 940px;
-    --vis-h: 720px;
-    --vis-top: 438px;
+    border-radius: 34px;
+    --ar: 1.4906; /* 5056 / 3392, the wide photo */
+    --px: 0.3;    /* narrow desktops: keep the phone clear of the headline */
+    --sy: 0px;
+    background: #040405; /* the photo's own left edge */
   }
+}
+
+@media (min-width: 1280px) {
+  .card { --px: 0; --sx: clamp(0px, calc(100cqw - 1232px), 120px); }
 }
 
 /* The notch: the card minus a concave cut-out at its top centre, from the width
    at which it clears the bar's right-hand cluster (data-notch-at, per language). */
 @media (min-width: 1280px) {
   .wrap[data-notch-at="1280"] .card {
-    -webkit-mask: var(--notch) center top / var(--notch-w) var(--notch-h) no-repeat, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask: var(--notch) center top / var(--notch-w) var(--notch-h) no-repeat exclude, linear-gradient(#000 0 0);
+    -webkit-mask:
+      var(--cap-l) calc(50% - (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
+      var(--cap-r) calc(50% + (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
+      linear-gradient(#000 0 0) 50% 0 / calc(var(--W) - var(--nr) * 4) var(--nh) no-repeat,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor, xor, xor;
+    mask:
+      var(--cap-l) calc(50% - (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
+      var(--cap-r) calc(50% + (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
+      linear-gradient(#000 0 0) 50% 0 / calc(var(--W) - var(--nr) * 4) var(--nh) no-repeat,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude, exclude, exclude;
   }
 }
 
 @media (min-width: 1440px) {
   .wrap[data-notch-at="1440"] .card {
-    -webkit-mask: var(--notch) center top / var(--notch-w) var(--notch-h) no-repeat, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask: var(--notch) center top / var(--notch-w) var(--notch-h) no-repeat exclude, linear-gradient(#000 0 0);
+    -webkit-mask:
+      var(--cap-l) calc(50% - (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
+      var(--cap-r) calc(50% + (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
+      linear-gradient(#000 0 0) 50% 0 / calc(var(--W) - var(--nr) * 4) var(--nh) no-repeat,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor, xor, xor;
+    mask:
+      var(--cap-l) calc(50% - (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
+      var(--cap-r) calc(50% + (var(--W) / 2 - var(--nr))) 0 / calc(var(--nr) * 2) var(--nh) no-repeat,
+      linear-gradient(#000 0 0) 50% 0 / calc(var(--W) - var(--nr) * 4) var(--nh) no-repeat,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude, exclude, exclude;
   }
 }
 
@@ -125,36 +151,58 @@
     z-index: 6;
     left: 50%;
     top: 18px;
-    height: var(--notch-h);
+    height: var(--nh);
     transform: translateX(-50%);
     align-items: center;
     justify-content: center;
-    gap: 30px;
-    padding-bottom: 6px;
+    gap: 4px;
+    padding: 0 26px 6px; /* clear of the rounded inner corners */
   }
 
-  .notchEdge {
-    position: absolute;
-    z-index: 3;
-    left: 50%;
-    top: 18px;
-    transform: translateX(-50%);
-    overflow: visible;
-    pointer-events: none;
-  }
-
+  .notchEdge { position: absolute; z-index: 3; top: 18px; overflow: visible; pointer-events: none; }
+  .edgeL { left: calc(50% - var(--W) / 2); }
+  .edgeR { left: calc(50% + var(--W) / 2 - var(--nr) * 2); }
+  .edgeM { left: calc(50% - var(--W) / 2 + var(--nr) * 2); width: calc(var(--W) - var(--nr) * 4); top: calc(18px + var(--nh) - 1px); height: 1px; background: #1f2125; }
   .notchEdge path { fill: none; stroke: #1f2125; stroke-width: 1px; }
 }
 
+/* An icon that opens into icon + label (a 0fr → 1fr grid column, so no measuring
+   per frame). The notch's width follows, on the same curve. */
 .notchLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
   font-size: 14px;
   color: var(--color-body);
   white-space: nowrap;
   text-decoration: none;
-  transition: color 0.3s var(--ease-out-expo);
+  transition: color 0.3s var(--ease-out-expo), background 0.3s var(--ease-out-expo);
 }
 
-.notchLink:hover { color: var(--color-text); }
+.notchLink:hover, .notchLink:focus-visible { color: var(--color-text); background: rgba(255, 255, 255, 0.06); }
+.notchLink:focus-visible { outline: 2px solid var(--color-silver); outline-offset: 2px; }
+
+.notchLabel {
+  display: inline-grid;
+  grid-template-columns: 0fr;
+  margin-left: 0;
+  opacity: 0;
+  transition: grid-template-columns 0.6s cubic-bezier(0.22, 1, 0.36, 1), margin-left 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+}
+
+.notchLabel > span { overflow: hidden; min-width: 0; }
+
+.wrap[data-nav-open="true"] .notchLabel,
+.wrap[data-nav-measure="open"] .notchLabel { grid-template-columns: 1fr; margin-left: 8px; opacity: 1; }
+
+.wrap[data-nav-measure] .notchLabel { transition: none; }
+.wrap[data-nav-measure="closed"] .notchLabel { grid-template-columns: 0fr; margin-left: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .notchLabel { transition: none; }
+}
 
 .nav {
   position: absolute;
@@ -182,7 +230,9 @@
 }
 
 @media (min-width: 1024px) {
-  .headline { left: 44px; right: auto; top: 150px; gap: 0; }
+  /* As wide as the space left of the phone's screen (from the art box), so it
+     wraps before it can reach the phone, in every language. */
+  .headline { left: 44px; right: auto; top: 150px; gap: 0; max-width: calc(var(--ax) + var(--aw) * 0.535 - 96px); }
 }
 
 .deskOnly { display: none; }
@@ -237,125 +287,154 @@
 }
 
 @media (min-width: 1024px) {
-  .h1 { font-size: clamp(56px, 5.1vw, 74px); line-height: 0.94; font-stretch: 114%; }
+  .h1 { font-size: clamp(52px, 4.6vw, 66px); line-height: 0.94; font-stretch: 114%; }
 }
 
-.wordmark {
+/* ── The art ─────────────────────────────────────────────────────────────── */
+.art {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 360px;
-  z-index: 1;
-  text-align: center;
-  font-size: 132px;
-  font-weight: 700;
-  font-stretch: 125%;
-  letter-spacing: -0.055em;
-  line-height: 0.8;
-  background: linear-gradient(180deg, rgba(241, 242, 244, 0.55) 0%, rgba(205, 209, 217, 0.22) 55%, rgba(126, 131, 139, 0.02) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  user-select: none;
+  left: var(--ax);
+  top: var(--ay);
+  width: var(--aw);
+  height: var(--ah);
+  pointer-events: none;
 }
 
-@media (min-width: 768px) {
-  .wordmark { top: 440px; font-size: 250px; }
+.artBg { z-index: 0; }
+
+/* The edge the shift uncovers fades into the card's matching dark (a gradient
+   over the photo's edge: cheaper to paint than a mask on the whole layer). */
+.artBg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #060508 0, rgba(6, 5, 8, 0) 60px);
 }
 
 @media (min-width: 1024px) {
-  .wordmark { top: 520px; font-size: clamp(250px, 27.8vw, 400px); }
+  .artBg::after { background: linear-gradient(90deg, #040405 0, rgba(4, 4, 5, 0) 90px); }
 }
 
-/* The cut-out: its screen centre sits on the card's centre line. Geometry comes
-   from the still's measured screen (HeroVisual). */
-.visual {
-  position: absolute;
-  z-index: 3;
-  left: 50%;
-  top: var(--vis-top);
-  height: calc(var(--vis-h) * var(--vis-scale, 1));
-  aspect-ratio: var(--img-ar);
-  transform: translateX(calc(-1 * var(--cx)));
+/* The intro's "light fades up": a dark veil over the photo that fades away
+   (an opacity animation, the cheapest kind; none outside the intro). */
+.shade { position: absolute; inset: 0; z-index: 3; background: #050506; opacity: 0; pointer-events: none; }
+.artHand { z-index: 3; }
+.artImg { display: block; width: 100%; height: 100%; }
+
+/* The silhouette crop, placed by its box in the photo (hero-media.ts). */
+.handImg { position: absolute; display: block; left: 42.603%; top: 17.718%; width: 33.722%; height: 82.282%; }
+
+@media (max-width: 1023px) {
+  .handImg { left: 16.215%; top: 28.204%; width: 59.935%; height: 71.796%; }
 }
 
-.image {
-  display: block;
-  width: 100%;
-  height: 100%;
+.screenDesk, .screenMob { position: absolute; inset: 0; }
+.screenDesk { display: none; }
+
+@media (min-width: 1024px) {
+  .screenDesk { display: block; }
+  .screenMob { display: none; }
 }
 
-/* A soft shadow behind the hand, pre-blurred by its gradient instead of a
-   drop-shadow filter on the cut-out (which is costly to paint). */
-.visual::before {
-  content: "";
-  position: absolute;
-  left: 38%;
-  top: 20%;
-  width: 70%;
-  height: 90%;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0.55), transparent 70%);
-  transform: translate(-6%, 6%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Code-only light: a silver band that glides along the hand and the frame. */
-.sweep {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  -webkit-mask: var(--mask) center / 100% 100% no-repeat;
-  mask: var(--mask) center / 100% 100% no-repeat;
-  background: linear-gradient(104deg, transparent 42%, rgba(255, 255, 255, 0.55) 50%, transparent 58%) 0 0 / 320% 100% no-repeat;
-  mix-blend-mode: overlay;
-  animation: sweep 9s cubic-bezier(0.45, 0, 0.2, 1) 1.2s infinite;
-  background-position: 120% 0;
-}
-
-@keyframes sweep {
-  0% { background-position: 120% 0; }
-  45% { background-position: -20% 0; }
-  100% { background-position: -20% 0; }
-}
-
-.dim {
-  position: absolute;
-  inset: 0;
-  background: #08090b;
-  opacity: var(--dim, 0);
-  pointer-events: none;
-}
+/* The photo's screen is lit grey; the chat brings its own dark glass. */
+.screenBg { position: absolute; inset: 0; background: linear-gradient(170deg, #121317 0%, #0b0c0e 60%); }
 
 .glass {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.045) 46%, transparent 60%);
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.05) 46%, transparent 60%);
 }
 
+/* ── Glass letters ───────────────────────────────────────────────────────────
+   RYVO in frosted glass: the letters are filled with a blurred, brightened copy
+   of the photo, aligned to it, so the glow shows through them; a thin light
+   edge, and a soft highlight from above. They sit between the photo and the
+   silhouette, so the hand passes in front. Plain translucent letters where
+   background-clip: text is not supported. */
+.glassWord {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding-top: 452px;
+  font-size: 128px;
+  font-weight: 700;
+  font-stretch: 125%;
+  letter-spacing: -0.055em;
+  line-height: 0.8;
+  color: rgba(241, 242, 244, 0.16);
+  user-select: none;
+  pointer-events: none;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .glassWord {
+    color: transparent;
+    background-image: image-set(url("/media/hero/hero-glass-m-600.avif") type("image/avif"), url("/media/hero/hero-glass-m-600.webp") type("image/webp"));
+    background-size: var(--aw) var(--ah);
+    background-position: var(--ax) var(--ay);
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
+  }
+
+  /* The highlight from above, in the same letters. */
+  .glassWord::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    padding-top: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.08) 22%, transparent 45%);
+    background-size: 100% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 0;
+    mix-blend-mode: screen;
+    opacity: 0.55;
+  }
+}
+
+@media (min-width: 768px) {
+  .glassWord { padding-top: 470px; font-size: 250px; }
+}
+
+@media (min-width: 1024px) {
+  .glassWord { padding-top: 560px; font-size: clamp(250px, 27.8vw, 400px); }
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .glassWord { background-image: image-set(url("/media/hero/hero-glass-1200.avif") type("image/avif"), url("/media/hero/hero-glass-1200.webp") type("image/webp")); }
+  }
+}
+
+/* The chip, beside the phone (positions in the art box). */
 .chip {
   position: absolute;
   z-index: 4;
-  right: 10px;
-  top: 376px;
+  left: clamp(10px, calc(var(--ax) + var(--aw) * 0.6), calc(100cqw - 168px));
+  top: calc(var(--ay) + var(--ah) * 0.74);
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 9px 11px;
   border-radius: 13px;
-  background: rgba(28, 30, 34, 0.6);
-  border: 1px solid rgba(205, 209, 217, 0.16);
+  background: rgba(20, 21, 25, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 
-@media (min-width: 768px) {
-  .chip { right: auto; left: calc(50% + 170px); top: 430px; }
+@media (min-width: 1024px) {
+  /* Narrow desktops: low on the left of the phone, over the wrist. */
+  .chip { left: calc(var(--ax) + var(--aw) * 0.622 - 178px); top: calc(var(--ay) + var(--ah) * 0.57); padding: 13px 16px; border-radius: 16px; gap: 4px; }
 }
 
-@media (min-width: 1024px) {
-  .chip { left: calc(50% + 190px); top: 560px; padding: 13px 16px; border-radius: 16px; gap: 4px; }
+@media (min-width: 1280px) {
+  .chip { left: calc(var(--ax) + var(--aw) * 0.775); top: calc(var(--ay) + var(--ah) * 0.36); }
 }
 
 /* The panel tucked under the card, fading into the page (Manuel's note 1). */
@@ -378,6 +457,17 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sweep { animation: none; opacity: 0; }
+
+
+/* Phones: the glow is right behind the letters, so they are lifted less, and
+   slightly translucent, so the light shows through them. */
+@media (max-width: 1023px) {
+  .glassWord { opacity: 0.92; }
+}
+
+/* Long-headline languages: a touch smaller on desktop, and balanced breaks. */
+.h1 [data-reveal-line] { text-wrap: balance; }
+
+@media (min-width: 1024px) {
+  :global(html[lang="pt-PT"]) .h1, :global(html[lang="es-ES"]) .h1 { font-size: clamp(48px, 4.2vw, 60px); }
 }

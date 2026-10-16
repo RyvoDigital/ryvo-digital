@@ -75,7 +75,7 @@ export default async function LangLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "var d=document.documentElement;d.classList.add('js');try{if(sessionStorage.getItem('ryvo-intro'))d.classList.add('intro-seen');else sessionStorage.setItem('ryvo-intro','1')}catch(e){}",
+              "var d=document.documentElement;d.classList.add('js');try{var q=new URLSearchParams(location.search).get('intro');if(q==='1'||(q!=='0'&&!matchMedia('(prefers-reduced-motion: reduce)').matches))d.classList.add('intro')}catch(e){}",
           }}
         />
       </head>

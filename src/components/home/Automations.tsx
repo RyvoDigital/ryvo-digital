@@ -6,7 +6,6 @@ import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { prefersReducedMotion, withMotion } from "@/lib/gsap";
 import { ArrowUpRight } from "@/components/chrome/Icons";
-import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import type { Rings } from "./rings-scene";
 import styles from "./Automations.module.css";
 
@@ -114,13 +113,13 @@ export default function Automations({ lang, t, names }: { lang: Locale; t: Dicti
         <div className={styles.copy}>
           <div className={`flex flex-col gap-[18px] ${styles.header}`}>
             <span className="mono-label">{t.label}</span>
-            <WordReveal as="h2" id="automations-title" className={`display ${styles.title}`} end="bottom 55%">
-              <Words text={t.titleA} />{" "}
-              <span className="text-steel" style={{ ["--word-on" as string]: "var(--color-silver)" }}>
-                <span className="hidden md:inline"><Words text={t.titleB} /></span>
-                <span className="md:hidden"><Words text={t.titleBShort} /></span>
+            <h2 id="automations-title" className={`display ${styles.title}`}>
+              {t.titleA}{" "}
+              <span className="text-steel">
+                <span className="hidden md:inline">{t.titleB}</span>
+                <span className="md:hidden">{t.titleBShort}</span>
               </span>
-            </WordReveal>
+            </h2>
           </div>
           <div ref={listRef} className={styles.list}>
             {names.map((name, i) => {

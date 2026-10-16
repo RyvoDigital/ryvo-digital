@@ -44,12 +44,30 @@
   .body { font-size: 16px; }
 }
 
+/* The panel is frosted dark glass over a soft mercury glow, so the blur has
+   something to show. Without backdrop-filter it is a solid dark panel. */
+.panelWrap { position: relative; min-width: 0; }
+
+.mercury {
+  position: absolute;
+  left: 8%;
+  right: 4%;
+  top: 6%;
+  height: 72%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(236, 238, 242, 0.58), rgba(169, 174, 182, 0.22) 46%, transparent 78%);
+  filter: blur(36px);
+  pointer-events: none;
+}
+
 .panel {
-  border-radius: 24px;
-  background: rgba(19, 20, 24, 0.8);
-  border: 1px solid #2e3136;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  position: relative;
+  border-radius: 28px;
+  background: rgba(14, 15, 18, 0.44);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 30px 80px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -57,11 +75,22 @@
   min-width: 0;
 }
 
-@media (min-width: 1024px) {
-  .panel { border-radius: 28px; padding: 28px; gap: 22px; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .panel { background: rgba(19, 20, 24, 0.94); }
 }
 
-.kinds { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: #0b0c0e; border: 1px solid #24272b; }
+@media (min-width: 1024px) {
+  .panel { border-radius: 32px; padding: 28px; gap: 22px; }
+}
+
+.auto { overflow: hidden; margin: -4px; padding: 4px; transition: height 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Each step slides in. */
+.enter { display: flex; flex-direction: column; gap: 16px; animation: step-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes step-in { from { opacity: 0; transform: translate3d(18px, 0, 0); } }
+
+.kinds { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); }
 
 @media (max-width: 1023px) {
   .kinds { width: 100%; }
@@ -80,12 +109,13 @@
   transition: background 0.5s var(--ease-out-expo), color 0.5s var(--ease-out-expo);
 }
 
-.kind[aria-pressed="true"] { background: var(--color-text); color: #0b0c0e; font-weight: 600; }
+.kind[aria-pressed="true"] { background: var(--chrome); color: #0b0c0e; font-weight: 600; }
 
-.stage { position: relative; min-height: 400px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.stage { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 
 .skeleton {
   flex: 1;
+  min-height: 170px;
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -110,8 +140,8 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid #2e3136;
-  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--color-text);
   display: flex;
   align-items: center;
@@ -122,38 +152,18 @@
 
 .arrow:disabled { opacity: 0.3; cursor: default; }
 
-/* Desktop: one week per page; the track slides between pages. */
-.weekViewport { overflow: hidden; margin: -2px; padding: 2px; }
-.weekTrack { display: flex; transition: transform 0.6s var(--ease-out-expo); }
-.weekPage { flex: 0 0 100%; display: grid; gap: 8px; min-width: 0; }
-
-/* Phones: every day in one swipeable row; the edges fade where there is more. */
-.dayRow {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  margin: 0 -16px;
-  padding: 2px 16px;
-  scroll-padding: 0 16px;
-  --fade-l: 0px;
-  --fade-r: 0px;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
-}
-
-.dayRow::-webkit-scrollbar { display: none; }
-.dayRow[data-start="false"] { --fade-l: 36px; }
-.dayRow[data-end="false"] { --fade-r: 36px; }
-.dayRow .day { flex: 0 0 56px; scroll-snap-align: start; }
+/* The week row: pages side by side, snapping; swipeable on touch. */
+.weekRow { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; margin: -3px; }
+.weekRow::-webkit-scrollbar { display: none; }
+.weekPage { flex: 0 0 100%; box-sizing: border-box; display: grid; gap: 8px; min-width: 0; padding: 3px; scroll-snap-align: start; }
 
 .day {
+  position: relative;
   min-width: 0;
-  min-height: 64px;
-  border-radius: 14px;
-  border: 1px solid #2e3136;
-  background: transparent;
+  min-height: 66px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
   color: var(--color-text);
   display: flex;
   flex-direction: column;
@@ -161,30 +171,36 @@
   justify-content: center;
   gap: 5px;
   cursor: pointer;
-  transition: background 0.4s var(--ease-out-expo), border-color 0.4s var(--ease-out-expo), color 0.4s var(--ease-out-expo);
+  transition: background 0.4s var(--ease-out-expo), border-color 0.4s var(--ease-out-expo), color 0.4s var(--ease-out-expo), transform 0.4s var(--ease-out-expo);
 }
 
 .dayWd { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-steel); }
 .dayN { font-size: 20px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
 
-.day:disabled { opacity: 0.3; cursor: default; }
-.day[aria-pressed="true"] { background: var(--color-text); color: #0b0c0e; border-color: transparent; }
+/* The chosen day in mercury chrome. */
+.day[aria-pressed="true"] { background: var(--chrome); color: #0b0c0e; border-color: transparent; box-shadow: 0 8px 26px rgba(205, 209, 217, 0.18); }
 .day[aria-pressed="true"] .dayWd { color: #3d4045; }
 
-.times { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; align-content: start; animation: times-in 0.5s var(--ease-out-expo) both; }
+.today { position: absolute; bottom: 7px; width: 4px; height: 4px; border-radius: 50%; background: var(--color-silver); }
+.day[aria-pressed="true"] .today { background: #0b0c0e; }
 
-@keyframes times-in { from { opacity: 0; transform: translateY(6px); } }
+/* The times unfold under the week: a smooth height change, no measuring. */
+.expand { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease; opacity: 0; }
+.expand[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
+.expandInner { overflow: hidden; min-height: 0; margin: -3px; padding: 3px; }
+
+.times { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; align-content: start; padding-top: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .times { animation: none; }
-  .weekTrack { transition: none; }
+  .enter { animation: none; }
+  .expand, .auto { transition: none; }
 }
 
 .time {
   min-height: 44px;
   border-radius: 12px;
-  border: 1px solid #2e3136;
-  background: rgba(241, 242, 244, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
   color: var(--color-text);
   font-size: 14px;
   font-variant-numeric: tabular-nums;
@@ -193,10 +209,10 @@
 }
 
 @media (hover: hover) {
-  .time:hover, .day:not(:disabled):hover, .arrow:not(:disabled):hover { border-color: #5e636b; }
+  .time:hover, .day:hover, .arrow:not(:disabled):hover { border-color: rgba(255, 255, 255, 0.22); }
 }
 
-.time:active { background: var(--color-text); color: #0b0c0e; }
+.time:active { background: var(--chrome); color: #0b0c0e; }
 
 .form { display: flex; flex-direction: column; gap: 14px; }
 

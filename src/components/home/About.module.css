@@ -118,3 +118,8 @@
 @media (min-width: 1024px) and (max-width: 1279px) {
   .indent { padding-left: 40px; }
 }
+
+/* Portuguese on phones: "Construído com rigor." on one line. */
+@media (max-width: 767px) {
+  :global(html[lang="pt-PT"]) .title { font-size: 31px; }
+}

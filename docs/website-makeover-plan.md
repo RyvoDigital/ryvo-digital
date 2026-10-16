@@ -830,6 +830,18 @@ Sources are in `~/ryvo-automation-platform` unless marked.
 6. **01 object:** the Seedance video is replaced by two interlocking chrome rings in real-time 3D (three.js 0.186.1), loaded near the section, rendered only on screen; the poster is a frame of the same scene.
 7. **How we work:** no scaling; minimum sizes (body 15 px, labels 12 px, headings 20 px); the heading joins the steps' column; panels show fewer rows (settings 4 of 6, the handover card without "Timeframe", the report's two main sections).
 
+**16 Oct 2026 (Manuel), homepage review round 5:**
+
+0. **Intro bug:** the intro was gated by sessionStorage, so every reload of a tab skipped it; the word reveal ran, but from steel over ~490 px of scroll, too faint and too quick to notice. The intro now plays on every homepage load (`html.intro`, set in the head script; `?intro=1` forces it, `?intro=0` turns it off; never with reduced motion). Proved on a cold load and a reload in Manuel's own Chrome.
+1. **New hero:** one backlit photograph per layout (Nano Banana Pro, chosen over GPT Image 2.5 for the cleaner silhouette): a dark hand and unbranded phone in front of a mercury glow, full-bleed in the card. A silhouette layer cut from it (BiRefNet matte) sits above the glass RYVO, so the letters pass behind the hand. The letters are filled with a blurred, brightened copy of the photo (frosted glass), with a light edge and a highlight; plain translucent letters where background-clip: text is missing. A vertical photo for phones. All layers share the photo's cover rectangle in container units, so the chat (4-corner mapped) and the silhouette line up at every size.
+2. **Nav:** four line icons in the notch open into icon + label on hover or keyboard focus; the notch widens (three mask pieces on one transitioned width) while the top row folds (RYVO → R, the language switch → the current one, Book → a round arrow). CSS transitions rather than GSAP, so it works before GSAP has loaded and costs no script per frame. The floating pill opens the same way.
+3. **Intro:** ~2 s; the photo is there from the first frame (it brightens and settles), headline lines from the left (80 px, blur to sharp), subline and buttons from the right, the glass RYVO, then the chip.
+5. **Word reveal:** only the night-shift headline and the About proof line; from #2A2D32 to #F1F2F4 over a much longer scroll; words stay lit until just below the screen (no visible jump, contrast checks pass on load). The Automations heading is static again.
+6. **How we work:** no container; the cards float over a soft glow.
+7. **Trust:** no chat timing; buyers glide in from the right, replies from the left, once.
+8. **Booking:** frosted glass over a mercury glow; one week from the first bookable day, only bookable days shown; a day opens its times inline; the panel follows its content's height.
+9. **Spanish How-we-work heading:** "Hecho por ti. / Lo vigilamos nosotros." (Manuel's wording; informal *tú*, where the rest of the Spanish site uses *usted*).
+
 **Launch checklist (before the Vercel preview works):**
 
 - [ ] Booking on hello@'s calendar (own UI, replaces the Google embed): follow `docs/booking-google-setup.md`. Then in Vercel → Project → Settings → Environment Variables (Preview and Production), add by hand: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`, `BOOKING_CALENDAR_ID` = hello@ryvodigital.com. Never set `BOOKING_MOCK` in Vercel. Until these are set, the site shows buttons to the Google booking pages (the short links are in `src/lib/booking/config.ts`, so the `NEXT_PUBLIC_BOOKING_*` variables are no longer needed).

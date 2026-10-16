@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Dictionary } from "@/i18n";
 import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import { ArrowUpRight } from "@/components/chrome/Icons";
@@ -75,10 +75,14 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
   }, [slots, kind, tz]);
   const days = [...byDay.keys()];
   const dayKey = days.join();
-  const weeks = useMemo(() => toWeeks(dayKey ? dayKey.split(",") : []), [dayKey]);
-  const weekIdx = Math.min(week, Math.max(0, weeks.length - 1));
-  const firstOpen = (w: string[] | undefined) => w?.find((k) => byDay.has(k));
-  const activeDay = day && byDay.has(day) ? day : firstOpen(weeks[weekIdx]) ?? days[0];
+  // One week at a time: pages of seven calendar days from the first bookable
+  // day, showing only the days that have times (no greyed-out days).
+  const pages = useMemo(() => toPages(dayKey ? dayKey.split(",") : []), [dayKey]);
+  const cols = Math.max(1, ...pages.map((p) => p.length));
+  const pageIdx = Math.min(week, Math.max(0, pages.length - 1));
+  const openDay = day && byDay.has(day) ? day : null;
+  const [shownDay, setShownDay] = useState<string | null>(null); // keeps the times on screen while they fold away
+  const todayKey = useMemo(() => new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()), [tz]);
 
   const fmtDay = (key: string) => {
     const d = new Date(`${key}T12:00:00`);
@@ -90,12 +94,17 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
     };
   };
   // "19–24 Oct", or "27 Oct – 1 Nov" across months, in every language.
-  const fmtWeek = (w: string[]) => {
+  const fmtRange = (w: string[]) => {
     const a = new Date(`${w[0]}T12:00:00`), b = new Date(`${w[w.length - 1]}T12:00:00`);
     const mon = (d: Date) => new Intl.DateTimeFormat(locale, { month: "short" }).format(d).replace(/\.$/, "");
+    if (w.length === 1) return `${a.getDate()} ${mon(a)}`;
     return a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${mon(b)}` : `${a.getDate()} ${mon(a)} – ${b.getDate()} ${mon(b)}`;
   };
-  const goWeek = (i: number) => { setWeek(i); setDay(firstOpen(weeks[i]) ?? null); };
+  const toggleDay = (k: string) => {
+    if (openDay === k) { setDay(null); return; }
+    setDay(k);
+    setShownDay(k);
+  };
   const fmtTime = (iso: string) => new Intl.DateTimeFormat(locale, { timeZone: tz, hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
   const fmtFull = (iso: string) =>
     new Intl.DateTimeFormat(locale, { timeZone: tz, weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
@@ -122,6 +131,8 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
           </p>
         </div>
 
+        <div className={styles.panelWrap}>
+        <div aria-hidden="true" className={styles.mercury} />
         <div ref={panel} className={styles.panel} data-no-pill>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div role="group" aria-label={t.label} className={styles.kinds}>
@@ -134,6 +145,7 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
             <span className="font-mono text-[10px] tracking-[0.12em] text-steel">{t.panelTag}</span>
           </div>
 
+          <AutoHeight>
           <div className={styles.stage} aria-live="polite">
             {stage.s === "loading" && <div className={styles.skeleton}><span>{t.loading}</span></div>}
 
@@ -147,50 +159,53 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
             {stage.s === "pick" && (days.length === 0 ? (
               <div className={styles.center}><p className="m-0 max-w-[340px] text-[14px] text-body">{t.empty}</p></div>
             ) : (
-              <>
+              <div className={styles.enter}>
                 <div className={styles.weekHead}>
                   <span className="flex flex-col gap-[2px]">
                     <span className="text-[15px] font-medium">{t.pickTime}</span>
                     <span className="font-mono text-[10.5px] text-steel">{t.timesIn} {tz.replace(/_/g, " ")}</span>
                   </span>
                   <span className={styles.weekNav}>
-                    <button type="button" className={styles.arrow} aria-label={t.prevWeek} disabled={weekIdx === 0} onClick={() => goWeek(weekIdx - 1)}>
+                    <button type="button" className={styles.arrow} aria-label={t.prevWeek} disabled={pageIdx === 0} onClick={() => setWeek(pageIdx - 1)}>
                       <Chevron dir="left" />
                     </button>
-                    <span className={styles.weekLabel} aria-live="polite">{weeks[weekIdx] && fmtWeek(weeks[weekIdx])}</span>
-                    <button type="button" className={styles.arrow} aria-label={t.nextWeek} disabled={weekIdx >= weeks.length - 1} onClick={() => goWeek(weekIdx + 1)}>
+                    <span className={styles.weekLabel} aria-live="polite">{pages[pageIdx] && fmtRange(pages[pageIdx])}</span>
+                    <button type="button" className={styles.arrow} aria-label={t.nextWeek} disabled={pageIdx >= pages.length - 1} onClick={() => setWeek(pageIdx + 1)}>
                       <Chevron dir="right" />
                     </button>
                   </span>
                 </div>
-                <WeekStrip
-                  weeks={weeks}
-                  index={weekIdx}
-                  onIndex={(i) => { setWeek(i); }}
-                  label={t.pickTime}
-                  firstDay={days[0]}
-                  render={(k) => {
+                <WeekRow pages={pages} index={pageIdx} cols={cols} onIndex={setWeek} label={t.pickTime}>
+                  {(k) => {
                     const f = fmtDay(k);
-                    const open = byDay.has(k);
                     return (
-                      <button key={k} type="button" data-day={k} aria-pressed={k === activeDay} aria-label={f.full} disabled={!open} onClick={() => setDay(k)} className={styles.day}>
+                      <button key={k} type="button" aria-pressed={k === openDay} aria-expanded={k === openDay} aria-label={f.full} onClick={() => toggleDay(k)} className={styles.day}>
                         <span className={styles.dayWd}>{f.wd}</span>
                         <span className={styles.dayN}>{f.n}</span>
+                        {k === todayKey && <span className={styles.today} aria-hidden="true" />}
                       </button>
                     );
                   }}
-                />
-                <div className={styles.times} key={activeDay}>
-                  {(byDay.get(activeDay!) ?? []).map((iso) => (
-                    <button key={iso} type="button" onClick={() => setStage({ s: "form", slot: iso })} className={styles.time}>
-                      {fmtTime(iso)}
-                    </button>
-                  ))}
+                </WeekRow>
+                {/* The chosen day's times unfold under the week (a smooth height change). */}
+                <div className={styles.expand} data-open={Boolean(openDay)}>
+                  <div className={styles.expandInner}>
+                    {shownDay && (
+                      <div className={styles.times} key={shownDay} inert={!openDay}>
+                        {(byDay.get(shownDay) ?? []).map((iso) => (
+                          <button key={iso} type="button" onClick={() => setStage({ s: "form", slot: iso })} className={styles.time}>
+                            {fmtTime(iso)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </>
+              </div>
             ))}
 
             {stage.s === "form" && (
+              <div className={styles.enter}>
               <BookingForm
                 t={t}
                 lang={lang}
@@ -203,10 +218,11 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
                 onTaken={() => load(kind)}
                 onUnavailable={() => setStage({ s: "error" })}
               />
+              </div>
             )}
 
             {stage.s === "done" && (
-              <div className={styles.center}>
+              <div className={`${styles.center} ${styles.enter}`}>
                 <span className={styles.ring} aria-hidden="true" />
                 <p className="m-0 text-[22px] font-medium">{t.doneTitle}</p>
                 <p className="m-0 text-[15px] font-medium text-text">{fmtFull(stage.slot)}</p>
@@ -216,86 +232,70 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
               </div>
             )}
           </div>
+          </AutoHeight>
+        </div>
         </div>
       </div>
     </section>
   );
 }
 
-// Weeks starting on Monday, from the first day with times to the last. Sunday is
-// a column only when some visitor's local time puts a slot on one.
-function toWeeks(days: string[]) {
-  if (!days.length) return [];
-  const key = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const withSunday = days.some((k) => new Date(`${k}T12:00:00`).getDay() === 0);
-  const first = new Date(`${days[0]}T12:00:00`);
-  const last = days[days.length - 1];
-  const monday = new Date(first);
-  monday.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+// Pages of seven calendar days, each starting at its first bookable day.
+function toPages(days: string[]) {
   const out: string[][] = [];
-  for (const d = new Date(monday); key(d) <= last; d.setDate(d.getDate() + 7)) {
-    out.push(Array.from({ length: withSunday ? 7 : 6 }, (_, i) => {
-      const x = new Date(d);
-      x.setDate(d.getDate() + i);
-      return key(x);
-    }));
+  let start = 0;
+  for (const k of days) {
+    const t = new Date(`${k}T12:00:00`).getTime();
+    if (!out.length || t - start >= 7 * 86_400_000) { start = t; out.push([]); }
+    out[out.length - 1].push(k);
   }
   return out;
 }
 
-const useDesk = () =>
-  useSyncExternalStore(
-    (cb) => { const m = matchMedia("(min-width: 1024px)"); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); },
-    () => matchMedia("(min-width: 1024px)").matches,
-    () => true,
-  );
-
-// Desktop: one week at a time, sliding between weeks with the arrows.
-// Phones: every day in one swipeable row with edge fades; the arrows jump a week
-// and the label follows the swipe.
-function WeekStrip({ weeks, index, onIndex, label, firstDay, render }: {
-  weeks: string[][]; index: number; onIndex: (i: number) => void; label: string; firstDay: string; render: (k: string) => React.ReactNode;
+// The week row: one page per week, side by side in a snapping scroller, so it
+// swipes on touch; the arrows (and the label) follow either way.
+function WeekRow({ pages, index, cols, onIndex, label, children }: {
+  pages: string[][]; index: number; cols: number; onIndex: (i: number) => void; label: string; children: (k: string) => React.ReactNode;
 }) {
-  const desk = useDesk();
   const row = useRef<HTMLDivElement>(null);
-  const [edges, setEdges] = useState({ start: true, end: false });
   const fromScroll = useRef(false);
-
-  // Phones: follow the arrows by scrolling to the week's first day.
   useEffect(() => {
     const el = row.current;
-    if (desk || !el) return;
+    if (!el) return;
     if (fromScroll.current) { fromScroll.current = false; return; }
-    const first = (weeks[index] ?? []).map((k) => el.querySelector<HTMLElement>(`[data-day="${k}"]`)).find(Boolean);
-    if (first) el.scrollTo({ left: first.offsetLeft - el.offsetLeft - 16, behavior: "smooth" });
-  }, [desk, index, weeks]);
-
+    el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
+  }, [index]);
   const onScroll = () => {
     const el = row.current;
     if (!el) return;
-    setEdges({ start: el.scrollLeft < 4, end: el.scrollLeft + el.clientWidth > el.scrollWidth - 4 });
-    const chips = [...el.querySelectorAll<HTMLElement>("[data-day]")];
-    const firstVisible = chips.find((c) => c.offsetLeft - el.offsetLeft + c.offsetWidth / 2 >= el.scrollLeft);
-    const w = weeks.findIndex((wk) => wk.includes(firstVisible?.dataset.day ?? ""));
-    if (w >= 0 && w !== index) { fromScroll.current = true; onIndex(w); }
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== index && i >= 0 && i < pages.length) { fromScroll.current = true; onIndex(i); }
   };
-
-  if (desk) {
-    return (
-      <div className={styles.weekViewport} role="group" aria-label={label}>
-        <div className={styles.weekTrack} style={{ transform: `translateX(${-index * 100}%)` }}>
-          {weeks.map((w, i) => (
-            <div key={w[0]} className={styles.weekPage} style={{ gridTemplateColumns: `repeat(${w.length}, minmax(0, 1fr))` }} inert={i !== index}>
-              {w.map(render)}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
   return (
-    <div ref={row} className={styles.dayRow} role="group" aria-label={label} onScroll={onScroll} data-start={edges.start} data-end={edges.end}>
-      {weeks.flat().filter((k) => k >= firstDay).map(render)}
+    <div ref={row} className={styles.weekRow} role="group" aria-label={label} onScroll={onScroll}>
+      {pages.map((p, i) => (
+        <div key={p[0]} className={styles.weekPage} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }} inert={i !== index}>
+          {p.map(children)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// The panel follows its content's height smoothly, so it never holds empty space.
+function AutoHeight({ children }: { children: React.ReactNode }) {
+  const inner = useRef<HTMLDivElement>(null);
+  const [h, setH] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    const el = inner.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div className={styles.auto} style={{ height: h }}>
+      <div ref={inner}>{children}</div>
     </div>
   );
 }

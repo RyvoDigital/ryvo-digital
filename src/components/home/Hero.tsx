@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { preload } from "react-dom";
 import type { CSSProperties } from "react";
 import type { Dictionary } from "@/i18n";
@@ -6,53 +5,49 @@ import type { Locale } from "@/i18n/config";
 import SiteNav from "@/components/chrome/SiteNav";
 import { BookButton } from "@/components/chrome/Icons";
 import { navLinks } from "@/components/chrome/nav-links";
-import { NOTCH, NOTCH_AT, NOTCH_W, notchMaskUrl, notchPath } from "@/components/chrome/notch";
+import { NOTCH, NOTCH_AT, NOTCH_W_CLOSED, NOTCH_W_OPEN, capMaskUrl } from "@/components/chrome/notch";
+import NotchNav from "@/components/chrome/NotchNav";
 import HeroVisual from "./HeroVisual";
-import { HERO_SIZES, heroSrcSet } from "./hero-media";
+import { ART, DESK_MEDIA, MOB_MEDIA, srcSet } from "./hero-media";
 import styles from "./Hero.module.css";
 
 export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
   const h = t.hero;
-  // The cut-out is the LCP element: fetch it first, at high priority.
-  preload("/media/hero/hand-phone-b-1160.avif", {
-    as: "image",
-    type: "image/avif",
-    fetchPriority: "high",
-    imageSrcSet: heroSrcSet("/media/hero/hand-phone-b", "avif"),
-    imageSizes: HERO_SIZES,
-  });
+  // The hero photo is the LCP element: fetch the one for this layout first, at
+  // high priority. (The silhouette layer is small and follows at normal priority.)
+  for (const [a, media] of [[ART.desk, DESK_MEDIA], [ART.mob, MOB_MEDIA]] as const) {
+    preload(`${a.bg}-${a.widths[1]}.avif`, {
+      as: "image", type: "image/avif", fetchPriority: "high", media,
+      imageSrcSet: srcSet(a, "bg", "avif"), imageSizes: a.sizes,
+    });
+  }
 
-  const w = NOTCH_W[lang];
-  const notch = { "--notch": notchMaskUrl(w), "--notch-w": `${w + 2 * NOTCH.r}px`, "--notch-h": `${NOTCH.h}px` } as CSSProperties;
+  const notch = {
+    "--cap-l": capMaskUrl("left"), "--cap-r": capMaskUrl("right"), "--nr": `${NOTCH.r}px`, "--nh": `${NOTCH.h}px`,
+    "--W-closed": `${NOTCH_W_CLOSED}px`, "--W-open": `${NOTCH_W_OPEN[lang]}px`,
+  } as CSSProperties;
 
   return (
-    <header className={styles.wrap} data-hero data-notch-at={NOTCH_AT[lang]} style={notch}>
+    <header className={styles.wrap} data-hero data-notch-at={NOTCH_AT[lang]} data-nav-open="false" style={notch}>
       <div aria-hidden="true" className={styles.spill} />
 
-      {/* Wide desktops: the four links sit in the card's notch, on the page itself
-          (narrower ones keep them inline in the card's bar, where they fit). */}
-      <nav aria-label={t.nav.main} className={styles.notchNav} style={{ width: w }}>
-        {navLinks(lang, t).map((l) => (
-          <Link key={l.href} href={l.href} className={styles.notchLink}>{l.label}</Link>
-        ))}
-      </nav>
-      <svg aria-hidden="true" className={styles.notchEdge} width={w + 2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${w + 2 * NOTCH.r} ${NOTCH.h}`}>
-        <path d={notchPath(w, NOTCH.h, NOTCH.r, false)} />
-      </svg>
+      {/* Wide desktops: the four links sit in the card's notch as icons that open
+          into words (narrower ones keep them inline in the card's bar). */}
+      <NotchNav links={navLinks(lang, t)} label={t.nav.main} />
 
       <div aria-hidden="true" className={styles.cardShadow} />
       <section className={styles.card} aria-labelledby="hero-title">
         <div className={styles.nav}>
-          <SiteNav lang={lang} t={t} bookHref="#book" linksClassName={styles.inlineLinks} />
+          <SiteNav lang={lang} t={t} bookHref="#book" linksClassName={styles.inlineLinks} fold />
         </div>
 
         <div className={styles.headline}>
           <h1 id="hero-title" className={styles.h1}>
-            <span className="md:block md:whitespace-nowrap" data-reveal-line style={{ ["--i" as string]: 0 }}>{h.titleA}</span>{" "}
-            <span className="md:block md:whitespace-nowrap" data-reveal-line style={{ ["--i" as string]: 1 }}>
+            <span className="md:block" data-reveal-line style={{ ["--i" as string]: 0 }}>{h.titleA}</span>{" "}
+            <span className="md:block" data-reveal-line style={{ ["--i" as string]: 1 }}>
               {h.titleB} <span className="text-steel">{h.titleC}</span>
             </span>{" "}
-            <span className="md:block md:whitespace-nowrap" data-reveal-line style={{ ["--i" as string]: 2 }}>
+            <span className="md:block" data-reveal-line style={{ ["--i" as string]: 2 }}>
               <span className="text-steel">{h.titleD}</span> {h.titleE}
             </span>
           </h1>
@@ -64,8 +59,6 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
             </span>
           </div>
         </div>
-
-        <div aria-hidden="true" className={styles.wordmark} data-wordmark>RYVO</div>
 
         <HeroVisual lang={lang} t={h} />
       </section>

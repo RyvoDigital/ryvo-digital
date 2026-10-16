@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
-import { ArrowUpRight } from "./Icons";
+import { ArrowUpRight, NavIcon } from "./Icons";
 import MobileMenu from "./MobileMenu";
 import { navLinks } from "./nav-links";
 
@@ -44,10 +44,14 @@ export default function FloatingNav({ lang, t, bookHref }: { lang: Locale; t: Di
         className="pointer-events-auto flex items-center gap-1 rounded-full border border-[rgba(205,209,217,0.16)] bg-[rgba(19,20,24,0.66)] p-[5px] shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
       >
         <Link href={`/${lang}`} className="px-3 text-[15px] font-bold tracking-[0.06em]" style={{ fontStretch: "125%" }}>RYVO</Link>
-        <ul className="hidden items-center lg:flex">
+        {/* Icons that open into icon + label while the pill is hovered or focused. */}
+        <ul className="pill-links hidden items-center lg:flex">
           {links.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} className="inline-flex min-h-[36px] items-center rounded-full px-[13px] text-[13px] text-body transition-colors duration-300 hover:bg-[rgba(241,242,244,0.06)] hover:text-text">{l.label}</Link>
+              <Link href={l.href} aria-label={l.label} className="inline-flex min-h-[40px] items-center rounded-full px-[11px] text-[13px] text-body transition-colors duration-300 hover:bg-[rgba(241,242,244,0.06)] hover:text-text focus-visible:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-silver">
+                <NavIcon name={l.icon} size={18} />
+                <span className="pill-label" aria-hidden="true"><span>{l.label}</span></span>
+              </Link>
             </li>
           ))}
         </ul>

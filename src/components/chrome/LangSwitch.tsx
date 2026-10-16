@@ -2,12 +2,15 @@ import Link from "next/link";
 import { LOCALES, type Locale } from "@/i18n/config";
 
 // Keeps the visitor on the same page when switching language.
-export default function LangSwitch({ lang, path = "", label, className = "" }: { lang: Locale; path?: string; label: string; className?: string }) {
+// With fold, the other languages fold away while the hero notch is open.
+export default function LangSwitch({ lang, path = "", label, className = "", fold = false }: { lang: Locale; path?: string; label: string; className?: string; fold?: boolean }) {
   return (
     <nav aria-label={label} className={`font-mono text-[12px] text-steel ${className}`}>
-      {LOCALES.map((l, i) => (
-        <span key={l}>
-          {i > 0 && <span aria-hidden="true"> · </span>}
+      {LOCALES.map((l, i) => {
+        const sep = i > 0 && <span aria-hidden="true"> · </span>;
+        const item = (
+          <>
+          {fold && l === lang ? sep && <span className="fold"><span>{sep}</span></span> : sep}
           <Link
             href={`/${l}${path}`}
             hrefLang={l}
@@ -17,8 +20,12 @@ export default function LangSwitch({ lang, path = "", label, className = "" }: {
           >
             {l}
           </Link>
-        </span>
-      ))}
+          </>
+        );
+        return fold && l !== lang
+          ? <span key={l} className="fold"><span>{item}</span></span>
+          : <span key={l}>{item}</span>;
+      })}
     </nav>
   );
 }
