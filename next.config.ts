@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // Never show the Next.js "N" badge, not even in development.
   devIndicators: false,
   // First-time visitors from LinkedIn and email: styles arrive with the HTML, no render-blocking request.
-  experimental: { inlineCss: true },
+  experimental: { inlineCss: true, globalNotFound: true },
   async redirects() {
     // Keep links to the old single-language legal pages working.
     return [

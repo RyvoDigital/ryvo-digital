@@ -11,7 +11,7 @@ import styles from "./Pricing.module.css";
 
 // Tick any automations: the monthly and the one-time setup roll to their new
 // values together. Default: 01 + 02 (the approved design's Core).
-export default function Pricing({ lang, t, names }: { lang: Locale; t: Dictionary["pricing"]; names: string[] }) {
+export default function Pricing({ lang, t, names, bookHref = "#book" }: { lang: Locale; t: Dictionary["pricing"]; names: string[]; bookHref?: string }) {
   const [chosen, setChosen] = useState<number[]>([0, 1]);
   const [seen, setSeen] = useState(false);
   const priceRef = useRef<HTMLSpanElement>(null);
@@ -52,7 +52,7 @@ export default function Pricing({ lang, t, names }: { lang: Locale; t: Dictionar
             )}
           </div>
           <span className={styles.cta}>
-            <BookButton href="#book" label={t.cta} />
+            <BookButton href={bookHref} label={t.cta} />
           </span>
           <ul className={styles.fine}>
             {t.fine.map((f) => <li key={f}>{f}</li>)}

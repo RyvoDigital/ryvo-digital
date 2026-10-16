@@ -1,7 +1,8 @@
 import type { Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n";
-import SiteNav from "@/components/chrome/SiteNav";
-import SiteFooter from "@/components/chrome/SiteFooter";
+import { getPages } from "@/i18n/pages";
+import PageHero from "@/components/pages/PageHero";
+import PageFrame from "@/components/pages/PageFrame";
 
 export const COMPANY = {
   name: "PEDRO SEIXAS VALE - CONSULTORIA, LDA",
@@ -35,37 +36,40 @@ export function LegalSection({
   );
 }
 
-// Restyled in the new system; the legal text itself is unchanged and English in
-// every language (marked as such on /pt and /es).
+// Restyled in the new system (the inner pages' opening card); the legal text
+// itself is unchanged and English in every language (marked as such on /pt and /es).
 export default function LegalPage({
   lang,
   title,
   lastUpdated,
+  path,
   children,
 }: {
   lang: Locale;
   title: string;
   lastUpdated: string;
+  path: string;
   children: React.ReactNode;
 }) {
   const t = getDictionary(lang);
+  const p = getPages(lang);
   const note = IN_ENGLISH[lang];
   return (
-    <>
-      <header className="px-[18px] pt-[14px] md:px-6 md:pt-7 lg:px-11">
-        <SiteNav lang={lang} t={t} bookHref={`/${lang}#book`} />
-      </header>
+    <PageFrame lang={lang} t={t} bookHref={`/${lang}/book`}>
+      <PageHero
+        lang={lang} t={t} path={path} label={p.legal.label} title={[title]} compact
+        sub={
+          <>
+            <p className="m-0 font-mono text-[12px] uppercase tracking-[0.12em] text-steel">{p.legal.updated} · {lastUpdated}</p>
+            {note && <p lang={lang} className="mb-0 mt-4 inline-block rounded-2xl border border-line-2 bg-[rgba(255,255,255,0.04)] px-4 py-3 text-[14px] text-body">{note}</p>}
+          </>
+        }
+      />
       <main>
-        <article lang="en" className="mx-auto max-w-[760px] px-5 pb-24 pt-20 leading-[1.7] md:pt-28">
-          {note && (
-            <p lang={lang} className="mb-8 rounded-2xl border border-line bg-surface px-4 py-3 text-[14px] text-body">{note}</p>
-          )}
-          <p className="mono-label">Last updated · {lastUpdated}</p>
-          <h1 className="display mt-6 text-[clamp(44px,7vw,76px)]">{title}</h1>
+        <article lang="en" className="mx-auto max-w-[760px] px-5 pb-24 pt-6 leading-[1.7] md:pt-10">
           {children}
         </article>
       </main>
-      <SiteFooter lang={lang} t={t} />
-    </>
+    </PageFrame>
   );
 }

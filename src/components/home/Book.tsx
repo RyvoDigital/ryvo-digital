@@ -184,9 +184,11 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
                   {(k) => {
                     const f = fmtDay(k);
                     return (
-                      <button key={k} type="button" aria-pressed={k === openDay} aria-expanded={k === openDay} aria-label={byDay.get(k)?.some((x) => x.free) ? f.full : `${f.full}, ${t.unavailable}`} data-full={!byDay.get(k)?.some((x) => x.free)} onClick={() => toggleDay(k)} className={styles.day}>
-                        <span className={styles.dayWd}>{f.wd}</span>
-                        <span className={styles.dayN}>{f.n}</span>
+                      <button key={k} type="button" aria-pressed={k === openDay} aria-expanded={k === openDay} data-full={!byDay.get(k)?.some((x) => x.free)} onClick={() => toggleDay(k)} className={styles.day}>
+                        {/* The visible "SAT 17" is read as the full date (its name contains what is shown). */}
+                        <span className={styles.dayWd} aria-hidden="true">{f.wd}</span>
+                        <span className={styles.dayN} aria-hidden="true">{f.n}</span>
+                        <span className="sr-only">{f.wd} {f.n}, {byDay.get(k)?.some((x) => x.free) ? f.full : `${f.full}, ${t.unavailable}`}</span>
                         {k === todayKey && <span className={styles.today} aria-hidden="true" />}
                       </button>
                     );

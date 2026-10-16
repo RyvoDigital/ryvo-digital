@@ -1,10 +1,10 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { fill, formatViewing, nextThursday, useViewingKey, weekdayOnly } from "@/lib/viewing-date";
-import PhoneStory from "./PhoneStory";
+import PhoneStory, { HandCard } from "./PhoneStory";
 import ScreenFit, { type Corners } from "@/components/chrome/ScreenFit";
 import { ART, DESK_MEDIA, srcSet } from "./hero-media";
 import styles from "./Hero.module.css";
@@ -38,49 +38,102 @@ function ArtPicture({ which, className, priority }: { which: "bg" | "hand"; clas
   );
 }
 
-// RYVO in liquid glass, sitting on the card's bottom edge. One SVG: each
-// letter is a clip of a blurred, brightened copy of the photo (aligned to it),
-// a soft white tint, a highlight from above, an inner shadow toward the bottom
-// right and a luminous edge, brighter at the top left. Every letter is one
-// consistent glass shape. If the texture is missing, the tint and the edge still
-// draw the letters. The silhouette layer above keeps the hand in front.
+// RYVO in liquid glass, sitting on the card's bottom edge: solid, thick glass,
+// not an outline. One SVG: each letter is a clip of a blurred copy of the photo
+// (placed on the photo's art box), under a soft milky tint; a specular highlight
+// lit from above runs along the top edges, an inner shadow darkens the bottom
+// inside edge for thickness, and a fine luminous rim draws the shape. Chromium
+// also bends the light through the letters (an SVG displacement from the
+// letters' own bevel, with a slight colour split at the rims); Safari and
+// Firefox keep the blur, tint and highlights. The silhouette layer above keeps
+// the hand in front. (Fixed ids: there is one wordmark on the page.)
 function GlassWordmark() {
-  const id = useId().replace(/:/g, "");
-  const t = `${id}-t`;
+  const svg = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    // Chromium only, and after the first paint, so the photo stays the LCP.
+    const ua = (navigator as Navigator & { userAgentData?: { brands: { brand: string }[] } }).userAgentData;
+    if (!ua?.brands.some((b) => b.brand === "Chromium")) return;
+    const id = requestAnimationFrame(() => svg.current?.setAttribute("data-refract", ""));
+    return () => cancelAnimationFrame(id);
+  }, []);
   return (
-    <svg aria-hidden="true" className={styles.glassWord} data-wordmark>
+    <svg ref={svg} aria-hidden="true" className={styles.glassWord} data-wordmark>
       <defs>
-        <text id={t} x="50%" y="100%" dy="0.06em" textAnchor="middle" className={styles.glassText}>RYVO</text>
-        <clipPath id={`${id}-clip`}><use href={`#${t}`} /></clipPath>
-        <linearGradient id={`${id}-edge`} x1="0" y1="0" x2="0.32" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="1" />
-          <stop offset="0.35" stopColor="#fff" stopOpacity="0.6" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0.18" />
+        <text id="ryvo-t" x="50%" y="100%" dy="0.06em" textAnchor="middle" className={styles.glassText}>RYVO</text>
+        <clipPath id="ryvo-clip"><use href="#ryvo-t" /></clipPath>
+        <linearGradient id="ryvo-edge" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.95" />
+          <stop offset="0.4" stopColor="#fff" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0.12" />
         </linearGradient>
-        <linearGradient id={`${id}-sheen`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.2" />
-          <stop offset="0.42" stopColor="#fff" stopOpacity="0.03" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        <linearGradient id="ryvo-milk" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0.55" stopColor="#f4f6fa" stopOpacity="0.16" />
+          <stop offset="0.8" stopColor="#e9ecf2" stopOpacity="0.09" />
+          <stop offset="1" stopColor="#dfe3ea" stopOpacity="0.05" />
         </linearGradient>
-        <filter id={`${id}-soft`} x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="4" /></filter>
-        <filter id={`${id}-inner`} x="-5%" y="-5%" width="110%" height="110%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="9" result="b" />
-          <feOffset in="b" dx="-7" dy="-9" result="o" />
+        {/* Chromium: the light refracted through the body. The letters' alpha,
+            blurred, is a bevel; its slope (x → red, y → green, 0.5 = flat) drives
+            the displacement, twice, a little apart, for red and for green-blue. */}
+        <filter id="ryvo-refract" filterUnits="userSpaceOnUse" x="0" y="38%" width="100%" height="62%" colorInterpolationFilters="sRGB">
+          <feImage href="#ryvo-t" result="shape" />
+          <feGaussianBlur in="shape" stdDeviation="16" result="b" />
+          <feOffset in="b" dx="-3" result="l" /><feOffset in="b" dx="3" result="r" />
+          <feOffset in="b" dy="-3" result="u" /><feOffset in="b" dy="3" result="d" />
+          <feComposite in="l" in2="r" operator="arithmetic" k2="1" k3="-1" result="lr" />
+          <feComposite in="r" in2="l" operator="arithmetic" k2="1" k3="-1" result="rl" />
+          <feComposite in="u" in2="d" operator="arithmetic" k2="1" k3="-1" result="ud" />
+          <feComposite in="d" in2="u" operator="arithmetic" k2="1" k3="-1" result="du" />
+          <feComposite in="lr" in2="rl" operator="arithmetic" k2="2.6" k3="-2.6" k4="0.5" result="gx" />
+          <feComposite in="ud" in2="du" operator="arithmetic" k2="2.6" k3="-2.6" k4="0.5" result="gy" />
+          <feColorMatrix in="gx" values="0 0 0 1 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0 1" result="mx" />
+          <feColorMatrix in="gy" values="0 0 0 0 0  0 0 0 1 0  0 0 0 0 0  0 0 0 0 1" result="my" />
+          <feComposite in="mx" in2="my" operator="arithmetic" k2="1" k3="1" result="map" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+          <feComponentTransfer in="blur" result="soft"><feFuncR type="linear" slope="1.3" intercept="0.05" /><feFuncG type="linear" slope="1.3" intercept="0.05" /><feFuncB type="linear" slope="1.3" intercept="0.06" /></feComponentTransfer>
+          <feDisplacementMap in="soft" in2="map" scale="110" xChannelSelector="R" yChannelSelector="G" result="d1" />
+          <feDisplacementMap in="soft" in2="map" scale="124" xChannelSelector="R" yChannelSelector="G" result="d2" />
+          <feColorMatrix in="d1" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
+          <feColorMatrix in="d2" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" result="gb" />
+          <feComposite in="red" in2="gb" operator="arithmetic" k2="1" k3="1" />
+        </filter>
+        {/* Every engine: the specular highlight, lit from above, on the top edges. */}
+        <filter id="ryvo-spec" x="-4%" y="-8%" width="108%" height="116%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="bump" />
+          <feSpecularLighting in="bump" surfaceScale="7" specularConstant="1.25" specularExponent="26" lightingColor="#fff" result="spec">
+            <feDistantLight azimuth="265" elevation="38" />
+          </feSpecularLighting>
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="bump2" />
+          <feSpecularLighting in="bump2" surfaceScale="4" specularConstant="1.4" specularExponent="60" lightingColor="#fff" result="gleam">
+            <feDistantLight azimuth="250" elevation="30" />
+          </feSpecularLighting>
+          <feComposite in="spec" in2="gleam" operator="arithmetic" k2="1" k3="0.9" result="both" />
+          <feComposite in="both" in2="SourceAlpha" operator="in" />
+        </filter>
+        {/* The bottom inside edge, darker: the glass's thickness. */}
+        <filter id="ryvo-inner" x="-5%" y="-5%" width="110%" height="110%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="b" />
+          <feOffset in="b" dx="-4" dy="-14" result="o" />
           <feComposite in="SourceAlpha" in2="o" operator="out" result="band" />
-          <feFlood floodColor="#000" floodOpacity="0.4" />
+          <feFlood floodColor="#000" floodOpacity="0.55" />
           <feComposite in2="band" operator="in" />
         </filter>
+        {/* Safari and Firefox: the same photo, blurred (~30 px) and lifted, unbent. */}
+        <filter id="ryvo-blur" filterUnits="userSpaceOnUse" x="0" y="38%" width="100%" height="62%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur stdDeviation="10" />
+          <feComponentTransfer><feFuncR type="linear" slope="1.3" intercept="0.05" /><feFuncG type="linear" slope="1.3" intercept="0.05" /><feFuncB type="linear" slope="1.3" intercept="0.06" /></feComponentTransfer>
+        </filter>
+        <filter id="ryvo-soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="5" /></filter>
       </defs>
-      <g clipPath={`url(#${id}-clip)`}>
-        <image href="/media/hero/hero7-glass-1400.webp" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" className={styles.glassDesk} />
-        <image href="/media/hero/hero7-glass-m-700.webp" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" className={styles.glassMob} />
-        <rect width="100%" height="100%" fill="#fff" opacity="0.05" />
-        <use href={`#${t}`} fill={`url(#${id}-sheen)`} />
-        {/* The glass's thickness: a soft light band just inside every edge. */}
-        <use href={`#${t}`} fill="none" stroke="#fff" strokeOpacity="0.16" strokeWidth="8" filter={`url(#${id}-soft)`} />
+      <g clipPath="url(#ryvo-clip)">
+        <image href="/media/hero/hero7-bg-1440.avif" preserveAspectRatio="none" className={`${styles.glassImg} ${styles.glassDesk}`} />
+        <image href="/media/hero/hero7-bg-m-600.avif" preserveAspectRatio="none" className={`${styles.glassImg} ${styles.glassMob}`} />
+        <rect width="100%" height="100%" fill="url(#ryvo-milk)" />
+        {/* a soft light band just inside every edge */}
+        <use href="#ryvo-t" fill="none" stroke="#fff" strokeOpacity="0.2" strokeWidth="10" filter="url(#ryvo-soft)" />
       </g>
-      <use href={`#${t}`} fill="#000" filter={`url(#${id}-inner)`} />
-      <use href={`#${t}`} fill="none" stroke={`url(#${id}-edge)`} strokeWidth="1.5" />
+      <use href="#ryvo-t" fill="#000" filter="url(#ryvo-inner)" />
+      <use href="#ryvo-t" fill="#fff" filter="url(#ryvo-spec)" className={styles.glassSpec} />
+      <use href="#ryvo-t" fill="none" stroke="url(#ryvo-edge)" strokeWidth="1.25" />
     </svg>
   );
 }
@@ -97,6 +150,8 @@ export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["h
       </div>
 
       <GlassWordmark />
+      {/* The deep dark at the bottom the letters rise out of (under the hand). */}
+      <div aria-hidden="true" className={styles.deep} />
 
       <div className={`${styles.art} ${styles.artHand}`} data-hero-art>
         <ArtPicture which="hand" className={styles.handImg} />
@@ -119,8 +174,7 @@ export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["h
 
       {/* The handover card's flight out of the phone to the chip (PhoneStory). */}
       <div aria-hidden="true" className={styles.fly} data-fly>
-        <span className={styles.flyT}>{t.story.handover}</span>
-        {t.story.rows.slice(0, 2).map(([k, v]) => <span key={k} className={styles.flyRow}><span>{k}</span><b>{v}</b></span>)}
+        <HandCard story={t.story} />
       </div>
 
       <div className={styles.chip} data-chip>

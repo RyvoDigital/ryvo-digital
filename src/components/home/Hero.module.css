@@ -41,10 +41,13 @@
   container-type: size;
   --ar: 0.6709; /* 3392 / 5056, the vertical photo */
   --px: 0.5;    /* horizontal alignment, like object-position */
-  --aw: max(100cqw, 100cqh * var(--ar));
-  --ah: max(100cqh, 100cqw / var(--ar));
+  /* --z: the photo zoomed past cover, so the phone reads larger (round 8: 28 %),
+     centred on the phone (the photo's centre column). */
+  --z: 1.28;
+  --aw: calc(max(100cqw, 100cqh * var(--ar)) * var(--z));
+  --ah: calc(max(100cqh, 100cqw / var(--ar)) * var(--z));
   --sx: 0px;    /* extra shift, filled by the card's matching dark */
-  --sy: 56px;   /* phones: the phone sits a little lower, clear of the headline */
+  --sy: 104px;  /* phones: the phone sits lower, 48 px clear of the headline */
   --ax: calc((100cqw - var(--aw)) * var(--px) + var(--sx));
   --ay: calc((100cqh - var(--ah)) * 0.5 + var(--sy));
 }
@@ -58,8 +61,9 @@
     height: 940px;
     border-radius: 34px;
     --ar: 1.4906; /* 5056 / 3392, the wide photo */
-    --sy: 0px;
+    --sy: 26px;   /* the zoomed phone sits a touch lower, clear of the notch */
     background: #050506;
+    --text-top: 150px;
   }
 }
 
@@ -226,7 +230,7 @@
      wraps before it can reach the phone, in every language. */
   /* Left of the phone, on a clear grid: the card's 44 px margin to 48 px short of
      the screen's left edge (from the art box). */
-  .headline { left: 44px; right: auto; top: 150px; gap: 0; width: calc(var(--ax) + var(--aw) * 0.4282 - 92px); }
+  .headline { left: 44px; right: auto; top: var(--text-top); gap: 0; width: calc(var(--ax) + var(--aw) * 0.4282 - 92px); }
 }
 
 .deskOnly { display: none; }
@@ -235,7 +239,9 @@
   .deskOnly { display: flex; flex-direction: column; gap: 24px; }
 
   /* Right of the phone: from 48 px clear of the screen to the card's margin. */
-  .rightCol { position: absolute; z-index: 4; top: 156px; left: calc(var(--ax) + var(--aw) * 0.5718 + 48px); right: 44px; }
+  /* Balanced with the headline: it ends on the card's right margin as the
+     headline starts on the left one, never nearer the screen than 48 px. Same top. */
+  .rightCol { position: absolute; z-index: 4; top: calc(var(--text-top) - 3px); right: 44px; left: max(calc(var(--ax) + var(--aw) * 0.5718 + 48px), calc(100cqw - 44px - 400px)); }
 }
 
 .sub { margin: 0; max-width: 400px; font-size: 17px; line-height: 1.55; color: var(--color-text); }
@@ -272,6 +278,7 @@
 
 .h1 {
   margin: 0;
+  font-family: "Archivo", "Archivo Wide Fallback", var(--font-sans); /* globals.css */
   font-size: 36px;
   line-height: 0.95;
   font-weight: 500;
@@ -320,7 +327,7 @@
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(5, 5, 6, 0.92) 0%, rgba(5, 5, 6, 0.86) 28%, rgba(5, 5, 6, 0.5) 40%, rgba(5, 5, 6, 0) 52%);
+  background: linear-gradient(180deg, rgba(5, 5, 6, 0.92) 0%, rgba(5, 5, 6, 0.86) 25%, rgba(5, 5, 6, 0.45) 33%, rgba(5, 5, 6, 0) 39%);
 }
 
 @media (min-width: 1024px) {
@@ -329,6 +336,18 @@
       radial-gradient(42% 46% at 15% 30%, rgba(5, 5, 6, 0.9) 0%, rgba(5, 5, 6, 0.72) 50%, rgba(5, 5, 6, 0) 100%),
       radial-gradient(34% 40% at 84% 26%, rgba(5, 5, 6, 0.62) 0%, rgba(5, 5, 6, 0.3) 55%, rgba(5, 5, 6, 0) 100%);
   }
+}
+
+/* The deep dark at the card's bottom: full black on the edge, falling off softly
+   to ~40 % of the card's height (a quarter on phones, where RYVO is smaller), so
+   RYVO rises out of it and its lower part fades into it. Under the hand. */
+.deep {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(0deg, #050506 0%, rgba(5, 5, 6, 0.9) 3%, rgba(5, 5, 6, 0.66) 7%, rgba(5, 5, 6, 0.4) 11%, rgba(5, 5, 6, 0.18) 16%, rgba(5, 5, 6, 0.05) 21%, rgba(5, 5, 6, 0) 25%);
+}
+
+@media (min-width: 1024px) {
+  .deep { background: linear-gradient(0deg, #050506 0%, rgba(5, 5, 6, 0.97) 6%, rgba(5, 5, 6, 0.88) 12%, rgba(5, 5, 6, 0.7) 18%, rgba(5, 5, 6, 0.48) 24%, rgba(5, 5, 6, 0.27) 30%, rgba(5, 5, 6, 0.11) 35%, rgba(5, 5, 6, 0.03) 39%, rgba(5, 5, 6, 0) 42%); }
 }
 
 /* The intro's "light fades up": a dark veil over the photo that fades away
@@ -383,24 +402,20 @@
   .glassText { font-size: 28.5cqw; }
 }
 
+/* The glass texture sits on the photo's art box, so it lines up with it. */
+.glassImg { x: var(--ax); y: var(--ay); width: var(--aw); height: var(--ah); }
+.glassImg { filter: url(#ryvo-blur); }
+.glassWord[data-refract] .glassImg { filter: url(#ryvo-refract); }
+.glassSpec { mix-blend-mode: screen; opacity: 0.85; }
 .glassDesk { display: none; }
-.glassMob { y: var(--sy); }
 
 @media (min-width: 1024px) {
   .glassDesk { display: inline; }
   .glassMob { display: none; }
 }
 
-/* The handover card in flight (positioned by PhoneStory with transforms). */
-.fly {
-  position: absolute; left: 0; top: 0; z-index: 6; width: 180px;
-  display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 14px;
-  background: #eceef1; color: #0b0c0e; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  opacity: 0; visibility: hidden; pointer-events: none; transform-origin: 50% 50%;
-}
-.flyT { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #5e636b; }
-.flyRow { display: flex; justify-content: space-between; gap: 8px; font-size: 10.5px; }
-.flyRow span { color: #5e636b; }
+/* The handover card in flight: PhoneStory's own card, sized and placed by it. */
+.fly { position: absolute; left: 0; top: 0; z-index: 6; width: 272px; opacity: 0; visibility: hidden; pointer-events: none; transform-origin: 50% 50%; }
 
 /* The chip, to the right of the phone (positions in the art box). */
 .chip {
@@ -420,8 +435,8 @@
 }
 
 @media (min-width: 1024px) {
-  /* Near the phone: over its right edge, low on the screen. */
-  .chip { left: calc(var(--ax) + var(--aw) * 0.5718 - 44px); top: calc(var(--ay) + var(--ah) * 0.6); padding: 13px 16px; border-radius: 16px; gap: 4px; }
+  /* Next to the phone: just over its right edge, low, clear of the screen's scenes. */
+  .chip { left: calc(var(--ax) + var(--aw) * 0.5718 + 6px); top: calc(var(--ay) + var(--ah) * 0.6); padding: 13px 16px; border-radius: 16px; gap: 4px; }
 }
 
 /* The panel tucked under the card, fading into the page (Manuel's note 1). */

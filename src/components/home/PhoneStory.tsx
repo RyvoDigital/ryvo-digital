@@ -1,18 +1,21 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { Dictionary } from "@/i18n";
 import { prefersReducedMotion, withMotion } from "@/lib/gsap";
 import styles from "./PhoneStory.module.css";
 
-// The phone screen tells the whole story, on the agency's phone, as a seamless
-// ~14 s loop (GSAP): a new enquiry arrives at 23:47 → its language is detected →
-// the AI reply writes itself → free times from the calendar appear, the buyer
-// picks one and it snaps in → "Viewing booked" forms → the handover card for the
-// consultant lifts off and flies out of the phone to the "Viewing booked" chip.
-// Only while on screen. Reduced motion (or no script): the final frame, still.
+// The phone screen tells the story in big, single scenes, keynote style, as a
+// seamless ~15 s loop (GSAP): a new enquiry lands at 23:47 → one large language
+// chip flicks through languages and locks on the buyer's → one large reply
+// writes itself → a big "11:00" is picked → a big "Viewing booked ✓" → the
+// handover card for the consultant, which lifts off the screen and flies to the
+// "Viewing booked" chip. Exactly one card flies: the screen's card hides on the
+// frame the flying copy (same markup, same size) takes its place.
+// Only while on screen. Reduced motion (or no script): the booked scene, still.
 
-const LANGS = ["PT", "EN", "ES", "FR", "DE"] as const;
+// Only the five languages the assistant answers in.
+const ROLL = ["PT", "EN", "ES", "FR", "DE"] as const;
 
 type Props = {
   chat: Dictionary["hero"]["chat"];
@@ -21,9 +24,24 @@ type Props = {
   slotShort: string; // e.g. "Thu 22 Oct"
 };
 
+// The consultant's handover card: drawn on the screen, and again in the hero's
+// flying layer, from this one component, so the two are the same card.
+export function HandCard({ story, className = "", ...rest }: { story: Dictionary["hero"]["story"]; className?: string; [k: `data-${string}`]: string | undefined }) {
+  return (
+    <div className={`${styles.hand} ${className}`} {...rest}>
+      <span className={styles.handT}>{story.handover}</span>
+      {story.rows.map(([k, v]) => (
+        <span key={k} className={styles.row} data-row><span>{k}</span><b>{v}</b></span>
+      ))}
+    </div>
+  );
+}
+
 export default function PhoneStory({ chat, story, langCode, slotShort }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const words = chat.a1.split(/(\s+)/);
+  // The flick: other languages roll past, then the buyer's.
+  const roll = useMemo(() => { const others = ROLL.filter((l) => l !== langCode); return [...others, ...others, langCode]; }, [langCode]);
 
   useEffect(() => {
     const el = root.current;
@@ -35,84 +53,79 @@ export default function PhoneStory({ chat, story, langCode, slotShort }: Props) 
       if (!el.offsetParent) return; // the other layout's phone: stays still
       const q = gsap.utils.selector(el);
       const one = (s: string) => q(`[data-s="${s}"]`)[0] as HTMLElement;
-      const stack = one("stack"), view = one("view");
       const hero = el.closest<HTMLElement>("[data-hero]");
       const chip = hero?.querySelector<HTMLElement>("[data-chip]");
       const fly = hero?.querySelector<HTMLElement>("[data-fly]");
-
-      // Keep the newest line in view: the earlier ones glide up.
-      const scrollTo = (s: string) => Math.min(0, view.clientHeight - (one(s).offsetTop + one(s).offsetHeight + 14));
-      const chips = q("[data-chip-lang]") as HTMLElement[];
-      const lock = Math.max(0, LANGS.indexOf(langCode));
-      const chipX = (i: number) => chips[i].offsetLeft;
-      const items = ["b1", "lang", "a1", "slots", "b2", "booked", "hand"].map(one);
-      const check = one("check") as unknown as SVGPathElement;
-      const len = check.getTotalLength();
+      const scenes = ["notif", "lang", "reply", "time", "booked", "hand"].map(one);
+      const reel = one("reel"), cell = (one("reel").firstElementChild as HTMLElement).offsetHeight || 84;
+      const check = one("check") as unknown as SVGPathElement, ring = one("ring") as unknown as SVGCircleElement;
+      const len = check.getTotalLength(), rlen = ring.getTotalLength();
+      const enter = { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: "expo.out" };
+      const leave = { autoAlpha: 0, y: -26, scale: 0.97, duration: 0.45, ease: "power2.in" };
 
       const ctx = gsap.context(() => {
         tl = gsap.timeline({ repeat: -1, paused: true, defaults: { ease: "power3.out" } });
-        // 0 · the lock screen at 23:47 (reset for every loop)
-        tl.set(one("lock"), { autoAlpha: 1, y: 0, filter: "blur(0px)" }, 0)
-          .set(one("notif"), { autoAlpha: 0, y: -36, scale: 0.94, filter: "blur(6px)" }, 0)
-          .set(one("thread"), { autoAlpha: 0 }, 0)
-          .set(stack, { y: 0 }, 0)
-          .set(items, { autoAlpha: 0, y: 12, scale: 0.94 }, 0)
-          .set(q("[data-word]"), { opacity: 0, y: 3 }, 0)
+        // 0 · the lock screen at 23:47 (everything reset for every loop)
+        tl.set(one("lock"), { autoAlpha: 1, y: 0 }, 0)
+          .set(scenes, { autoAlpha: 0, y: 30, scale: 0.96 }, 0)
+          .set(reel, { y: 0 }, 0)
+          .set(one("pill"), { attr: { "data-on": "false" } }, 0)
+          .set(q("[data-word]"), { opacity: 0, y: 4 }, 0)
           .set(one("dots"), { autoAlpha: 0 }, 0)
-          .set(one("hl"), { autoAlpha: 0, x: chipX(0) }, 0)
-          .set(chips, { attr: { "data-on": "false" } }, 0)
-          .set(q("[data-pill]"), { autoAlpha: 0, y: 8, attr: { "data-on": "false" } }, 0)
+          .set(q("[data-time]"), { autoAlpha: 0, y: 14, height: "auto", marginTop: "", attr: { "data-on": "false" } }, 0)
+          .set(one("pick"), { autoAlpha: 0, y: 10 }, 0)
+          .set(ring, { strokeDasharray: rlen, strokeDashoffset: rlen }, 0)
           .set(check, { strokeDasharray: len, strokeDashoffset: len }, 0)
-          .set(q("[data-row]"), { autoAlpha: 0, x: -8 }, 0)
-          .set(one("hand"), { x: 0, rotate: 0 }, 0);
+          .set(q("[data-row]"), { autoAlpha: 0, x: -10 }, 0);
 
-        // 0.5 · a new enquiry drops in
-        tl.to(one("notif"), { autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.95, ease: "expo.out" }, 0.5);
-        // 1.8 · it opens into the conversation
-        tl.to(one("lock"), { autoAlpha: 0, y: -40, filter: "blur(6px)", duration: 0.7, ease: "power2.in" }, 1.8)
-          .to(one("notif"), { autoAlpha: 0, y: -70, scale: 0.9, duration: 0.6, ease: "power2.in" }, 1.8)
-          .to(one("thread"), { autoAlpha: 1, duration: 0.6 }, 2.05)
-          .to(one("b1"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, transformOrigin: "0% 100%" }, 2.2);
-        // 2.9 · the language is detected: the light flicks across, then locks on
-        tl.to(one("lang"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.5 }, 2.9)
-          .to(one("hl"), { autoAlpha: 1, duration: 0.2 }, 3.1);
-        const flick = [0, 1, 2, 3, 4, 3, 2, 1, 0, 1, 2, 3, 4].slice(0, 9 + lock);
-        flick.forEach((i, n) => tl!.to(one("hl"), { x: chipX(i), duration: 0.11 + n * 0.012, ease: "power1.inOut" }, 3.15 + n * 0.115));
-        const landed = 3.15 + flick.length * 0.115;
-        tl.to(one("hl"), { x: chipX(lock), duration: 0.45, ease: "power3.out" }, landed)
-          .set(chips[lock], { attr: { "data-on": "true" } }, landed + 0.25);
-        // 4.6 · the reply writes itself
-        tl.to(stack, { y: scrollTo("a1"), duration: 0.8, ease: "power3.inOut" }, 4.5)
-          .to(one("a1"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.6, transformOrigin: "100% 100%" }, 4.6)
-          .to(one("dots"), { autoAlpha: 1, duration: 0.25 }, 4.7)
-          .to(one("dots"), { autoAlpha: 0, duration: 0.2 }, 5.25)
-          .to(q("[data-word]"), { opacity: 1, y: 0, duration: 0.35, stagger: 0.035, ease: "power2.out" }, 5.35);
-        const wrote = 5.35 + q("[data-word]").length * 0.035;
-        // the calendar's free times appear; the buyer picks one; it snaps into place
-        tl.to(stack, { y: scrollTo("slots"), duration: 0.8, ease: "power3.inOut" }, wrote + 0.2)
-          .to(one("slots"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.6 }, wrote + 0.3)
-          .to(q("[data-pill]"), { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.12 }, wrote + 0.5)
-          .to(stack, { y: scrollTo("b2"), duration: 0.7, ease: "power3.inOut" }, wrote + 1.3)
-          .to(one("b2"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.6, transformOrigin: "0% 100%" }, wrote + 1.4)
-          .set(q('[data-pill="1"]'), { attr: { "data-on": "true" } }, wrote + 2.0)
-          .fromTo(q('[data-pill="1"]'), { scale: 1 }, { scale: 1.06, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 }, wrote + 2.0);
-        // "Viewing booked" forms
-        const b = wrote + 2.6;
-        tl.to(stack, { y: scrollTo("booked"), duration: 0.8, ease: "power3.inOut" }, b)
-          .to(one("booked"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: "expo.out" }, b + 0.1)
-          .to(check, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, b + 0.4);
-        // the handover card forms, then flies out of the phone to the chip
-        const h = b + 1.4;
-        tl.to(stack, { y: scrollTo("hand"), duration: 0.8, ease: "power3.inOut" }, h)
-          .to(one("hand"), { autoAlpha: 1, y: 0, scale: 1, duration: 0.6 }, h + 0.1)
-          .to(q("[data-row]"), { autoAlpha: 1, x: 0, duration: 0.4, stagger: 0.1 }, h + 0.35)
-          .to(one("hand"), { x: 70, y: -16, rotate: -4, scale: 0.86, autoAlpha: 0, duration: 0.7, ease: "power3.in" }, h + 1.45)
-          .call(() => flyOut(gsap, one("hand"), fly, chip, hero), undefined, h + 1.45);
+        // 0.4 · a new enquiry lands, big
+        tl.to(one("notif"), { ...enter, duration: 0.9 }, 0.4);
+        // 2.4 · the language: the chip flicks through, then locks on the buyer's
+        tl.to(one("lock"), { autoAlpha: 0, y: -40, duration: 0.5, ease: "power2.in" }, 2.4)
+          .to(one("notif"), leave, 2.4)
+          .to(one("lang"), enter, 2.75);
+        let at = 3.0;
+        roll.forEach((_, i) => {
+          if (!i) return;
+          const last = i === roll.length - 1;
+          tl!.to(reel, { y: -i * cell, duration: last ? 0.5 : 0.1, ease: last ? "back.out(2)" : "power1.inOut" }, at);
+          at += 0.12 + i * 0.012;
+        });
+        const locked = at + 0.35;
+        tl.set(one("pill"), { attr: { "data-on": "true" } }, locked)
+          .fromTo(one("pill"), { scale: 1 }, { scale: 1.07, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, locked);
+        // the reply writes itself
+        const r = locked + 0.95;
+        tl.to(one("lang"), leave, r)
+          .to(one("reply"), enter, r + 0.4)
+          .to(one("dots"), { autoAlpha: 1, duration: 0.2 }, r + 0.45)
+          .to(one("dots"), { autoAlpha: 0, duration: 0.2 }, r + 0.9)
+          .to(q("[data-word]"), { opacity: 1, y: 0, duration: 0.35, stagger: 0.045, ease: "power2.out" }, r + 1.0);
+        const wrote = r + 1.0 + q("[data-word]").length * 0.045 + 1.0;
+        // the calendar's two free times; the buyer picks 11:00, big
+        tl.to(one("reply"), leave, wrote)
+          .to(one("time"), enter, wrote + 0.3)
+          .to(q("[data-time]"), { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.12 }, wrote + 0.45)
+          .to(one("pick"), { autoAlpha: 1, y: 0, duration: 0.5 }, wrote + 1.25)
+          .set(one("t1"), { attr: { "data-on": "true" } }, wrote + 1.6)
+          .fromTo(one("t1"), { scale: 1 }, { scale: 1.06, duration: 0.2, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, wrote + 1.6)
+          .to(one("t0"), { autoAlpha: 0, height: 0, marginTop: 0, duration: 0.5, ease: "power3.inOut" }, wrote + 1.95);
+        // "Viewing booked ✓", big
+        const b = wrote + 2.9;
+        tl.to(one("time"), leave, b)
+          .to(one("booked"), enter, b + 0.3)
+          .to(ring, { strokeDashoffset: 0, duration: 0.55, ease: "power2.inOut" }, b + 0.4)
+          .to(check, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, b + 0.85);
+        // the handover card forms, then lifts off and flies out to the chip
+        const h = b + 2.0;
+        tl.to(one("booked"), leave, h)
+          .to(one("hand"), enter, h + 0.3)
+          .to(q("[data-row]"), { autoAlpha: 1, x: 0, duration: 0.4, stagger: 0.1 }, h + 0.55)
+          .call(() => flyOut(gsap, one("hand"), fly, chip, hero), undefined, h + 2.0);
         // hold, then back to the lock screen for a seamless loop
         const end = h + 3.4;
-        tl.to(one("thread"), { autoAlpha: 0, duration: 0.7, ease: "power2.inOut" }, end)
-          .to(one("lock"), { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "power2.out" }, end + 0.2)
-          .set({}, {}, end + 1.1);
+        tl.to(one("lock"), { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, end)
+          .set({}, {}, end + 1.0);
       }, el);
       run();
       return () => { ctx.revert(); tl = null; };
@@ -122,7 +135,7 @@ export default function PhoneStory({ chat, story, langCode, slotShort }: Props) 
     const onVis = () => run();
     document.addEventListener("visibilitychange", onVis);
     return () => { io.disconnect(); document.removeEventListener("visibilitychange", onVis); stop(); };
-  }, [langCode]);
+  }, [langCode, roll]);
 
   return (
     <div ref={root} className={styles.story} data-story>
@@ -133,90 +146,89 @@ export default function PhoneStory({ chat, story, langCode, slotShort }: Props) 
         <span className={styles.day}>{chat.stamp.split("·")[0].trim()}</span>
       </div>
 
-      <div className={styles.notif} data-s="notif">
-        <span className={styles.appIcon} aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" /></svg>
-        </span>
-        <span className={styles.notifBody}>
-          <span className={styles.notifTop}><b>{story.notif}</b><span>23:47</span></span>
+      {/* 1 · the enquiry */}
+      <div className={`${styles.scene} ${styles.sNotif}`} data-s="notif">
+        <div className={styles.notif}>
+          <span className={styles.notifTop}>
+            <span className={styles.appIcon} aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" /></svg>
+            </span>
+            <b>{story.notif}</b><span className={styles.now}>23:47</span>
+          </span>
           <span className={styles.notifFrom}>{story.from}</span>
           <span className={styles.notifText}>{story.l1}</span>
+        </div>
+      </div>
+
+      {/* 2 · the language, one big chip */}
+      <div className={styles.scene} data-s="lang">
+        <span className={styles.lbl}>{story.detected}</span>
+        <span className={styles.pill} data-s="pill" data-on="false">
+          <span className={styles.reel} data-s="reel">
+            {roll.map((l, i) => <span key={i} className={styles.code}>{l}</span>)}
+          </span>
         </span>
       </div>
 
-      <div className={styles.thread} data-s="thread">
-        <div className={styles.head}>
-          <span className={styles.avatar} aria-hidden="true">J</span>
-          <span className={styles.headText}><b>{story.from}</b><span>{chat.agency} · {story.ai}</span></span>
+      {/* 3 · one large reply */}
+      <div className={styles.scene} data-s="reply">
+        <span className={styles.lbl}>{story.ai}</span>
+        <div className={styles.out}>
+          <p className={styles.outText}>
+            {words.map((w, i) => (/^\s+$/.test(w) ? w : <span key={i} data-word>{w}</span>))}
+          </p>
+          <span className={styles.dots} data-s="dots" aria-hidden="true"><i /><i /><i /></span>
         </div>
-        <div className={styles.view} data-s="view">
-          <div className={styles.stack} data-s="stack">
-            <p className={styles.in} data-s="b1">{story.l1}</p>
+      </div>
 
-            <div className={styles.lang} data-s="lang">
-              <span className={styles.langLbl}>{story.detected}</span>
-              <span className={styles.chips}>
-                <span className={styles.hl} data-s="hl" aria-hidden="true" />
-                {LANGS.map((l) => <span key={l} className={styles.chip} data-chip-lang data-on={l === langCode}>{l}</span>)}
-              </span>
-            </div>
+      {/* 4 · a big 11:00 */}
+      <div className={styles.scene} data-s="time">
+        <span className={styles.lbl}>{story.slots}</span>
+        <span className={styles.day2}>{slotShort}</span>
+        <span className={styles.time} data-time data-s="t0" data-on="false">10:00</span>
+        <span className={styles.time} data-time data-s="t1" data-on="false">11:00</span>
+        <span className={styles.pick} data-s="pick">{chat.l2}</span>
+      </div>
 
-            <div className={styles.out} data-s="a1">
-              <span className={styles.aiTag}>{story.ai}</span>
-              <p className={styles.outText}>
-                {words.map((w, i) => (/^\s+$/.test(w) ? w : <span key={i} data-word>{w}</span>))}
-              </p>
-              <span className={styles.dots} data-s="dots" aria-hidden="true"><i /><i /><i /></span>
-            </div>
+      {/* 5 · Viewing booked ✓ */}
+      <div className={`${styles.scene} ${styles.sBooked}`} data-s="booked">
+        <svg className={styles.check} viewBox="0 0 96 96" width="96" height="96" aria-hidden="true">
+          <circle data-s="ring" cx="48" cy="48" r="44" />
+          <path data-s="check" d="M29 49.5l13 13 25-27" />
+        </svg>
+        <b className={styles.bookedT}>{story.booked}</b>
+        <span className={styles.bookedWhen}>{slotShort} · 11:00</span>
+        <span className={styles.bookedSub}>{story.bookedSub}</span>
+      </div>
 
-            <div className={styles.slots} data-s="slots">
-              <span className={styles.slotsLbl}>{story.slots}</span>
-              <span className={styles.pills}>
-                <span className={styles.pill} data-pill="0" data-on="false">{slotShort} · 10:00</span>
-                <span className={styles.pill} data-pill="1" data-on="true">{slotShort} · 11:00</span>
-              </span>
-            </div>
-
-            <p className={styles.in} data-s="b2">{chat.l2}</p>
-
-            <div className={styles.booked} data-s="booked">
-              <svg className={styles.check} viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" />
-                <path data-s="check" d="M7.5 12.4l3 3 6-6.4" />
-              </svg>
-              <span className={styles.bookedText}>
-                <b>{story.booked}</b>
-                <span>{slotShort} · 11:00</span>
-                <span className={styles.bookedSub}>{story.bookedSub}</span>
-              </span>
-            </div>
-
-            <div className={styles.hand} data-s="hand">
-              <span className={styles.handT}>{story.handover}</span>
-              {story.rows.map(([k, v]) => (
-                <span key={k} className={styles.row} data-row><span>{k}</span><b>{v}</b></span>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* 6 · the handover card (it flies out to the chip) */}
+      <div className={styles.scene} data-s="hand">
+        <HandCard story={story} data-s="handcard" />
       </div>
     </div>
   );
 }
 
-// The handover card leaves the phone: a copy of it, in page coordinates, travels
-// from the card's place on the screen to the "Viewing booked" chip and lands in it.
-function flyOut(gsap: typeof import("gsap").gsap, from: HTMLElement, fly?: HTMLElement | null, chip?: HTMLElement | null, hero?: HTMLElement | null) {
-  if (!fly || !chip || !hero) return;
-  const card = hero.querySelector("section")!.getBoundingClientRect();
-  const a = from.getBoundingClientRect(), c = chip.getBoundingClientRect();
-  const w = fly.offsetWidth || 180, hgt = fly.offsetHeight || 96;
-  const sx = a.left + a.width / 2 - card.left - w / 2, sy = a.top + a.height / 2 - card.top - hgt / 2;
-  const ex = c.left + c.width / 2 - card.left - w / 2, ey = c.top + c.height / 2 - card.top - hgt / 2;
+// The handover card leaves the phone. The flying layer holds the same card; it
+// takes the screen card's exact place and size on the frame the screen card is
+// hidden, so one card lifts off and travels to the "Viewing booked" chip.
+function flyOut(gsap: typeof import("gsap").gsap, scene: HTMLElement, fly?: HTMLElement | null, chip?: HTMLElement | null, hero?: HTMLElement | null) {
+  const card = scene.querySelector<HTMLElement>("[data-s=handcard]");
+  if (!fly || !chip || !hero || !card) return;
+  const box = hero.querySelector("section")!.getBoundingClientRect();
+  const a = card.getBoundingClientRect(), c = chip.getBoundingClientRect();
+  const w = card.offsetWidth;
+  fly.style.width = `${w}px`;
+  const hgt = fly.offsetHeight || card.offsetHeight;
+  const s0 = a.width / w, s1 = Math.min(1, (c.width / w) * 1.05);
+  const sx = a.left + a.width / 2 - box.left - w / 2, sy = a.top + a.height / 2 - box.top - hgt / 2;
+  const ex = c.left + c.width / 2 - box.left - w / 2, ey = c.top + c.height / 2 - box.top - hgt / 2;
+  gsap.set(fly, { x: sx, y: sy, scale: s0, rotate: 0, autoAlpha: 1 });
+  gsap.set(scene, { autoAlpha: 0 });
   gsap.timeline()
-    .fromTo(fly, { x: sx, y: sy, scale: Math.max(0.5, a.width / w), autoAlpha: 0, rotate: -3 }, { autoAlpha: 1, duration: 0.25, ease: "power1.out" })
-    .to(fly, { x: ex, y: ey, scale: Math.min(1, c.width / w), rotate: 0, duration: 1.05, ease: "power3.inOut" }, 0)
-    .to(fly, { autoAlpha: 0, scale: Math.min(1, c.width / w) * 0.9, duration: 0.35, ease: "power2.in" }, 0.85)
-    .fromTo(chip, { scale: 1 }, { scale: 1.05, duration: 0.22, ease: "power2.out", yoyo: true, repeat: 1 }, 0.95)
-    .fromTo(chip, { boxShadow: "0 0 0 rgba(205, 209, 217, 0)" }, { boxShadow: "0 0 34px rgba(205, 209, 217, 0.45)", duration: 0.3, yoyo: true, repeat: 1 }, 0.95);
+    .to(fly, { y: sy - 14 * s0, scale: s0 * 1.04, rotate: -2, duration: 0.3, ease: "power2.out" })
+    .to(fly, { x: ex, y: ey, scale: s1, rotate: 0, duration: 0.95, ease: "power3.inOut" }, 0.22)
+    .to(fly, { autoAlpha: 0, scale: s1 * 0.88, duration: 0.3, ease: "power2.in" }, 0.95)
+    .fromTo(chip, { scale: 1 }, { scale: 1.06, duration: 0.22, ease: "power2.out", yoyo: true, repeat: 1 }, 1.05)
+    .fromTo(chip, { boxShadow: "0 0 0 rgba(205, 209, 217, 0)" }, { boxShadow: "0 0 34px rgba(205, 209, 217, 0.45)", duration: 0.3, yoyo: true, repeat: 1 }, 1.05);
 }

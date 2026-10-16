@@ -14,6 +14,11 @@ const archivo = Archivo({
   axes: ["wdth"],
   variable: "--font-archivo",
   display: "swap",
+  // Not preloaded: Chrome holds the first frame for a preloaded font, and this
+  // one (90 KB, the width axis) can land late on a phone, which held the first
+  // paint to ~2.7 s on some loads. Text paints at once in the size-matched
+  // fallback and swaps in.
+  preload: false,
 });
 
 const geistMono = Geist_Mono({

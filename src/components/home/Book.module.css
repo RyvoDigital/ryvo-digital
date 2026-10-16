@@ -20,7 +20,8 @@
 /* Desktop: the copy ~40%, the panel ~60%. minmax(0, …) so nothing inside can
    widen a column past its share. */
 @media (min-width: 1024px) {
-  .inner { grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); align-items: center; gap: clamp(40px, 5vw, 80px); }
+  /* start, not centre: the panel's height changes as the times load, and the title must not move with it */
+  .inner { grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); align-items: start; gap: clamp(40px, 5vw, 80px); }
 }
 
 .copy { display: flex; flex-direction: column; gap: 18px; min-width: 0; }

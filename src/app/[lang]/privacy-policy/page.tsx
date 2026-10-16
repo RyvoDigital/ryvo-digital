@@ -12,7 +12,7 @@ export default async function PrivacyPolicyPage({ params }: { params: Promise<{ 
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   return (
-    <LegalPage lang={lang} title="Privacy Policy" lastUpdated="22 September 2026">
+    <LegalPage lang={lang} path="/privacy-policy" title="Privacy Policy" lastUpdated="22 September 2026">
       <LegalSection title="1. Who we are">
         <p>
           Ryvo Digital is a brand of {COMPANY.name}, NIPC {COMPANY.nipc}, with registered

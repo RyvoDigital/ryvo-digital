@@ -13,7 +13,7 @@ export default function SiteNav({ lang, t, bookHref, path = "", inlineLinks = tr
   const links = navLinks(lang, t);
   return (
     <nav aria-label={t.nav.main} className="relative z-10 flex items-center justify-between">
-      <Link href={`/${lang}`} className={`text-[17px] font-bold tracking-[0.06em] lg:text-[20px] ${logoClassName}`} style={{ fontStretch: "125%" }}>
+      <Link href={`/${lang}`} className={`inline-flex min-h-[44px] items-center text-[17px] font-bold tracking-[0.06em] lg:text-[20px] ${logoClassName}`} style={{ fontStretch: "125%" }}>
         {fold ? <>R<span className="fold"><span>YVO</span></span></> : "RYVO"}
       </Link>
       {inlineLinks && (

@@ -75,8 +75,8 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
         {/* Phones: the subline and the two actions sit under the card. */}
         <div className="flex flex-col gap-4 lg:hidden">
           <p className="m-0 text-[15px] leading-[1.55] text-body" data-reveal style={{ ["--i" as string]: 0 }}>{h.body}</p>
-          <span className="flex items-center gap-5" data-reveal style={{ ["--i" as string]: 1 }}>
-            <BookButton href="#book" label={h.primary} className="!pl-5 text-[14px]" />
+          <span className="flex flex-wrap items-center gap-x-5 gap-y-1" data-reveal style={{ ["--i" as string]: 1 }}>
+            <BookButton href="#book" label={h.primary} className="shrink-0 whitespace-nowrap !pl-5 text-[14px]" />
             <a href="#demo" className={styles.textLink}>{h.secondary}</a>
           </span>
         </div>

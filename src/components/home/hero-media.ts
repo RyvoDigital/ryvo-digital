@@ -16,14 +16,14 @@ export type Art = {
 export const ART: Record<"desk" | "mob", Art> = {
   desk: {
     bg: "/media/hero/hero7-bg", hand: "/media/hero/hero7-hand", widths: [1440, 2160, 2880], w: 5056, h: 3392,
-    sizes: "1440px",
-    handBox: [38.845, 22.229, 32.12, 77.771], handWidths: [480, 960, 1440], handSizes: "460px", handW: 1624, handH: 2638,
+    sizes: "1840px", // the art box is zoomed 1.28× past cover (Hero.module.css --z)
+    handBox: [38.845, 22.229, 32.12, 77.771], handWidths: [480, 960, 1440], handSizes: "590px", handW: 1624, handH: 2638,
     corners: { TL: [42.82, 23.496], TR: [57.18, 23.496], BR: [57.18, 71.728], BL: [42.82, 71.728] }, aspect: 2.2534, radius: 0.1555,
   },
   mob: {
     bg: "/media/hero/hero7-bg-m", hand: "/media/hero/hero7-hand-m", widths: [600, 900, 1200], w: 3392, h: 5056,
-    sizes: "(min-width: 768px) 740px, 540px",
-    handBox: [29.068, 28.758, 56.958, 71.242], handWidths: [320, 640, 960], handSizes: "(min-width: 768px) 420px, 300px", handW: 1932, handH: 3602,
+    sizes: "(min-width: 768px) 950px, 690px",
+    handBox: [29.068, 28.758, 56.958, 71.242], handWidths: [320, 640, 960], handSizes: "(min-width: 768px) 540px, 390px", handW: 1932, handH: 3602,
     corners: { TL: [36.409, 29.806], TR: [63.532, 29.806], BR: [63.532, 70.431], BL: [36.409, 70.431] }, aspect: 2.2326, radius: 0.1517,
   },
 };

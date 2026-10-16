@@ -853,6 +853,22 @@ Sources are in `~/ryvo-automation-platform` unless marked.
 7. **Keyboard order:** RYVO, then the nav links, then the languages and Book (where the notch shows, the logo sits outside the card, before the notch).
 8. **Booking live:** Manuel set up Google (OAuth client, refresh token, calendar id in .env.local); BOOKING_MOCK removed from .env.local. Vercel still needs the same four variables, added by Manuel by hand.
 
+**17 Oct 2026 (Manuel), homepage review round 8, and the inner pages (stop point 4):**
+
+1. **Bottom dark:** a deep gradient under the hand, full black on the card's edge and falling off softly to ~42% of the card's height (25% on phones, where RYVO is small), so RYVO rises out of darkness.
+2. **RYVO as liquid glass:** a solid body: the photo itself seen through the letters, blurred (~30 px) and lifted, under a milky tint; a specular highlight lit from above on the top edges (two SVG lights: broad and sharp); a darker inner bottom edge; a fine luminous rim. Chromium also refracts: an SVG displacement driven by the letters' own bevel, applied after first paint, with a slight red/green-blue split at the rims. Safari and Firefox keep the blur, tint and highlights.
+3. **Phone 28% larger:** the art box is zoomed 1.28× past cover around the phone (`--z`), upright and centred; the headline and right column still keep 48 px from the screen (measured at 1024–1920; on phones the phone sits 48 px+ below the headline).
+4. **Phone story, keynote style:** one large element per scene, centred: a big notification → one big language chip whose codes roll and lock on the buyer's (only PT EN ES FR DE) → one large reply writing itself → a big 11:00 picked from two → a big "Viewing booked ✓" → the handover card. ~17 s loop.
+5. **One card flies:** the flying layer is the same component as the screen's card, placed at its exact rect and scale on the frame the screen card is hidden. Frame-by-frame check at 1440 and 390.
+6. **Right column:** ends on the card's right margin, balanced with the headline on the left (never nearer the screen than 48 px), its first line's top on the headline's (measured).
+
+**Inner pages, in the homepage's system** (the hero card with the notch and folding top row, the floating pill, glass, type, entrances):
+- `/automations`: the five automations, one glass section each (plan §3.2 copy, true claims only), the "switched on only after its checks" line, the weekly report, the same pricing picker with setup, FAQ (Q11 still held for the contract), booking CTA.
+- `/websites`: the light silver page (the same tokens re-pointed, `.theme-light`), from €1,500 and care from €150 / month, Manuel Vale + Phil Hajjar only, a websites-call CTA (`/book?kind=websites`).
+- `/about`: the proof line first (3,600+ automated tests on every change), then the team by side (Manuel on both, Martim on automations only, Phil on websites only; titles as Manuel gave them, in English in every language), Lisbon and Madrid, the company line. No people photos: monograms.
+- `/book`: the full booking UI, both call types.
+- 404 in the visitor's language (any unknown `/xx/...` path, status 404) and a global English 404 for paths without a language; restyled privacy and terms (text unchanged, English on /pt and /es, marked as English).
+
 **17 Oct 2026 (Manuel), homepage review round 7:**
 
 1. **The phone screen tells the whole story** (PhoneStory, GSAP, a ~14 s seamless loop on the agency's phone; only while on screen; reduced motion or no script: the booked final frame, still). Storyboard:

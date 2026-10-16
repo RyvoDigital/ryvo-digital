@@ -12,7 +12,7 @@ export default async function TermsOfServicePage({ params }: { params: Promise<{
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   return (
-    <LegalPage lang={lang} title="Terms of Service" lastUpdated="22 September 2026">
+    <LegalPage lang={lang} path="/terms-of-service" title="Terms of Service" lastUpdated="22 September 2026">
       <LegalSection title="1. About us">
         <p>
           This website, ryvodigital.com, is operated by Ryvo Digital, a brand of {COMPANY.name},
