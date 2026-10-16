@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { preload } from "react-dom";
 import type { CSSProperties } from "react";
 import type { Dictionary } from "@/i18n";
@@ -33,12 +34,17 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
 
       {/* Wide desktops: the four links sit in the card's notch as icons that open
           into words (narrower ones keep them inline in the card's bar). */}
+      {/* Where the notch shows, the logo sits out here too, before the notch in the
+          page order, so the keyboard goes logo → links → languages → Book. */}
+      <Link href={`/${lang}`} className={styles.wrapLogo} style={{ fontStretch: "125%" }}>
+        R<span className="fold"><span>YVO</span></span>
+      </Link>
       <NotchNav links={navLinks(lang, t)} label={t.nav.main} />
 
       <div aria-hidden="true" className={styles.cardShadow} />
       <section className={styles.card} aria-labelledby="hero-title">
         <div className={styles.nav}>
-          <SiteNav lang={lang} t={t} bookHref="#book" linksClassName={styles.inlineLinks} fold />
+          <SiteNav lang={lang} t={t} bookHref="#book" linksClassName={styles.inlineLinks} fold logoClassName={styles.cardLogo} />
         </div>
 
         <div className={styles.headline}>

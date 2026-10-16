@@ -29,6 +29,7 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
   const [stage, setStage] = useState<Stage>({ s: "loading" });
   const [day, setDay] = useState<string | null>(null);
   const [week, setWeek] = useState(0);
+  const [weekDir, setWeekDir] = useState<"next" | "prev">("next");
   const [near, setNear] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
   const tz = useMemo(() => (typeof window === "undefined" ? "UTC" : Intl.DateTimeFormat().resolvedOptions().timeZone), []);
@@ -100,6 +101,7 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
     if (w.length === 1) return `${a.getDate()} ${mon(a)}`;
     return a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${mon(b)}` : `${a.getDate()} ${mon(a)} – ${b.getDate()} ${mon(b)}`;
   };
+  const goWeek = (i: number) => { setWeekDir(i >= pageIdx ? "next" : "prev"); setWeek(i); };
   const toggleDay = (k: string) => {
     if (openDay === k) { setDay(null); return; }
     setDay(k);
@@ -166,16 +168,16 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
                     <span className="font-mono text-[10.5px] text-steel">{t.timesIn} {tz.replace(/_/g, " ")}</span>
                   </span>
                   <span className={styles.weekNav}>
-                    <button type="button" className={styles.arrow} aria-label={t.prevWeek} disabled={pageIdx === 0} onClick={() => setWeek(pageIdx - 1)}>
+                    <button type="button" className={styles.arrow} aria-label={t.prevWeek} disabled={pageIdx === 0} onClick={() => goWeek(pageIdx - 1)}>
                       <Chevron dir="left" />
                     </button>
                     <span className={styles.weekLabel} aria-live="polite">{pages[pageIdx] && fmtRange(pages[pageIdx])}</span>
-                    <button type="button" className={styles.arrow} aria-label={t.nextWeek} disabled={pageIdx >= pages.length - 1} onClick={() => setWeek(pageIdx + 1)}>
+                    <button type="button" className={styles.arrow} aria-label={t.nextWeek} disabled={pageIdx >= pages.length - 1} onClick={() => goWeek(pageIdx + 1)}>
                       <Chevron dir="right" />
                     </button>
                   </span>
                 </div>
-                <WeekRow pages={pages} index={pageIdx} cols={cols} onIndex={setWeek} label={t.pickTime}>
+                <WeekRow pages={pages} index={pageIdx} dir={weekDir} cols={cols} onIndex={goWeek} label={t.pickTime}>
                   {(k) => {
                     const f = fmtDay(k);
                     return (
@@ -252,32 +254,29 @@ function toPages(days: string[]) {
   return out;
 }
 
-// The week row: one page per week, side by side in a snapping scroller, so it
-// swipes on touch; the arrows (and the label) follow either way.
-function WeekRow({ pages, index, cols, onIndex, label, children }: {
-  pages: string[][]; index: number; cols: number; onIndex: (i: number) => void; label: string; children: (k: string) => React.ReactNode;
+// The week row: only the current week is on screen, so no chip is ever cut off.
+// Changing week slides the new chips in from the side they come from; on touch,
+// a horizontal swipe changes the week too.
+function WeekRow({ pages, index, dir, cols, onIndex, label, children }: {
+  pages: string[][]; index: number; dir: "next" | "prev"; cols: number; onIndex: (i: number) => void; label: string; children: (k: string) => React.ReactNode;
 }) {
-  const row = useRef<HTMLDivElement>(null);
-  const fromScroll = useRef(false);
-  useEffect(() => {
-    const el = row.current;
-    if (!el) return;
-    if (fromScroll.current) { fromScroll.current = false; return; }
-    el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
-  }, [index]);
-  const onScroll = () => {
-    const el = row.current;
-    if (!el) return;
-    const i = Math.round(el.scrollLeft / el.clientWidth);
-    if (i !== index && i >= 0 && i < pages.length) { fromScroll.current = true; onIndex(i); }
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const onDown = (e: React.PointerEvent) => { if (e.pointerType !== "mouse") start.current = { x: e.clientX, y: e.clientY }; };
+  const onUp = (e: React.PointerEvent) => {
+    const s0 = start.current;
+    start.current = null;
+    if (!s0) return;
+    const dx = e.clientX - s0.x, dy = e.clientY - s0.y;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (dx < 0 && index < pages.length - 1) onIndex(index + 1);
+    if (dx > 0 && index > 0) onIndex(index - 1);
   };
+  const page = pages[index] ?? [];
   return (
-    <div ref={row} className={styles.weekRow} role="group" aria-label={label} onScroll={onScroll}>
-      {pages.map((p, i) => (
-        <div key={p[0]} className={styles.weekPage} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }} inert={i !== index}>
-          {p.map(children)}
-        </div>
-      ))}
+    <div className={styles.weekRow} role="group" aria-label={label} onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => (start.current = null)}>
+      <div key={page[0]} className={styles.weekPage} data-dir={dir} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+        {page.map(children)}
+      </div>
     </div>
   );
 }

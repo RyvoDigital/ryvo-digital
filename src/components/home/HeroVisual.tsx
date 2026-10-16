@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { fill, formatViewing, nextThursday, useViewingKey, weekdayOnly } from "@/lib/viewing-date";
@@ -38,6 +38,53 @@ function ArtPicture({ which, className, priority }: { which: "bg" | "hand"; clas
   );
 }
 
+// RYVO in liquid glass, sitting on the card's bottom edge. One SVG: each
+// letter is a clip of a blurred, brightened copy of the photo (aligned to it),
+// a soft white tint, a highlight from above, an inner shadow toward the bottom
+// right and a luminous edge, brighter at the top left. Every letter is one
+// consistent glass shape. If the texture is missing, the tint and the edge still
+// draw the letters. The silhouette layer above keeps the hand in front.
+function GlassWordmark() {
+  const id = useId().replace(/:/g, "");
+  const t = `${id}-t`;
+  return (
+    <svg aria-hidden="true" className={styles.glassWord} data-wordmark>
+      <defs>
+        <text id={t} x="50%" y="100%" dy="0.06em" textAnchor="middle" className={styles.glassText}>RYVO</text>
+        <clipPath id={`${id}-clip`}><use href={`#${t}`} /></clipPath>
+        <linearGradient id={`${id}-edge`} x1="0" y1="0" x2="0.32" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="1" />
+          <stop offset="0.4" stopColor="#fff" stopOpacity="0.42" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0.1" />
+        </linearGradient>
+        <linearGradient id={`${id}-sheen`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.4" />
+          <stop offset="0.42" stopColor="#fff" stopOpacity="0.06" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <filter id={`${id}-soft`} x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="4" /></filter>
+        <filter id={`${id}-inner`} x="-5%" y="-5%" width="110%" height="110%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="9" result="b" />
+          <feOffset in="b" dx="-7" dy="-9" result="o" />
+          <feComposite in="SourceAlpha" in2="o" operator="out" result="band" />
+          <feFlood floodColor="#000" floodOpacity="0.3" />
+          <feComposite in2="band" operator="in" />
+        </filter>
+      </defs>
+      <g clipPath={`url(#${id}-clip)`}>
+        <image href="/media/hero/hero6-glass-1400.webp" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" className={styles.glassDesk} />
+        <image href="/media/hero/hero6-glass-m-700.webp" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" className={styles.glassMob} />
+        <rect width="100%" height="100%" fill="#fff" opacity="0.15" />
+        <use href={`#${t}`} fill={`url(#${id}-sheen)`} />
+        {/* The glass's thickness: a soft light band just inside every edge. */}
+        <use href={`#${t}`} fill="none" stroke="#fff" strokeOpacity="0.3" strokeWidth="12" filter={`url(#${id}-soft)`} />
+      </g>
+      <use href={`#${t}`} fill="#000" filter={`url(#${id}-inner)`} />
+      <use href={`#${t}`} fill="none" stroke={`url(#${id}-edge)`} strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["hero"] }) {
   const key = useViewingKey();
   const date = useMemo(() => (key ? formatViewing(lang, nextThursday()) : weekdayOnly(lang)), [key, lang]);
@@ -49,7 +96,7 @@ export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["h
         <ArtPicture which="bg" className={styles.artImg} priority />
       </div>
 
-      <div aria-hidden="true" className={styles.glassWord} data-text="RYVO" data-wordmark>RYVO</div>
+      <GlassWordmark />
 
       <div className={`${styles.art} ${styles.artHand}`} data-hero-art>
         <ArtPicture which="hand" className={styles.handImg} />
@@ -69,6 +116,7 @@ export default function HeroVisual({ lang, t }: { lang: Locale; t: Dictionary["h
         </div>
       </div>
 
+      <div aria-hidden="true" className={styles.scrim} />
       <div aria-hidden="true" className={styles.shade} data-hero-shade />
 
       <div className={styles.chip} data-chip>

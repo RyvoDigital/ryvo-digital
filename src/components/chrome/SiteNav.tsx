@@ -9,11 +9,11 @@ import { navLinks } from "./nav-links";
 // Top bar. On the homepage the four links live in the hero card's notch
 // where it fits, and inline below that (linksClassName says where they show);
 // elsewhere they sit inline.
-export default function SiteNav({ lang, t, bookHref, path = "", inlineLinks = true, linksClassName = "lg:flex", fold = false }: { lang: Locale; t: Dictionary; bookHref: string; path?: string; inlineLinks?: boolean; linksClassName?: string; fold?: boolean }) {
+export default function SiteNav({ lang, t, bookHref, path = "", inlineLinks = true, linksClassName = "lg:flex", fold = false, logoClassName = "" }: { lang: Locale; t: Dictionary; bookHref: string; path?: string; inlineLinks?: boolean; linksClassName?: string; fold?: boolean; logoClassName?: string }) {
   const links = navLinks(lang, t);
   return (
     <nav aria-label={t.nav.main} className="relative z-10 flex items-center justify-between">
-      <Link href={`/${lang}`} className="text-[17px] font-bold tracking-[0.06em] lg:text-[20px]" style={{ fontStretch: "125%" }}>
+      <Link href={`/${lang}`} className={`text-[17px] font-bold tracking-[0.06em] lg:text-[20px] ${logoClassName}`} style={{ fontStretch: "125%" }}>
         {fold ? <>R<span className="fold"><span>YVO</span></span></> : "RYVO"}
       </Link>
       {inlineLinks && (

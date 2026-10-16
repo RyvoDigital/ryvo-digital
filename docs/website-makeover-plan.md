@@ -842,6 +842,17 @@ Sources are in `~/ryvo-automation-platform` unless marked.
 8. **Booking:** frosted glass over a mercury glow; one week from the first bookable day, only bookable days shown; a day opens its times inline; the panel follows its content's height.
 9. **Spanish How-we-work heading:** "Hecho por ti. / Lo vigilamos nosotros." (Manuel's wording; informal *tú*, where the rest of the Spanish site uses *usted*).
 
+**17 Oct 2026 (Manuel), homepage review round 6:**
+
+1. **Hero photo again** (Nano Banana Pro): the phone perfectly upright (0°) and centred, a near-black hand with only a thin rim light, for desktop and phones; the chat re-mapped (the screen fits at 0°). The headline sits left of the phone with a soft darkening behind it so it reads on the glow; the chip is to the right. The hero files are versioned (hero6-…): the media folder is cached for a year as immutable, so reusing a file name would show returning visitors the old image.
+2. **RYVO in liquid glass:** one SVG; each letter clips a blurred, brightened copy of the photo (aligned to it), with a 15% white tint, a highlight from above, an inner shadow toward the bottom right, a soft rim of light inside the edge, and a luminous edge brighter at the top left. Without the texture, the tint and edges still draw the letters.
+3. **RYVO on the card's bottom edge**, slightly cut, full width; in the intro it rises from below the edge after the subline and buttons, before the chip.
+4. **Booking:** only the current week is rendered, so no chip is ever cut; changing week slides the chips in; touch swipes change the week.
+5. **No Next.js "N" badge:** devIndicators off (it never shipped in production builds).
+6. **Spanish How-we-work heading:** "Lo hacemos por usted. / Lo vigilamos nosotros."
+7. **Keyboard order:** RYVO, then the nav links, then the languages and Book (where the notch shows, the logo sits outside the card, before the notch).
+8. **Booking live:** Manuel set up Google (OAuth client, refresh token, calendar id in .env.local); BOOKING_MOCK removed from .env.local. Vercel still needs the same four variables, added by Manuel by hand.
+
 **Launch checklist (before the Vercel preview works):**
 
 - [ ] Booking on hello@'s calendar (own UI, replaces the Google embed): follow `docs/booking-google-setup.md`. Then in Vercel → Project → Settings → Environment Variables (Preview and Production), add by hand: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`, `BOOKING_CALENDAR_ID` = hello@ryvodigital.com. Never set `BOOKING_MOCK` in Vercel. Until these are set, the site shows buttons to the Google booking pages (the short links are in `src/lib/booking/config.ts`, so the `NEXT_PUBLIC_BOOKING_*` variables are no longer needed).

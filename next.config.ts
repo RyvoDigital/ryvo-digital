@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Never show the Next.js "N" badge, not even in development.
+  devIndicators: false,
   // First-time visitors from LinkedIn and email: styles arrive with the HTML, no render-blocking request.
   experimental: { inlineCss: true },
   async redirects() {
