@@ -132,16 +132,16 @@ reduced motion. Files: `src/app/lab/` (own root layout) and `src/components/lab/
 |---|---|---|---|
 | 01 | Liquid-glass card | pointer specular (quickTo), refracting rim | all |
 | 02 | Glass tab switch | thumb glides (expo, CSS) | /book, /websites |
-| 03 | Glass toggle | chrome knob slides | pricing |
+| 03 | Glass switch (shared `GlassSwitch` + `SwitchRow`) | a glass lens glides over a recessed track (expo 0.45 s) and stretches in travel; mercury glow when on; drag or click; off, the whole row dims to 45% and desaturates | pricing, any on/off |
 | 04 | Animated icon set (5) | draw on scroll-in, gesture on hover | /automations, /book |
 | 05 | Bento grid (5 automations + weekly report) | staggered settle, object lift on hover | /automations |
 | 06 | Object frame | float, pointer tilt (quickTo), crossfade | all |
 | 07 | Sticky scroll story (3 beats, labelled simulated) | pinned visual, beats light, blur-in panels | /automations, /websites |
-| 08 | Feature timeline (the 8 onboarding steps) | rail fill scrubbed, steps light | /automations, /websites, /book |
+| 08 | Feature timeline (the 8 onboarding steps) | mercury rail with a light scrubbed down it; glass chips draw their icon as it arrives; the active step lifts into a glass card (pinned beside the rail on desktop, in place on phones), counter 03 / 08; passed steps quieter, upcoming dim | /automations, /websites, /book |
 | 09 | Pricing module (the real formula, `lib/pricing.ts`) | receipt rows, DigitRoll total | /automations |
 | 10 | Stat / proof block (3,600+ · 5 · 2) | count-up once | /about |
 | 11 | Principles rows ("Instead of…") | staggered settle | /about, /automations |
-| 12 | Two cities (Lisbon–Madrid arc, 503 km) | arc scrubbed, light travels | /about |
+| 12 | Two cities, on a globe (three.js) | turns in from the east and settles on Iberia; a lifted arc draws Lisbon → Madrid (503 km) and a light travels it; calm mouse drag | /about |
 | 13 | Glass FAQ accordion | grid-rows open, plus turns | /automations, /websites, /book |
 | 14 | CTA band | lines settle | all |
 | 15 | Glass section dock | section index, progress ring, prev/next, Book | long pages |
@@ -152,6 +152,30 @@ the locked homepage; reduced motion gives final figures, every step lit and icon
 were found and fixed: the object stills have black, non-alpha grounds that showed as squares on glass
 (now feathered; the real fix is an alpha cut-out, below), and the bento left an empty slot (now the
 weekly-report tile).
+
+### Fix round, 17 Oct 2026 (Manuel's three notes)
+Before/after shots: `fixes/before-03-switch.png`, `before-09-pricing.png`, `before-08-timeline.png`,
+`before-12-cities.png` → `fixes/after-03-switch.png`, `after-09-pricing.png`, `after-08-timeline.png`
+(+ `-390`), `after-12-globe.png` (+ `-390`).
+
+- **03 Glass switch** (`GlassSwitch`, `SwitchRow` in `Glass.tsx`; the pricing module uses the same one).
+  The knob is a clear glass lens: frost, a chrome rim light, a crescent highlight, a bottom caustic, an
+  inset shade and a soft shadow. In Chromium it also bends what is under it, using a **baked lens map**
+  drawn on the client (the jahed technique; his code, id 12460, stays locked until the 21st.dev quota
+  resets). The track is recessed and fills with a mercury glow when on. Off, the row drops to 45% opacity
+  and desaturates; in the receipt, the price fades and strikes through while the total rolls.
+  It has `role="switch"`, `aria-checked`, Space and Enter, a 2 px focus ring and a 44 px target, and
+  touch keeps vertical scroll (`touch-action: pan-y`). Reduced motion: instant, no stretch.
+- **08 Timeline:** see the table row above. The eight icons are drawn with `pathLength=1`, so the
+  draw-on is pure CSS once the light reaches them. Reduced motion: every step lit, nothing pinned.
+- **12 Globe** (`Globe.tsx`, `globe-scene.ts`, `globe-shared.ts`, `globe-dots.ts`): three.js 0.186,
+  no new library. Land is ~38k dots baked from Natural Earth 1:50m land (public domain): even 0.3°
+  spacing across the visible side, sparse on the far side, Int16 base64, 205 KB. Data and three.js load
+  only within 600 px of view. Rendering pauses off-screen and in hidden tabs, DPR is capped at 2, and
+  without WebGL a 2D dot poster of the settled frame is drawn. The arc is lifted and bowed slightly
+  north: a pure great circle this short reads as a straight line from above. Mouse drag only (±12°,
+  eases home), so touch never traps the page. Reduced motion: the settled frame, arc drawn. Measured
+  scrolling past it at 1440: p95 frame 17.6 ms, worst 17.7 ms.
 
 ---
 
@@ -197,8 +221,8 @@ CONSULTORIA, LDA.) · CTA.
 
 | | Direction | What makes it different |
 |---|---|---|
-| **B1** | **Proof & principles** | Opens on a giant chrome **3,600+** counting up. Then "Instead of… we…" principle rows (five true trade-offs), the team as glass monogram cards split by side, and the Lisbon–Madrid arc. No photography at all: pure type and chrome. |
-| **B2** | **Two cities** | Architecture-led. Two full-bleed monochrome silver-toned frames, Lisbon then Madrid (new Kie set: facade + detail per city), each with mono coordinates. The proof line and team sit in glass over them. Editorial and quiet, the most "place". (No claim about who sits in which city.) |
+| **B1** | **Proof & principles** | Opens on a giant chrome **3,600+** counting up. Then "Instead of… we…" principle rows (five true trade-offs), the team as glass monogram cards split by side, and the two-cities globe (Lisbon → Madrid arc). No photography at all: pure type and chrome. |
+| **B2** | **Two cities** | Architecture-led. Two full-bleed monochrome silver-toned frames, Lisbon then Madrid (new Kie set: facade + detail per city), each with mono coordinates. The proof line and team sit in glass over them; the two-cities globe opens the section as the map. Editorial and quiet, the most "place". (No claim about who sits in which city.) |
 | **B3** | **The workshop** | "Built in-house" as the spine: a vertical rail of how we work (we design → build → check every change against 3,600+ tests → run and watch), each step marked by a chrome tool object. The team closes it. Engineering-honest, close to the Trust tone. |
 
 ### /book

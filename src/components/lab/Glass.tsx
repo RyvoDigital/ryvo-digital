@@ -8,9 +8,23 @@ import s from "./palette.module.css";
 // bends calmly (scale 9), never wobbles. Turned on only where backdrop-filter
 // accepts an SVG url (Chromium), by setting html[data-refract].
 export function RefractFilter() {
+  const lens = useRef<SVGFEImageElement>(null);
   useEffect(() => {
     try {
       if (CSS.supports("backdrop-filter", "url(#lab-refract) blur(1px)")) document.documentElement.dataset.refract = "";
+      // A baked lens map for the switch knob (the jahed technique, drawn here):
+      // red/green hold the outward bend, strongest near the rim, neutral inside.
+      const N = 64, cv = document.createElement("canvas");
+      cv.width = cv.height = N;
+      const ctx = cv.getContext("2d")!, img = ctx.createImageData(N, N);
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const nx = (x + 0.5) / (N / 2) - 1, ny = (y + 0.5) / (N / 2) - 1, r = Math.hypot(nx, ny);
+        const k = r >= 1 ? 0 : Math.pow(Math.min(1, Math.max(0, (r - 0.35) / 0.65)), 2);
+        const i = (y * N + x) * 4;
+        img.data[i] = 128 - 127 * nx * k; img.data[i + 1] = 128 - 127 * ny * k; img.data[i + 2] = 128; img.data[i + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+      lens.current?.setAttribute("href", cv.toDataURL());
     } catch {}
   }, []);
   return (
@@ -19,6 +33,10 @@ export function RefractFilter() {
         <feTurbulence type="fractalNoise" baseFrequency="0.011 0.014" numOctaves="2" seed="7" result="n" />
         <feGaussianBlur in="n" stdDeviation="3" result="nb" />
         <feDisplacementMap in="SourceGraphic" in2="nb" scale="9" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <filter id="lab-lens" x="0" y="0" width="1" height="1" filterUnits="objectBoundingBox" primitiveUnits="objectBoundingBox" colorInterpolationFilters="sRGB">
+        <feImage ref={lens} x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="map" />
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="0.24" xChannelSelector="R" yChannelSelector="G" />
       </filter>
     </svg>
   );
@@ -112,6 +130,81 @@ export function GlassSegmented() {
   );
 }
 
+const TRAVEL = 26; // knob travel: 58 track − 26 knob − 2 × 3 inset
+
+/**
+ * The glass switch, shared by every on/off in the palette. A glass lens glides
+ * over a recessed track (expo, 0.45 s) and stretches a little in travel; on,
+ * the track fills with a mercury glow. Click, Space or Enter toggles; it can
+ * also be dragged, and snaps to the nearer side on release.
+ */
+export function GlassSwitch({ checked, onChange, labelledBy }: { checked: boolean; onChange: (next: boolean) => void; labelledBy?: string }) {
+  const el = useRef<HTMLButtonElement>(null);
+  const [st, setSt] = useState<"a" | "b" | undefined>(undefined);
+  const drag = useRef<{ x0: number; base: number; moved: boolean } | null>(null);
+  const swallowClick = useRef(false);
+  const set = (next: boolean) => { if (next === checked) return; setSt((v) => (v === "a" ? "b" : "a")); onChange(next); };
+
+  const down = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return;
+    drag.current = { x0: e.clientX, base: checked ? TRAVEL : 0, moved: false };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const move = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const d = drag.current, node = el.current;
+    if (!d || !node) return;
+    const dx = e.clientX - d.x0;
+    if (!d.moved && Math.abs(dx) < 4) return;
+    d.moved = true;
+    node.dataset.drag = "true";
+    node.style.setProperty("--x", `${Math.min(TRAVEL, Math.max(0, d.base + dx))}px`);
+  };
+  const up = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const d = drag.current, node = el.current;
+    drag.current = null;
+    if (!d || !node || !d.moved) return;
+    swallowClick.current = true;
+    const x = d.base + (e.clientX - d.x0);
+    const next = x > TRAVEL / 2;
+    node.dataset.drag = "false";
+    node.style.setProperty("--x", `${next ? TRAVEL : 0}px`);
+    set(next);
+  };
+
+  return (
+    <button
+      ref={el}
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-labelledby={labelledBy}
+      className={s.gs}
+      data-st={st}
+      style={{ "--x": `${checked ? TRAVEL : 0}px` } as React.CSSProperties}
+      onClick={(e) => { e.stopPropagation(); if (swallowClick.current) { swallowClick.current = false; return; } set(!checked); }}
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={up}
+      onPointerCancel={up}
+    >
+      <span className={s.gsTrack} aria-hidden="true" />
+      <span className={s.gsKnob} aria-hidden="true">
+        <span className={s.gsLens}><span className={s.gsBend} /></span>
+      </span>
+    </button>
+  );
+}
+
+/** A glass row that holds a switch: the whole row toggles, and dims when off. */
+export function SwitchRow({ id, on, onChange, children }: { id: string; on: boolean; onChange: (next: boolean) => void; children: ReactNode }) {
+  return (
+    <Glass className={s.gRow} data-on={on} onClick={() => onChange(!on)}>
+      <span id={id} style={{ display: "flex", gap: 14, alignItems: "baseline" }}>{children}</span>
+      <GlassSwitch checked={on} onChange={onChange} labelledBy={id} />
+    </Glass>
+  );
+}
+
 export function GlassToggle() {
   const names = ["Inbound concierge", "Contact reactivation", "Buyer follow-up"];
   const [on, setOn] = useState([true, true, false]);
@@ -119,10 +212,9 @@ export function GlassToggle() {
     <div className={s.stage}>
       <div className={s.toggles}>
         {names.map((n, i) => (
-          <Glass key={n} as="button" className={s.toggleRow} role="switch" aria-checked={on[i]} onClick={() => setOn((v) => v.map((x, j) => (j === i ? !x : x)))}>
-            <span>{n}</span>
-            <span className={s.switch} aria-hidden="true" />
-          </Glass>
+          <SwitchRow key={n} id={`tg-${i}`} on={on[i]} onChange={(v) => setOn((cur) => cur.map((x, j) => (j === i ? v : x)))}>
+            {n}
+          </SwitchRow>
         ))}
       </div>
     </div>

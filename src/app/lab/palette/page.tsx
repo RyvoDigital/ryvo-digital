@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import s from "@/components/lab/palette.module.css";
 import { GlassCard, GlassSegmented, GlassToggle, GlassDock, RefractFilter } from "@/components/lab/Glass";
-import { StickyStory, Timeline, ProofStats, CitiesArc } from "@/components/lab/Scroll";
+import { StickyStory, Timeline, ProofStats } from "@/components/lab/Scroll";
+import { CitiesGlobe } from "@/components/lab/Globe";
 import { Bento, PricingModule, GlassFaq, CtaBand, ObjectFrame, Principles } from "@/components/lab/Blocks";
 import { AutomationIcons } from "@/components/lab/AnimatedIcons";
 
@@ -14,16 +15,16 @@ export default function PalettePage() {
   const pieces: { id: string; n: string; name: string; use: string; node: React.ReactNode }[] = [
     { id: "glass-card", n: "01", name: "Liquid-glass card", use: "Base surface for every card, plan, panel and modal. Six layers: frost body, refracting rim (Chromium), chrome rim light, pointer specular, bottom shade, drop shadow.", node: <GlassCard /> },
     { id: "segmented", n: "02", name: "Glass tab switch", use: "Automations | Websites switch on /book and /how-we-work; any two- or three-way choice.", node: <GlassSegmented /> },
-    { id: "toggle", n: "03", name: "Glass toggle", use: "The pricing picker's module switches; any on/off.", node: <GlassToggle /> },
+    { id: "toggle", n: "03", name: "Glass switch", use: "One shared switch: a glass lens over a recessed track, a mercury glow when on, a liquid glide; drag or click. Off, the whole row dims. Used by the pricing module.", node: <GlassToggle /> },
     { id: "icons", n: "04", name: "Animated icon set", use: "The five automations, drawn on scroll-in, a small gesture each on hover. Inline SVG + GSAP stroke drawing.", node: <AutomationIcons /> },
     { id: "bento", n: "05", name: "Bento grid", use: "The five automations at a glance on /automations; the services on /websites.", node: <Bento /> },
     { id: "object", n: "06", name: "Object frame", use: "A chrome object (Kie render) on a ring of light, floating, tilting toward the pointer.", node: <ObjectFrame /> },
     { id: "story", n: "07", name: "Sticky scroll story", use: "One automation, or one project, told in three beats while the visual stays pinned.", node: <StickyStory /> },
-    { id: "timeline", n: "08", name: "Feature timeline", use: "From the first call to go-live (/automations), how a project runs (/websites), what happens after you book (/book).", node: <Timeline /> },
+    { id: "timeline", n: "08", name: "Feature timeline", use: "A mercury rail with a light travelling down it; glass chips draw their icons as it arrives; the active step lifts into a glass card (pinned on desktop). For onboarding, a project, or after-you-book.", node: <Timeline /> },
     { id: "pricing", n: "09", name: "Pricing module", use: "Tick automations; a glass receipt itemises them and rolls the monthly and setup totals.", node: <PricingModule /> },
     { id: "proof", n: "10", name: "Stat / proof block", use: "True figures only, as giant type that counts up once.", node: <ProofStats /> },
     { id: "principles", n: "11", name: "Principles rows", use: "Trust without testimonials: “Instead of …, we …”, each a true trade-off.", node: <Principles /> },
-    { id: "cities", n: "12", name: "Two cities", use: "Lisbon and Madrid as coordinates and one arc, drawn on scroll. No faces needed.", node: <CitiesArc /> },
+    { id: "cities", n: "12", name: "Two cities, on a globe", use: "A three.js globe, land as silver dots, turns in and settles on Iberia; a lifted arc draws Lisbon to Madrid (503 km) and a light travels it. Loads near view, pauses off-screen; a calm mouse drag.", node: <CitiesGlobe /> },
     { id: "faq", n: "13", name: "Glass FAQ accordion", use: "Questions on /automations, /websites and /book.", node: <GlassFaq /> },
     { id: "cta", n: "14", name: "CTA band", use: "The closing ask on every page, in glass over a mercury glow.", node: <CtaBand /> },
     { id: "dock", n: "15", name: "Glass section dock", use: "A floating pill that follows a long page: section index, progress, one-tap Book. (Live at the bottom of this page.)", node: <p className={s.note}>The dock is floating at the bottom of the screen. It tracks the section in view.</p> },

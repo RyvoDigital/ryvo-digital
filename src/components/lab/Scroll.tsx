@@ -64,55 +64,96 @@ export function StickyStory() {
 }
 
 // ── 08 Feature timeline ──────────────────────────────────────────────────────
-// A silver rail fills with the scroll (scrubbed); each step lights as the fill
-// reaches it. Without script, or with reduced motion: full rail, every step lit.
-const STEPS = [
-  ["A short call", "We show you the system working, learn how your agency works, and tell you honestly whether it fits."],
-  ["Proposal within 24 hours", "One page: what we would set up, the monthly price and the go-live plan."],
-  ["Contract and data processing agreement", "No data of yours enters our systems before both are signed."],
-  ["One setup form", "Agency details, AMI licence, WhatsApp number, calendar and hours, areas, languages, tone."],
-  ["WhatsApp and Meta", "We take you through Meta’s business verification and get the message templates approved."],
-  ["Testing", "At least twenty test conversations against your setup, including the awkward ones."],
-  ["Careful go-live", "We switch on in stages and read every conversation in the first days."],
-  ["Every month", "A check-in on what the reports show and what to adjust."],
+// A mercury rail with a soft light travelling down it, scrubbed to the scroll.
+// Each step's glass chip draws its icon as the light reaches it; the active
+// step lifts into a glass card over a glow (pinned beside the rail on desktop,
+// in place on phones), with a mono counter. Passed steps stay lit but quieter;
+// upcoming ones dim. Reduced motion: every step shown lit, nothing pinned.
+const STEPS: { t: string; b: string; icon: React.ReactNode }[] = [
+  { t: "A short call", b: "We show you the system working, learn how your agency works, and tell you honestly whether it fits.",
+    icon: <><path className="draw" pathLength={1} d="M3 8.5A2.5 2.5 0 0 1 5.5 6h8A2.5 2.5 0 0 1 16 8.5v7a2.5 2.5 0 0 1-2.5 2.5h-8A2.5 2.5 0 0 1 3 15.5Z" /><path className="draw" pathLength={1} d="m16 10.5 5-3v9l-5-3" /></> },
+  { t: "Proposal within 24 hours", b: "One page: what we would set up, the monthly price and the go-live plan.",
+    icon: <><path className="draw" pathLength={1} d="M11 21H6.5A1.5 1.5 0 0 1 5 19.5v-15A1.5 1.5 0 0 1 6.5 3H14l4 4v3" /><path className="draw" pathLength={1} d="M17 13a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" /><path className="draw" pathLength={1} d="M17 15.2V17l1.3 1" /></> },
+  { t: "Contract and data processing agreement", b: "No data of yours enters our systems before both are signed.",
+    icon: <><path className="draw" pathLength={1} d="M6.5 3h8L19 7.5v12a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19.5v-15A1.5 1.5 0 0 1 6.5 3Z" /><path className="draw" pathLength={1} d="M8 8h5M8 11h7" /><path className="draw" pathLength={1} d="M8 17c1.2-2 2-2 2.6-.4.5 1.3 1.2 1.3 2-.2.6-1 1.3-1 2 .2" /></> },
+  { t: "One setup form", b: "Agency details, AMI licence, WhatsApp number, calendar and hours, areas, languages, tone.",
+    icon: <><path className="draw" pathLength={1} d="M6.5 4h11A1.5 1.5 0 0 1 19 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18.5v-13A1.5 1.5 0 0 1 6.5 4Z" /><path className="draw" pathLength={1} d="m8 9 1.3 1.3L11.5 8M13.5 9.5H16" /><path className="draw" pathLength={1} d="m8 15 1.3 1.3 2.2-2.3M13.5 15.5H16" /></> },
+  { t: "WhatsApp and Meta", b: "We take you through Meta\u2019s business verification and get the message templates approved.",
+    icon: <><path className="draw" pathLength={1} d="m12 3 2.2 1.6 2.7-.1.8 2.6 2.2 1.6-.9 2.5.9 2.5-2.2 1.6-.8 2.6-2.7-.1L12 21l-2.2-1.6-2.7.1-.8-2.6-2.2-1.6.9-2.5-.9-2.5 2.2-1.6.8-2.6 2.7.1Z" /><path className="draw" pathLength={1} d="m8.8 12.2 2.2 2.2 4.2-4.6" /></> },
+  { t: "Testing", b: "At least twenty test conversations against your setup, including the awkward ones.",
+    icon: <><path className="draw" pathLength={1} d="M9.5 3h5M10.5 3v5.5l-5.2 9.1A2.3 2.3 0 0 0 7.3 21h9.4a2.3 2.3 0 0 0 2-3.4l-5.2-9.1V3" /><path className="draw" pathLength={1} d="M7.4 14.5h9.2" /></> },
+  { t: "Careful go-live", b: "We switch on in stages and read every conversation in the first days.",
+    icon: <><path className="draw" pathLength={1} d="M4 19h4v-4h4v-4h4V7h4" /><path className="draw" pathLength={1} d="M17 4h3v3" /></> },
+  { t: "Every month", b: "A check-in on what the reports show and what to adjust.",
+    icon: <><path className="draw" pathLength={1} d="M5.5 5h13A1.5 1.5 0 0 1 20 6.5v12a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-12A1.5 1.5 0 0 1 5.5 5Z" /><path className="draw" pathLength={1} d="M4 9.5h16M8.5 3v4M15.5 3v4" /><path className="draw" pathLength={1} d="m9.5 15 1.8 1.8 3.4-3.6" /></> },
 ];
 
+const Icon = ({ i, className }: { i: number; className: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <g className="ghost">{STEPS[i].icon}</g>
+    {STEPS[i].icon}
+  </svg>
+);
+
 export function Timeline() {
-  const root = useRef<HTMLDivElement>(null);
-  const fill = useRef<HTMLSpanElement>(null);
+  const list = useRef<HTMLDivElement>(null);
+  // Before script (and with reduced motion) every step is lit: -1 means "all".
+  const [active, setActive] = useState(-1);
   useEffect(() => {
-    const node = root.current;
+    const node = list.current;
     if (!node || prefersReducedMotion()) return;
-    const nodes = Array.from(node.querySelectorAll<HTMLElement>("[data-node]"));
-    nodes.forEach((n) => (n.dataset.on = "false"));
-    fill.current?.style.setProperty("--p", "0");
-    return withMotion(({ ScrollTrigger }) => {
+    const items = Array.from(node.querySelectorAll<HTMLElement>("[data-step]"));
+    node.style.setProperty("--p", "0");
+    const frame = () => setActive(0);
+    const id = requestAnimationFrame(frame);
+    const stop = withMotion(({ ScrollTrigger }) => {
       const st = ScrollTrigger.create({
         trigger: node,
-        start: "top 62%",
-        end: "bottom 62%",
-        scrub: 0.6,
+        start: "top 55%",
+        end: "bottom 55%",
+        scrub: 0.5,
         onUpdate: (self) => {
-          fill.current?.style.setProperty("--p", String(self.progress));
-          const railTop = node.getBoundingClientRect().top;
-          const h = node.offsetHeight;
-          nodes.forEach((n) => { n.dataset.on = String((n.getBoundingClientRect().top - railTop) / h <= self.progress + 0.01); });
+          const p = self.progress;
+          node.style.setProperty("--p", String(p));
+          node.style.setProperty("--lo", String(Math.min(1, p * 12, (1 - p) * 12 + 0.25)));
+          // The light's position along the rail, against each chip's centre.
+          const r = node.getBoundingClientRect(), top = r.top + 28, h = r.height - 56;
+          let a = 0;
+          items.forEach((it, i) => { const ir = it.getBoundingClientRect(); if ((ir.top + ir.height / 2 - top) / h <= p + 0.004) a = i; });
+          setActive(a);
         },
       });
       return () => st.kill();
     });
+    return () => { cancelAnimationFrame(id); stop(); };
   }, []);
+  const shown = active < 0 ? 0 : active;
+  const state = (i: number) => (active < 0 ? "past" : i < active ? "past" : i === active ? "active" : "next");
   return (
-    <div ref={root} className={s.timeline}>
-      <span className={s.rail} aria-hidden="true" />
-      <span ref={fill} className={s.railFill} aria-hidden="true" />
-      {STEPS.map(([t, b], i) => (
-        <div key={t} className={s.node} data-node data-on="true">
-          <span className={s.nodeNum}>STEP 0{i + 1}</span>
-          <h3 className={s.nodeTitle}>{t}</h3>
-          <p className={s.nodeText}>{b}</p>
-        </div>
-      ))}
+    <div className={s.tl}>
+      <div className={`${s.stage} ${s.tlStage}`} aria-hidden="true">
+        <Glass key={shown} className={`${s.tlCard} ${s.tlCardIn}`}>
+          <span className={s.tlCount}><b>{String(shown + 1).padStart(2, "0")}</b> / {String(STEPS.length).padStart(2, "0")}</span>
+          <Icon i={shown} className={`${s.tlBig} ${s.tlIcon}`} />
+          <h3 className={s.tlCardTitle}>{STEPS[shown].t}</h3>
+          <p className={s.tlCardText}>{STEPS[shown].b}</p>
+        </Glass>
+      </div>
+      <div ref={list} className={s.tlList}>
+        <span className={s.tlTrack} aria-hidden="true" />
+        <span className={s.tlFill} aria-hidden="true" />
+        <span className={s.tlLight} aria-hidden="true" />
+        <ol className={s.tlOl}>
+        {STEPS.map((st, i) => (
+          <li key={st.t} className={s.tlItem} data-step data-state={state(i)} aria-current={active === i ? "step" : undefined}>
+            <Glass className={s.tlChip}><Icon i={i} className={s.tlIcon} /></Glass>
+            <span className={s.tlNum}>{String(i + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}</span>
+            <h3 className={s.tlTitle}>{st.t}</h3>
+            <p className={s.tlText}>{st.b}</p>
+          </li>
+        ))}
+        </ol>
+      </div>
     </div>
   );
 }
@@ -158,51 +199,6 @@ export function ProofStats() {
           <p className={s.proofLabel}>{label}</p>
         </div>
       ))}
-    </div>
-  );
-}
-
-// ── 12 Two cities ───────────────────────────────────────────────────────────
-// Lisbon and Madrid as coordinates and one arc that draws with the scroll; a
-// small light travels it. 503 km is the straight-line distance between them.
-export function CitiesArc() {
-  const root = useRef<HTMLDivElement>(null);
-  const arc = useRef<SVGPathElement>(null);
-  useEffect(() => {
-    const node = root.current;
-    const p = arc.current;
-    if (!node || !p || prefersReducedMotion()) return;
-    const L = p.getTotalLength();
-    p.style.strokeDasharray = `${L}`;
-    p.style.strokeDashoffset = `${L}`;
-    return withMotion(({ gsap }) => {
-      const tw = gsap.to(p, { strokeDashoffset: 0, ease: "none", scrollTrigger: { trigger: node, start: "top 80%", end: "center 45%", scrub: 0.8 } });
-      return () => { tw.scrollTrigger?.kill(); tw.kill(); };
-    });
-  }, []);
-  const d = "M150 262 Q500 40 850 200";
-  return (
-    <div ref={root} className={`${s.stage} ${s.cities}`}>
-      <svg viewBox="0 0 1000 360" role="img" aria-label="Lisbon and Madrid, 503 km apart">
-        <defs>
-          <linearGradient id="arcG" x1="0" x2="1"><stop offset="0" stopColor="#8e939b" /><stop offset=".5" stopColor="#fafbfc" /><stop offset="1" stopColor="#a9aeb6" /></linearGradient>
-          <radialGradient id="dotG"><stop offset="0" stopColor="#fff" /><stop offset="1" stopColor="#fff" stopOpacity="0" /></radialGradient>
-        </defs>
-        <path d={d} fill="none" stroke="rgba(205,209,217,.12)" strokeWidth="1" strokeDasharray="2 6" />
-        <path ref={arc} d={d} fill="none" stroke="url(#arcG)" strokeWidth="1.5" strokeLinecap="round" />
-        <circle r="10" fill="url(#dotG)">
-          <animateMotion dur="5s" repeatCount="indefinite" path={d} keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines="0.45 0 0.55 1" />
-        </circle>
-        {[[150, 262, "LISBON", "38.72°N · 9.14°W", "start"], [850, 200, "MADRID", "40.42°N · 3.70°W", "end"]].map(([x, y, n, c, a]) => (
-          <g key={n as string}>
-            <circle cx={x as number} cy={y as number} r="5" fill="#f1f2f4" />
-            <circle cx={x as number} cy={y as number} r="16" fill="none" stroke="rgba(205,209,217,.35)" />
-            <text className={s.cityName} x={x as number} y={(y as number) + 56} fontSize="40" textAnchor={a as "start" | "end"}>{n === "LISBON" ? "Lisbon" : "Madrid"}</text>
-            <text className={s.cityLabel} x={x as number} y={(y as number) + 84} textAnchor={a as "start" | "end"}>{c}</text>
-          </g>
-        ))}
-        <text className={s.cityLabel} x="500" y="120" textAnchor="middle">503 KM</text>
-      </svg>
     </div>
   );
 }

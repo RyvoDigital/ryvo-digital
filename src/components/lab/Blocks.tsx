@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { withMotion, prefersReducedMotion } from "@/lib/gsap";
 import { monthly, setup, ADD_ON, BASE_MONTHLY } from "@/lib/pricing";
 import DigitRoll from "@/components/chrome/DigitRoll";
-import { Glass } from "./Glass";
+import { Glass, SwitchRow } from "./Glass";
 import s from "./palette.module.css";
 
 const AUTOMATIONS = [
@@ -103,7 +103,7 @@ export function ObjectFrame() {
 // Same model and formula as the locked homepage picker (lib/pricing.ts).
 export function PricingModule() {
   const [chosen, setChosen] = useState([0, 1]);
-  const toggle = (i: number) => setChosen((c) => (c.includes(i) ? c.filter((x) => x !== i) : [...c, i].sort()));
+  const setOn = (i: number, on: boolean) => setChosen((c) => (on ? [...new Set([...c, i])].sort() : c.filter((x) => x !== i)));
   const m = chosen.length ? monthly(chosen) : 0;
   const u = chosen.length ? setup(chosen) : 0;
   // The automation with the highest add-on carries the €350 base; the others add on.
@@ -114,27 +114,24 @@ export function PricingModule() {
       <div className={s.pricing}>
         <div className={s.chips}>
           {AUTOMATIONS.map((a, i) => (
-            <Glass key={a.n} as="button" className={s.toggleRow} role="switch" aria-checked={chosen.includes(i)} onClick={() => toggle(i)}>
-              <span style={{ display: "flex", gap: 14, alignItems: "baseline" }}>
-                <span className="mono-label">{a.n}</span>
-                {a.name}
-              </span>
-              <span className={s.switch} aria-hidden="true" />
-            </Glass>
+            <SwitchRow key={a.n} id={`pr-${i}`} on={chosen.includes(i)} onChange={(v) => setOn(i, v)}>
+              <span className="mono-label">{a.n}</span>
+              {a.name}
+            </SwitchRow>
           ))}
         </div>
-        <Glass className={s.receipt} aria-live="polite">
+        <Glass className={s.receipt}>
           <span className="mono-label" style={{ position: "relative", zIndex: 2 }}>LAUNCH PRICING · EXCL. VAT</span>
+          {/* Every automation stays listed; an unticked one fades and its price strikes through. */}
           <div className={s.receiptRows}>
-            {chosen.length === 0 && <div className={s.receiptRow}><span>Tick an automation</span><span>—</span></div>}
-            {[lead, ...chosen.filter((c) => c !== lead)].filter((c) => c >= 0).map((c) => (
-              <div key={c} className={s.receiptRow}>
-                <span>{AUTOMATIONS[c].n} {AUTOMATIONS[c].name}</span>
+            {AUTOMATIONS.map((a, c) => (
+              <div key={a.n} className={s.receiptRow} data-on={chosen.includes(c)}>
+                <span>{a.n} {a.name}</span>
                 <span className="tnum">{c === lead ? `€${BASE_MONTHLY}` : `+€${ADD_ON[c]}`}</span>
               </div>
             ))}
           </div>
-          <div className={s.total}>
+          <div className={s.total} aria-live="polite">
             <span className="mono-label">FROM</span>
             <span className={`${s.totalNum} chrome-text`}>€<DigitRoll value={eur(m)} /></span>
             <span className="mono-label">/ MONTH</span>
