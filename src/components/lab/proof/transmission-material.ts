@@ -90,14 +90,18 @@ export class TransmissionMaterial extends MeshPhysicalMaterial {
   // bright edge into speckles. Evenly spaced samples give a smooth spectrum.
   float jitter = 0.5;
   float smear = uThickness * max(pow(roughnessFactor, 0.33), uAniso);
+  // The colour split grows with the grazing angle: none on a face seen
+  // straight on, a faint spectrum where the bevels turn away.
+  float graze = 1.0 - clamp(abs(dot(normalize(n), v)), 0.0, 1.0);
+  float chroma = uChroma * graze * graze;
   for (int i = 0; i < MTM_SAMPLES; i++) {
     float k = (float(i) + jitter) / float(MTM_SAMPLES);
     vec3 rnd = normalize(vec3(mtmRand(seed++) - 0.5, mtmRand(seed++) - 0.5, mtmRand(seed++) - 0.5));
     vec3 sn = normalize(n + roughnessFactor * roughnessFactor * 2.0 * rnd * pow(mtmRand(seed++), 0.33));
     float th = material.thickness + smear * k;
     acc.r += mtmSample(sn, v, pos, material.ior, th).r;
-    acc.g += mtmSample(sn, v, pos, material.ior * (1.0 + uChroma * k), th).g;
-    acc.b += mtmSample(sn, v, pos, material.ior * (1.0 + 2.0 * uChroma * k), th).b;
+    acc.g += mtmSample(sn, v, pos, material.ior * (1.0 + chroma * k), th).g;
+    acc.b += mtmSample(sn, v, pos, material.ior * (1.0 + 2.0 * chroma * k), th).b;
   }
   acc /= float(MTM_SAMPLES);
 

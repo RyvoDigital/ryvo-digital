@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { startMotion, isReduced } from "./motion";
-import type { Sig, Stage, StageKind } from "./stage-scene";
+import type { CrystalForm, Sig, Stage, StageKind } from "./stage-scene";
 import { objectSrc } from "./objects";
 import s from "./proof.module.css";
 
@@ -14,6 +14,7 @@ export type SignatureApi = { renderNow: () => void };
 
 type Props = {
   sig: Sig; kind: StageKind; objects: number[]; poster: number; label: string;
+  form?: CrystalForm;
   // The hero's carousel: read every tick; told when the stage leaves or returns.
   getPos?: () => number;
   getHover?: () => number;
@@ -21,7 +22,7 @@ type Props = {
   onReady?: (api: SignatureApi) => void;
 };
 
-export default function Signature({ sig, kind, objects, poster, label, getPos, getHover, onVisible, onReady }: Props) {
+export default function Signature({ sig, kind, objects, poster, label, form, getPos, getHover, onVisible, onReady }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const hooks = useRef({ getPos, getHover, onVisible, onReady });
   useEffect(() => { hooks.current = { getPos, getHover, onVisible, onReady }; });
@@ -53,7 +54,7 @@ export default function Signature({ sig, kind, objects, poster, label, getPos, g
         if (!(probe.getContext("webgl2") || probe.getContext("webgl"))) throw new Error("no webgl");
         const [{ createStage }, m] = await Promise.all([import("./stage-scene"), startMotion()]);
         if (disposed) return;
-        stage = await createStage(cv!, { sig, kind, objects: objects.map((i) => objectSrc(i, 800, "webp")), reduced });
+        stage = await createStage(cv!, { sig, kind, objects: objects.map((i) => objectSrc(i, 800, "webp")), reduced, form });
         if (disposed) { stage.dispose(); return; }
 
         const measure = () => {
@@ -144,7 +145,7 @@ export default function Signature({ sig, kind, objects, poster, label, getPos, g
       stage?.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sig, kind, objects.join(",")]);
+  }, [sig, kind, form, objects.join(",")]);
 
   return (
     <div ref={wrap} className={s.sig} data-kind={kind} data-ready={ready} role="img" aria-label={label}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import type { Dictionary } from "@/i18n";
 import type { Pages } from "@/i18n/pages";
@@ -32,6 +32,53 @@ const POINT_TITLES: string[][] = [
   ["At the right moment", "Everyone is asked"],
 ];
 
+// A point: its title, then its description. A long point (over 140
+// characters) that has more than one sentence shows its first sentence, and
+// the rest on tap, inline, word for word: nothing is cut or reworded.
+const LONG = 140;
+const isLong = (text: string) => text.length > LONG;
+
+function Point({ title, text, span }: { title: string; text: string; span?: number }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const parts = isLong(text) ? text.match(/^(.+?[.!?])\s+(.+)$/) : null;
+  return (
+    <li className={s.point} data-point data-wide={span && span > 1 ? "true" : undefined} style={span && span > 1 ? { gridColumn: `span ${span}` } : undefined}>
+      <span className={s.ptRule} data-pt-rule aria-hidden="true" />
+      <strong className={s.ptTitle}>{title}</strong>
+      <span className={s.pointText}>
+        {parts ? (
+          <>
+            {parts[1]}{" "}
+            <span id={id} className={s.ptRest} hidden={!open}>{parts[2]}{" "}</span>
+            <button type="button" className={s.ptMore} aria-expanded={open} aria-controls={id} aria-label={open ? "Show less" : "Show the rest of this point"} onClick={() => setOpen((o) => !o)}>
+              <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+            </button>
+          </>
+        ) : text}
+      </span>
+    </li>
+  );
+}
+
+// What a point shows before any tap: its first sentence when it folds.
+const shownLength = (text: string) => (isLong(text) ? (text.match(/^(.+?[.!?])\s+(.+)$/)?.[1] ?? text) : text).length;
+
+// Grid a: three columns; a point that still shows more than 140 characters
+// spans two. Rows fill in reading order; where the next point will not fit,
+// the last one in the row widens to meet the edge, so no row is left with a
+// hole (the last row may stay short).
+function spans(texts: string[]) {
+  const out = texts.map((t) => (shownLength(t) > LONG ? 2 : 1));
+  let used = 0, lastIdx = -1;
+  out.forEach((w, i) => {
+    if (used + w > 3) { if (lastIdx >= 0) out[lastIdx] += 3 - used; used = 0; }
+    used += w; lastIdx = i;
+    if (used === 3) used = 0;
+  });
+  return out;
+}
+
 function ObjectPicture({ i }: { i: number }) {
   const set = (ext: "avif" | "webp") => [480, 800].map((w) => `${objectSrc(i, w as 480, ext)} ${w}w`).join(", ");
   return (
@@ -42,8 +89,13 @@ function ObjectPicture({ i }: { i: number }) {
   );
 }
 
-export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p: P; ctaLabel: string; place: string }) {
+// Round 4: three choices of taste, each switchable by URL
+// (?crystal=a|b&spread=a|b&footer=a|b), each finished.
+export type Variants = { crystal: "a" | "b"; spread: "a" | "b"; footer: "a" | "b" };
+
+export default function ProofPage({ t, p, ctaLabel, place, v }: { t: Dictionary; p: P; ctaLabel: string; place: string; v: Variants }) {
   const root = useRef<HTMLDivElement>(null);
+  const spreadV = v.spread;
   const names = t.automationNames;
 
   useEffect(() => {
@@ -109,34 +161,43 @@ export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p:
           const headIn = (d = 0) => gsap.to(head, { opacity: 1, y: 0, duration: 1.1, stagger: 0.07, ease: "expo.out", delay: d });
           let enter: () => void;
           if (i === 0) {
-            // 01 · the numeral slides in from the edge; the points cascade down.
+            // 01 · the numeral slides in from the edge.
             gsap.set(numeral, { x: "-40vw", opacity: 0 });
-            gsap.set(pts, { opacity: 0, y: 30 });
-            enter = () => { gsap.to(numeral, { x: 0, opacity: 1, duration: 1.5, ease: "expo.out" }); headIn(0.15); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.3 }); gsap.to(pts, { opacity: 1, y: 0, duration: 1, stagger: 0.07, ease: "expo.out", delay: 0.35 }); };
+            enter = () => { gsap.to(numeral, { x: 0, opacity: 1, duration: 1.5, ease: "expo.out" }); headIn(0.15); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.3 }); };
           } else if (i === 1) {
-            // 02 · a hairline draws over each point, then its words appear.
+            // 02 · the numeral rises softly.
             gsap.set(numeral, { opacity: 0, y: 30 });
-            gsap.set(rules, { scaleX: 0 });
-            gsap.set(pts, { opacity: 0 });
-            enter = () => { gsap.to(numeral, { opacity: 1, y: 0, duration: 1.2, ease: "expo.out" }); headIn(0.1); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.2 }); gsap.to(pts, { opacity: 1, duration: 0.9, stagger: 0.12, ease: "power2.out", delay: 0.75 }); gsap.to(rules, { scaleX: 1, duration: 1.1, stagger: 0.12, ease: "expo.inOut", delay: 0.25 }); };
+            enter = () => { gsap.to(numeral, { opacity: 1, y: 0, duration: 1.2, ease: "expo.out" }); headIn(0.1); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.2 }); };
           } else if (i === 2) {
-            // 03 · the numeral rises out of its own mask; the points rise by column.
+            // 03 · the numeral rises out of its own mask.
             gsap.set(numeral, { yPercent: 100 });
-            gsap.set(pts, { opacity: 0, yPercent: 40 });
-            enter = () => { gsap.to(numeral, { yPercent: 0, duration: 1.3, ease: "expo.out" }); headIn(0.2); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.25 }); gsap.to(pts, { opacity: 1, yPercent: 0, duration: 1.1, stagger: { each: 0.1, grid: "auto", from: "start", axis: "x" }, ease: "expo.out", delay: 0.4 }); };
+            enter = () => { gsap.to(numeral, { yPercent: 0, duration: 1.3, ease: "expo.out" }); headIn(0.2); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.25 }); };
           } else if (i === 3) {
-            // 04 · the points fan in like cards; the object turns into place.
+            // 04 · the numeral slides back; the object turns into place.
             gsap.set(numeral, { opacity: 0, x: 40 });
-            gsap.set(pts, { opacity: 0, x: 70, rotation: 3, transformOrigin: "0% 100%" });
             gsap.set(obj, { rotation: -18 });
-            enter = () => { gsap.to(numeral, { opacity: 1, x: 0, duration: 1.2, ease: "expo.out" }); headIn(0.1); gsap.to(obj, { opacity: 1, rotation: 0, duration: 1.5, ease: "expo.out", delay: 0.15 }); gsap.to(pts, { opacity: 1, x: 0, rotation: 0, duration: 1.2, stagger: 0.12, ease: "expo.out", delay: 0.35 }); };
+            enter = () => { gsap.to(numeral, { opacity: 1, x: 0, duration: 1.2, ease: "expo.out" }); headIn(0.1); gsap.to(obj, { opacity: 1, rotation: 0, duration: 1.5, ease: "expo.out", delay: 0.15 }); };
           } else {
-            // 05 · the numeral settles from a soft focus; the points unveil left to right.
+            // 05 · the numeral settles from a soft focus.
             gsap.set(numeral, { opacity: 0, scale: 1.3, filter: "blur(14px)", transformOrigin: "0% 60%" });
-            gsap.set(pts, { clipPath: "inset(0 100% 0 0)" });
-            enter = () => { gsap.to(numeral, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.4, ease: "expo.out", clearProps: "filter" }); headIn(0.15); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.2 }); gsap.to(pts, { clipPath: "inset(0 0% 0 0)", duration: 1.3, stagger: 0.18, ease: "expo.inOut", delay: 0.4 }); };
+            enter = () => { gsap.to(numeral, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.4, ease: "expo.out", clearProps: "filter" }); headIn(0.15); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.2 }); };
           }
           once(node, "top 72%", enter);
+          // The points, the same in every spread, by variant: a, a quiet rise
+          // in reading order; b, a slow stagger, each row's hairline drawing
+          // first, then its words.
+          const list = node.querySelector<HTMLElement>("[data-points]")!;
+          if (spreadV === "a") {
+            gsap.set(pts, { opacity: 0, y: 14 });
+            once(list, "top 84%", () => gsap.to(pts, { opacity: 1, y: 0, duration: 1.2, stagger: 0.06, ease: "expo.out" }));
+          } else {
+            gsap.set(pts, { opacity: 0, y: 22 });
+            gsap.set(rules, { scaleX: 0 });
+            once(list, "top 84%", () => {
+              gsap.to(rules, { scaleX: 1, duration: 1.6, stagger: 0.2, ease: "expo.inOut" });
+              gsap.to(pts, { opacity: 1, y: 0, duration: 1.5, stagger: 0.2, ease: "expo.out", delay: 0.25 });
+            });
+          }
 
           const bob = gsap.to(float, { y: -8, duration: 3.4, ease: "sine.inOut", yoyo: true, repeat: -1, paused: true });
           ScrollTrigger.create({ trigger: node, start: "top bottom", end: "bottom top", onToggle: (st) => (st.isActive ? bob.play() : bob.pause()) });
@@ -192,21 +253,8 @@ export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p:
         });
         once(cta, "top 55%", () => gsap.to(ctaRise, { opacity: 1, y: 0, duration: 1.1, stagger: 0.08, delay: 0.35, ease: "expo.out" }));
 
-        // ── The footer's moment: a hairline from the centre, the letters rise,
-        // one glint crosses the wordmark (and again on hover) ──────────────
+        // (The footer runs its own motion: ProofFooter, by variant.)
         const footer = el.querySelector<HTMLElement>("[data-footer]")!;
-        const letters = q("[data-footer-letter]", footer);
-        const glint = footer.querySelector<HTMLElement>("[data-footer-glint]")!;
-        const fRule = footer.querySelector<HTMLElement>("[data-footer-rule]")!;
-        gsap.set(letters, { yPercent: 110 });
-        gsap.set(fRule, { scaleX: 0 });
-        const sweep = () => gsap.fromTo(glint, { backgroundPosition: "120% 0" }, { backgroundPosition: "-20% 0", duration: 1.6, ease: "power2.inOut", overwrite: true });
-        once(footer, "top 85%", () => {
-          gsap.to(fRule, { scaleX: 1, duration: 1.4, ease: "expo.inOut" });
-          gsap.to(letters, { yPercent: 0, duration: 1.2, stagger: 0.07, ease: "expo.out", delay: 0.15 });
-          gsap.delayedCall(0.9, sweep);
-        });
-        footer.querySelector("[data-footer-mark]")!.addEventListener("pointerenter", sweep);
 
         // ── The dock: in range from the hero to the close; shown only while
         // scrolling up (to navigate), hidden while reading or scrolling down,
@@ -236,7 +284,7 @@ export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p:
       cancelled = true;
       revert?.();
     };
-  }, []);
+  }, [spreadV]);
 
   const words = p.checks.split(" ");
 
@@ -259,7 +307,7 @@ export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p:
             </h1>
           </div>
           <div className={s.heroStage} data-hero-stage>
-            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} />
+            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} form={v.crystal} />
           </div>
           <div className={s.heroActions} data-hero-copy>
             <span className={s.actions} data-hero-rise>
@@ -305,18 +353,9 @@ export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p:
                 <div className={s.objGlow} />
                 <div className={s.objTilt} data-tilt><div data-float><ObjectPicture i={i} /></div></div>
               </div>
-              <ol className={s.pointGrid} data-cols={pts.length === 3 ? 3 : 2}>
-                {pts.map((pt, k) => (
-                  <li key={pt} className={s.point} data-point>
-                    <span className={s.ptRule} data-pt-rule aria-hidden="true" />
-                    <span className={s.pointIdx}>{String(k + 1).padStart(2, "0")}</span>
-                    <span className={s.pointBody}>
-                      <strong className={s.ptTitle}>{POINT_TITLES[i][k]}</strong>
-                      <span className={s.pointText}>{pt}</span>
-                    </span>
-                  </li>
-                ))}
-              </ol>
+              <ul className={s.pointGrid} data-v={spreadV} data-points>
+                {pts.map((pt, k) => <Point key={pt} title={POINT_TITLES[i][k]} text={pt} span={spreadV === "a" ? spans(pts)[k] : undefined} />)}
+              </ul>
             </section>
           );
         })}
@@ -354,7 +393,7 @@ export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p:
         </section>
       </main>
 
-      <div data-after-faq><ProofFooter t={t} place={place} bookHref={BOOK} /></div>
+      <div data-after-faq><ProofFooter t={t} place={place} bookHref={BOOK} variant={v.footer} /></div>
       <Dock names={names} bookHref={BOOK} book={t.nav.book} />
     </div>
   );

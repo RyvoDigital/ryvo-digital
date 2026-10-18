@@ -22,7 +22,10 @@ export type StageOptions = {
   kind: StageKind;
   objects: string[]; // image URLs with alpha, square, all framed the same
   reduced: boolean;
+  form?: CrystalForm; // hero crystal: a, the tall slab; b, a thick rounded cube
 };
+
+export type CrystalForm = "a" | "b";
 
 export type Stage = {
   render: (time: number) => void;
@@ -61,6 +64,41 @@ function studio(renderer: WebGLRenderer) {
   const tex = pmrem.fromScene(env, 0).texture;
   pmrem.dispose();
   env.traverse((o) => { if (o instanceof Mesh) { o.geometry.dispose(); (o.material as MeshBasicMaterial).dispose(); } });
+  return tex;
+}
+
+// ── The hero crystal's studio (round 4): large softboxes, not strips ───────
+// Thin strips drew a hard line round the crystal's edge (an outline). A real
+// glass shot is lit by big diffused softboxes: their feathered edges give
+// broad, soft reflections that sweep across the faces as the crystal turns,
+// and the polished bevels catch them bright at grazing angles (Fresnel).
+function softStudio(renderer: WebGLRenderer) {
+  const env = new Scene();
+  env.background = new Color().setScalar(0.006);
+  // One feathered softbox texture: bright in the middle, falling off smoothly
+  // to nothing at every edge.
+  const c = document.createElement("canvas"); c.width = 256; c.height = 256;
+  const g = c.getContext("2d")!;
+  const fx = g.createLinearGradient(0, 0, 256, 0), fy = g.createLinearGradient(0, 0, 0, 256);
+  for (const f of [fx, fy]) { f.addColorStop(0, "rgba(255,255,255,0)"); f.addColorStop(0.28, "rgba(255,255,255,1)"); f.addColorStop(0.72, "rgba(255,255,255,1)"); f.addColorStop(1, "rgba(255,255,255,0)"); }
+  g.fillStyle = fx; g.fillRect(0, 0, 256, 256);
+  g.globalCompositeOperation = "destination-in"; g.fillStyle = fy; g.fillRect(0, 0, 256, 256);
+  const soft = new CanvasTexture(c);
+  const box = (w: number, h: number, power: number, pos: [number, number, number], rot: [number, number, number]) => {
+    const m = new Mesh(new PlaneGeometry(w, h), new MeshBasicMaterial({ map: soft, color: new Color().setScalar(power), side: DoubleSide, transparent: true }));
+    m.position.set(...pos); m.rotation.set(...rot); env.add(m);
+  };
+  box(7, 4.5, 2.6, [-6, 3.2, 1.5], [0, Math.PI / 2.7, 0]); // the key: a large softbox, high left, sweeping the left faces
+  box(11, 3.2, 1.7, [0, 7.5, 0.5], [Math.PI / 2, 0, 0]); // overhead: the top face and the top bevel
+  box(2.4, 8, 1.3, [6.5, 0.8, -2.5], [0, -Math.PI / 2.4, 0]); // a tall strip box behind right, for the right bevel
+  box(9, 2.5, 0.3, [1.5, 2.2, 8], [0.25, Math.PI, 0]); // a dim, wide fill in front: the faces never go dead
+  box(2.6, 10, 2.4, [-3.2, 1.5, 9], [0, Math.PI - 0.3, 0.12]); // a tall softbox behind the camera: the soft band that sweeps the front face
+  box(10, 6, 0.06, [0, -5.5, 0], [-Math.PI / 2, 0, 0]); // a faint floor bounce
+  const pmrem = new PMREMGenerator(renderer);
+  const tex = pmrem.fromScene(env, 0.035).texture;
+  pmrem.dispose();
+  env.traverse((o) => { if (o instanceof Mesh) { o.geometry.dispose(); (o.material as MeshBasicMaterial).dispose(); } });
+  soft.dispose();
   return tex;
 }
 
@@ -184,7 +222,16 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
 
   const scene = new Scene();
   scene.background = PAGE;
-  const envTex = studio(renderer);
+  const form: CrystalForm = opts.form ?? "a";
+  const heroCrystal = opts.kind === "hero" && opts.sig === "crystal";
+  const envTex = heroCrystal ? softStudio(renderer) : studio(renderer);
+  // The two hero forms. Both stand on the same floor line (bottom at -1.755).
+  //   a: the tall slab, 3.0 × 3.75, 1.0 deep, 0.3 bevels.
+  //   b: a thick rounded cube, 3.15 square, 2.1 deep, 0.62 radius: sculptural,
+  //      turned a little so a side face and its depth show.
+  const F = form === "b"
+    ? { w: 3.15, h: 3.15, d: 2.1, r: 0.62, y: -0.18, face: [2.3, 2.3], thick: 1.5, yaw: 0.13 }
+    : { w: 3.0, h: 3.75, d: 1.0, r: 0.3, y: 0.12, face: [2.28, 3.03], thick: 0.85, yaw: 0 };
 
   const camera = new PerspectiveCamera(30, 1, 0.1, 60);
   const lookAt = new Vector3(0, -0.15, 0);
@@ -198,7 +245,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
   // 70% of the crystal's inner face (2.28 × 3.03) as seen on screen. The objects
   // sit 2.5 units behind it, so perspective shrinks them by about 0.85: the box
   // at their depth is larger by 1/0.85.
-  const FIT_W = 0.7 * 2.28 / 0.85, FIT_H = 0.7 * 3.03 / 0.85;
+  const FIT_W = 0.7 * F.face[0] / 0.85, FIT_H = 0.7 * F.face[1] / 0.85;
   const SPACING = 3.7;
   // Each object's real bounds (from its alpha), so every object can be fitted
   // to the same visual box inside the crystal, whatever its shape.
@@ -294,13 +341,17 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
   let rtMain: WebGLRenderTarget | null = null;
   let rtBack: WebGLRenderTarget | null = null;
   if (opts.sig === "crystal") {
-    const geo: BufferGeometry = opts.kind === "hero" ? new RoundedBoxGeometry(3.0, 3.75, 1.0, 16, 0.3) : lensGeometry(1.25, 0.2, 0.2, 0.12);
-    const common = { color: 0xffffff, ior: 1.5, envMap: envTex, envMapIntensity: 1.35, specularIntensity: 1, roughness: 0 };
+    const geo: BufferGeometry = opts.kind === "hero" ? new RoundedBoxGeometry(F.w, F.h, F.d, 16, F.r) : lensGeometry(1.25, 0.2, 0.2, 0.12);
+    const common = { color: 0xffffff, ior: 1.5, envMap: envTex, envMapIntensity: heroCrystal ? 1.1 : 1.35, specularIntensity: 1, roughness: 0 };
     // A trace of emissive on the front faces only (the back pass would add it
     // twice and grey the slab): the volume reads as catching light, never as a hole.
-    front = new TransmissionMaterial({ ...common, side: FrontSide, emissive: new Color(0.0011, 0.0012, 0.0014) }, 8);
-    front.t.uThickness.value = opts.kind === "hero" ? 0.75 : 0.8;
-    front.t.uChroma.value = 0.045; // a subtle split at the edge, not a smear
+    // Hero: a clearcoat, a second polished layer whose Fresnel makes the bevels
+    // bright at grazing angles while the flat face stays clear.
+    front = new TransmissionMaterial({ ...common, side: FrontSide, emissive: new Color(0.0011, 0.0012, 0.0014), ...(heroCrystal ? { clearcoat: 1, clearcoatRoughness: 0.03 } : {}) }, 8);
+    front.t.uThickness.value = opts.kind === "hero" ? F.thick : 0.8;
+    // Dispersion is weighted by grazing angle in the shader, so it shows only on
+    // the bevels: the flat face is free of colour fringes.
+    front.t.uChroma.value = heroCrystal ? 0.09 : 0.045;
     front.t.uAniso.value = 0.06;
     // The back faces mirror the studio faintly: at full strength their rim read
     // as a second, broken line inside the front one.
@@ -309,7 +360,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     back.t.uChroma.value = 0.02;
     back.t.uAniso.value = 0.04;
     crystal = new Mesh(geo, front);
-    crystal.position.z = opts.kind === "hero" ? 0.9 : 1.0;
+    crystal.position.z = opts.kind === "hero" ? 0.9 + (F.d - 1) / 2 : 1.0;
     scene.add(crystal);
     // The buffers the crystal refracts. The rim's crispness comes from the
     // canvas itself (antialiased); these only feed the refraction, which the
@@ -363,10 +414,15 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     const narrow = aspect < 1.1;
     camera.fov = narrow ? 34 : 28;
     // Hero: the crystal fills about half the stage's height, centred.
-    camera.position.set(0, 0.5, opts.kind === "hero" ? (narrow ? 11.4 : 14.6) : narrow ? 11 : 10.5);
+    // Hero: the camera stands about 6.5° above the crystal, so its top face and
+    // its thickness read.
+    // Short screens step back a little more: the headline and the caption
+    // keep their size, so the crystal gives way to keep their breathing room.
+    const hz = narrow ? 12.6 : 17.2 * Math.min(1.2, Math.max(1, 880 / h));
+    camera.position.set(0, opts.kind === "hero" ? F.y + hz * Math.tan((6.5 * Math.PI) / 180) : 0.5, opts.kind === "hero" ? hz : narrow ? 11 : 10.5);
     // Wide hero: look a little higher, so the crystal sits just below the
     // middle, clear of the headline above and the caption below.
-    camera.lookAt(opts.kind === "hero" && !narrow ? lookAt.clone().setY(0.42) : lookAt);
+    camera.lookAt(opts.kind === "hero" ? lookAt.clone().setY(narrow ? 0.1 : 0.02) : lookAt);
     camera.updateProjectionMatrix();
     const dpr = renderer.getPixelRatio();
     if (poolMat) renderer.getDrawingBufferSize(poolMat.uniforms.uRes.value);
@@ -401,9 +457,10 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
         const k = fit * (1 - near * 0.3);
         // Hover: the resting object lifts a little and turns.
         const lift = hover * (1 - near) * 0.09;
-        m.position.set(x - b.cx * SIZE * k, 0.18 + bob + py * 0.04 + lift - b.cy * SIZE * k, OBJ_Z - near * 0.9);
+        m.position.set(x - b.cx * SIZE * k, F.y + 0.06 + bob + py * 0.04 + lift - b.cy * SIZE * k, OBJ_Z - near * 0.9);
         m.scale.setScalar(k);
-        m.rotation.z = hover * (1 - near) * -0.06;
+        // Facing the raised camera, so the object reads front-on.
+        m.rotation.set(-0.11, 0, hover * (1 - near) * -0.06);
         const fade = Math.max(0, Math.min(1, 1 - (ad - 0.45) * 0.78));
         (m.material as MeshBasicMaterial).opacity = fade;
         const c = crisp[i];
@@ -420,7 +477,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
         }
         const g = glows[i];
         // The glow sits clear of the crystal's lower bevel, which would smear it into a band.
-        g.position.set(x, -1.0 + near * 0.06, m.position.z - 0.01);
+        g.position.set(x, F.y - 1.12 + near * 0.06, m.position.z - 0.01);
         g.scale.setScalar(1 - near * 0.3);
         (g.material as MeshBasicMaterial).opacity = fade * 0.34;
       });
@@ -429,8 +486,18 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
         // faces stay edge-on, so the rim reads as one clean line of light.
         // Front-on, as a thick block: a very slow idle sway (±3.5°) and a gentle
         // pointer parallax (±5°) turn it just enough to show its depth.
-        crystal.rotation.set(0.04 + Math.cos(t * 0.17) * 0.03 + py * 0.06, Math.sin(t * 0.21) * 0.061 + px * 0.087, 0.0);
-        crystal.position.set(0, 0.12 + scroll * 0.35, 0.9);
+        // Round 4: upright (the camera above shows the top face), the same slow
+        // sway; and the studio itself turns with the sway and the pointer, so
+        // the softbox reflections sweep across the faces.
+        const yaw = F.yaw + Math.sin(t * 0.21) * 0.061 + px * 0.087;
+        crystal.rotation.set(Math.cos(t * 0.17) * 0.03 + py * 0.06, yaw, 0.0);
+        crystal.position.set(0, F.y + scroll * 0.35, crystal.position.z);
+        if (front && back) {
+          const ry = Math.sin(t * 0.13) * 0.32 + px * 0.55;
+          const rx = py * 0.12;
+          front.envMapRotation.set(rx, ry, 0);
+          back.envMapRotation.set(rx, ry, 0);
+        }
         if (caustic && reflection) {
           caustic.scale.set(1 + Math.sin(t * 0.3) * 0.03, 1, 1);
           (caustic.material as MeshBasicMaterial).opacity = 0.5 + Math.sin(t * 0.47) * 0.06;
