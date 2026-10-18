@@ -206,16 +206,32 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     const c = document.createElement("canvas"); c.width = c.height = 128;
     const g = c.getContext("2d")!;
     const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-    r.addColorStop(0, "rgba(205,209,217,0.55)"); r.addColorStop(0.45, "rgba(205,209,217,0.12)"); r.addColorStop(1, "rgba(205,209,217,0)");
+    // A long, soft falloff: no edge for the crystal's bevel to catch.
+    r.addColorStop(0, "rgba(205,209,217,0.5)"); r.addColorStop(0.3, "rgba(205,209,217,0.2)"); r.addColorStop(0.65, "rgba(205,209,217,0.05)"); r.addColorStop(1, "rgba(205,209,217,0)");
     g.fillStyle = r; g.fillRect(0, 0, 128, 128);
     const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace; return t;
   })();
   const glows = planes.map(() => {
-    const m = new Mesh(new PlaneGeometry(SIZE * 1.1, SIZE * 0.22), new MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.0 }));
+    // Hero: narrower than the crystal's flat face, so its lower bevel never
+    // refracts the glow into a hard band.
+    const m = new Mesh(new PlaneGeometry(SIZE * (opts.kind === "hero" ? 0.7 : 1.1), SIZE * (opts.kind === "hero" ? 0.17 : 0.22)), new MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.0 }));
     m.position.z = OBJ_Z - 0.01;
     if (opts.sig === "crystal") scene.add(m);
     return m;
   });
+
+  // Hero: a direct copy of each object, drawn over the crystal while it rests
+  // there, so a resting object is crisp; the refraction keeps the edges and the
+  // glide in and out. Never part of the buffers the crystal refracts.
+  const restK = planes.map(() => 0); // how far each object has settled into its crisp copy
+  const crisp = opts.kind === "hero" && opts.sig === "crystal"
+    ? planes.map((p) => {
+        const m = new Mesh(p.geometry, new MeshBasicMaterial({ map: (p.material as MeshBasicMaterial).map, transparent: true, depthWrite: false, depthTest: false, toneMapped: false, opacity: 0 }));
+        m.renderOrder = 10;
+        scene.add(m);
+        return m;
+      })
+    : [];
 
   // ── Signature: crystal ─────────────────────────────────────────────────
   let crystal: Mesh | null = null;
@@ -328,9 +344,20 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
         m.scale.setScalar(1 - near * 0.3);
         const fade = Math.max(0, Math.min(1, 1 - (ad - 0.45) * 0.78));
         (m.material as MeshBasicMaterial).opacity = fade;
+        const c = crisp[i];
+        if (c) {
+          c.position.copy(m.position);
+          c.scale.copy(m.scale);
+          // Fully crisp within 0.04 of rest, back to pure refraction by 0.3.
+          const rest = 1 - Math.min(1, Math.max(0, (ad - 0.04) / 0.26));
+          const k = rest * rest * (3 - 2 * rest);
+          (c.material as MeshBasicMaterial).opacity = fade * k;
+          restK[i] = k;
+          c.visible = (c.material as MeshBasicMaterial).opacity > 0.002;
+        }
         const g = glows[i];
         // The glow sits clear of the crystal's lower bevel, which would smear it into a band.
-        g.position.set(x, -1.12 + near * 0.12, m.position.z - 0.01);
+        g.position.set(x, -1.0 + near * 0.06, m.position.z - 0.01);
         g.scale.setScalar(1 - near * 0.3);
         (g.material as MeshBasicMaterial).opacity = fade * 0.34;
       });
@@ -367,6 +394,12 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     if (crystal && front && back && rtMain && rtBack) {
       // drei's order: the scene without the crystal, then the crystal's back
       // faces refracting that, then the front faces refracting both.
+      const shown = crisp.map((c) => c.visible);
+      crisp.forEach((c) => (c.visible = false));
+      // In the buffer the crystal refracts, a settling object fades out as its
+      // crisp copy fades in on top: a cross-dissolve, never two images at once.
+      const base = planes.map((m) => (m.material as MeshBasicMaterial).opacity);
+      if (crisp.length) planes.forEach((m, i) => ((m.material as MeshBasicMaterial).opacity = base[i] * (1 - restK[i])));
       crystal.visible = false;
       renderer.setRenderTarget(rtMain);
       renderer.render(scene, camera);
@@ -378,6 +411,8 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
       crystal.material = front;
       front.t.uBuffer.value = rtBack.texture;
       renderer.setRenderTarget(null);
+      crisp.forEach((c, i) => (c.visible = shown[i]));
+      planes.forEach((m, i) => ((m.material as MeshBasicMaterial).opacity = base[i]));
     }
     renderer.render(scene, camera);
   };
@@ -415,6 +450,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     setPos: (p) => { pos = p; },
     dispose: () => {
       planes.forEach((m) => { m.geometry.dispose(); (m.material as MeshBasicMaterial).dispose(); });
+      crisp.forEach((m) => (m.material as MeshBasicMaterial).dispose());
       glows.forEach((m) => { m.geometry.dispose(); (m.material as MeshBasicMaterial).dispose(); });
       textures.forEach((t) => t.dispose());
       glowTex.dispose();

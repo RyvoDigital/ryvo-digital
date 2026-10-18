@@ -114,6 +114,8 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
         ScrollTrigger.create({ trigger: film, start: "top 75%", once: true, onEnter: () => gsap.to(q("[data-reveal]", film), { opacity: 1, y: 0, duration: 1.1, ease: "expo.out" }) });
         gsap.fromTo(film.querySelector("[data-device]"), { y: 70, scale: 0.96 }, { y: 0, scale: 1, ease: "none", scrollTrigger: { trigger: film, start: "top bottom", end: "top 25%", scrub: true } });
         ScrollTrigger.create({ trigger: film, start: "top 55%", end: "bottom 55%", onToggle: (st) => st.isActive && setDock(0) });
+        // The dock steps aside while the film is on screen, so it never sits over the beats.
+        ScrollTrigger.create({ trigger: film, start: "top 70%", end: "bottom 30%", onToggle: (st) => (el.querySelector<HTMLElement>("[data-dock]")!.dataset.aside = String(st.isActive)) });
 
         // ── "Switched on only after its checks": the words light as you read ─
         const checks = el.querySelector<HTMLElement>("[data-checks]")!;
@@ -225,7 +227,7 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
                   ))}
                 </ol>
               </section>
-              {i === 0 && <Film t={t} name={n} beats={beats} />}
+              {i === 0 && <Film t={t} name={n} tagline={p.items[0].tagline} beats={beats} />}
             </div>
           );
         })}

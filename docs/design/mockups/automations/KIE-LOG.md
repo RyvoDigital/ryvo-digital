@@ -37,3 +37,15 @@ Cap left for this page: 384. **Balance before: 1,729. Used: 24 (1 × 24). Balanc
 **Prompt (16:9, 4K):** a premium desktop display, an ultra-thin slab of bead-blasted silver aluminium with a slim even black glass border, on a thin aluminium stand with a flat foot; perfectly front-on at the height of the screen's centre; the screen on, showing a flat uniform mid-grey (#7F7F7F) so its edges can be measured exactly; no logo, lettering, notch, buttons or brand marks anywhere; seamless deep black; one strip light high left, a rim light behind right, a faint glow under the foot.
 
 **Processing:** cut out with BiRefNet; the screen found from the grey (x 1277–4230, y 474–2127) and painted dark glass; cropped and exported to `public/media/proof/device/display-v1-{760,1200,1800}.{avif,webp}`. The film plays in code over the screen rectangle (left 4.404%, top 5.753%, width 91.687%, height 67.564% of the image).
+
+## Round 3 (18 Oct 2026): the whole display, re-rendered
+
+Cap left for this page: 360. **Balance before: 1,705. Used: 24 (1 × 24). Balance after: 1,681.** One take was enough (2 allowed).
+
+| # | Name | Task id | Credits | Ref | Verdict |
+|---|---|---|---|---|---|
+| 11 | display-b | 625338b54a4dbe603ca26849135d2cf4 | 24 | none | **Kept.** The whole device in frame; an even silver edge all round; thin, even bezels; a slim stand curving to a small foot; no marks. Replaces display-a (lit on one edge only, with a boxy stand) |
+
+**Prompt (4:3, 4K):** as round 2's, plus: the whole device fully in frame with generous black space; thin, perfectly even black borders on all four sides; a fine aluminium edge with one even highlight all the way round; a slim stand of one thin aluminium sheet curving softly to a small flat foot ("a slender, gently tapering neck, never a box"); soft even light from above and both sides.
+
+**Processing:** not cut out this time, because BiRefNet reads the black bezel on black as background and drops it. Instead every pixel darker than the page was lifted to the page colour (#07080A), so the image needs no alpha. The screen was measured from the grey (x 725–4074, y 615–2504, 3,350 × 1,890) and painted dark. Exported as `public/media/proof/device/display-v2-{760,1200,1800}.{avif,webp}`. Screen rectangle: left 5.592%, top 7.236%, width 88.842%, height 65.196% of the 3,773 × 2,902 image.

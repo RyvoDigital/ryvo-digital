@@ -106,13 +106,15 @@
 
 @media (min-width: 1024px) {
   .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto; height: 100svh; min-height: 640px; max-height: 1080px; padding: 92px var(--pad) 26px; }
-  /* Static, so the headline's second half is placed against the hero itself. */
-  .heroA { position: static; grid-column: 1; grid-row: 1; max-width: 560px; }
+  .heroA { grid-column: 1 / -1; grid-row: 1; }
   .heroLabel, .h1Part { position: relative; z-index: 2; }
   .h1 { font-size: clamp(30px, 2.75vw, 46px); line-height: 1.02; }
-  .h1Part { display: block; }
-  /* The second half of the headline answers the first from the far corner. */
-  .h1B { position: absolute; z-index: 2; right: var(--pad); bottom: 30px; max-width: 480px; text-align: right; }
+  /* One sentence across the top band: the first half on the left, the second
+     answering it on the right, on the same line, so it reads left to right;
+     each half stays clear of the crystal below. */
+  .h1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+  .h1Part { display: block; max-width: min(520px, 34vw); }
+  .h1B { text-align: right; }
   .heroStage { position: absolute; inset: 0; margin: 0; z-index: 1; }
   .heroScene { position: absolute; inset: 0; }
   .heroCanvas { position: absolute; inset: 0; min-height: 0; }
@@ -327,6 +329,7 @@
   pointer-events: none;
 }
 .dock[data-show="true"] { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.dock[data-show="true"][data-aside="true"] { opacity: 0; transform: translate(-50%, 150%); pointer-events: none; }
 .dockIdx { display: flex; gap: 0; list-style: none; margin: 0; padding: 0; }
 .dockLink {
   position: relative;
