@@ -62,3 +62,21 @@ Cap left for this page: 336. **Balance before: 1,681. Used: 48 (2 × 24). Balanc
 **Prompt (16:9, 4K):** a premium ultra-thin laptop, open, perfectly front-on; thin even dark bezels; a small rounded camera notch at the top centre; the screen flat mid-grey (#7F7F7F, for exact measurement), visible area 16:10; only a thin slice of the keyboard base and hinge below the lid; no logo, lettering, stickers or ports; seamless deep black; soft even light from above and both sides.
 
 **Processing:** the screen found as the largest grey region (its shape keeps the notch and the rounded corners), grown by 3 px past the anti-aliased edge, and made **transparent**: the film plays behind the image, so the bezels and notch sit on top of it exactly. Screen: 2,866 × 1,806 px (1.587, i.e. 16:10 within 1%). The black around it was lifted to the page colour. Exported as `public/media/lab/automations/macbook-v1-{800,1400,2000}.{avif,webp}` (with alpha). Screen hole: left 12.329%, top 7.137%, width 75.342%, height 70.437% of the 3,804 × 2,564 image.
+
+## Round 4 (18 Oct 2026): motion footage for the brand film (Seedance 2.5)
+
+Budget: up to 600 credits for footage. **Balance before: 1,633. Used: 539. Balance after: 1,094.**
+
+**Price, measured** (Kie does not publish it): 720p costs 63 credits/s (5 s = 315); 480p costs 28 credits/s (4 s = 112). Five clips at 720p would have been about 1,575, so as the brief allows: **the best three as footage** (01, 02, 04). 03 and 05 are animated in 3D in the film (`@remotion/three`).
+
+| # | Name | Task id | Credits | Settings | Verdict |
+|---|---|---|---|---|---|
+| 14 | 01-concierge | 62dc29b7e5a93eecaa34d3e83a4ac7b2 | 315 | 720p (960 × 960), 5 s | **Kept.** A real turn with light sweeping the chrome; last frame = first frame, so it loops |
+| 15 | 02-reactivation | db8152d8c2c3d8549ac6ffaf1d4905bc | 112 | 480p, 4 s | **Kept.** The rings glide; light moves across them; loops |
+| 16 | 04-launch | c29515895d4ab767bc395aef11b94611 | 112 | 480p, 4 s | **Kept.** The cards turn edge-on and back: the strongest motion; loops |
+
+**Input:** each object's own still (round 1 render, cut-out composited on #050506) as both `first_frame_url` and `last_frame_url`, so each clip begins and ends on the same pose; `aspect_ratio: adaptive` (required for first/last-frame tasks), `generate_audio: false`. 480p is enough: in the film an object shows at about 330 px on screen.
+
+**Prompt:** "Premium product film. The single polished liquid-chrome object slowly turns about its vertical axis and floats gently up and down, centred, on a pure seamless black studio background. The camera is locked off. Soft studio light glides across the mirror chrome… It ends exactly in its starting pose, for a seamless loop. No other objects, no text, no logo, no people, no colour cast."
+
+Files: `video/public/clips/{01-concierge,02-reactivation,04-launch}.mp4` (source footage for Remotion; not served on the site).

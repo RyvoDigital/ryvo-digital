@@ -4,17 +4,24 @@
   "description": "The /automations brand film (Remotion). Kept apart from the Next app.",
   "scripts": {
     "studio": "remotion studio src/index.ts",
-    "render:mp4": "remotion render src/index.ts BrandFilm out/brand-film.mp4 --codec=h264 --crf=26 --pixel-format=yuv420p",
-    "render:webm": "remotion render src/index.ts BrandFilm out/brand-film.webm --codec=vp9 --crf=36",
-    "render:poster": "remotion still src/index.ts BrandFilm out/brand-film-poster.png --frame=0"
+    "render:mp4": "remotion render src/index.ts BrandFilm out/brand-film.mp4 --codec=h264 --crf=29 --x264-preset=slow --pixel-format=yuv420p",
+    "render:webm": "remotion render src/index.ts BrandFilm out/brand-film.webm --codec=vp9 --crf=46",
+    "render:poster": "remotion still src/index.ts BrandFilm out/brand-film-poster.png --frame=215"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.8.2",
     "@remotion/cli": "4.0.536",
     "@remotion/fonts": "^4.0.536",
     "@remotion/google-fonts": "4.0.536",
+    "@remotion/media": "^4.0.536",
+    "@remotion/motion-blur": "^4.0.536",
+    "@remotion/three": "^4.0.536",
+    "@remotion/transitions": "^4.0.536",
+    "@types/three": "^0.186.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "remotion": "4.0.536"
+    "remotion": "4.0.536",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

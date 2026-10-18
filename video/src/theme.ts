@@ -27,9 +27,18 @@ export const EXPO = Easing.bezier(0.16, 1, 0.3, 1);
 export const EXPO_IN = Easing.bezier(0.7, 0, 0.84, 0);
 export const EXPO_INOUT = Easing.bezier(0.87, 0, 0.13, 1);
 
-// Every change lands on a beat: 120 bpm, one beat every 15 frames at 30 fps.
-export const BEAT = 15;
+// Every change lands on a beat: an imagined 106 bpm, one beat every 17 frames
+// at 30 fps. The five moments cut fast; "how we work" breathes slower.
+export const BEAT = 17;
 
 export const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 export const OBJECTS = ["01-concierge", "02-reactivation", "03-follow-up", "04-launch", "05-deed"].map((n) => staticFile(`objects/${n}-v1-1200.webp`));
+
+// Real footage (Seedance 2.5, image-to-video from the stills; each loops) for
+// three objects; 03 and 05 are modelled in 3D (scenes/Chrome3D.tsx).
+export const CLIPS: Record<number, string> = {
+  0: staticFile("clips/01-concierge.mp4"),
+  1: staticFile("clips/02-reactivation.mp4"),
+  3: staticFile("clips/04-launch.mp4"),
+};
