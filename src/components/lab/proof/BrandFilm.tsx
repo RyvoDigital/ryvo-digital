@@ -49,11 +49,11 @@ export default function BrandFilm({ label }: { label: string }) {
             loop
             playsInline
             preload="metadata"
-            poster={`${M}/brand-film-poster-v2-1920.webp`}
+            poster={`${M}/brand-film-poster-v3-1920.webp`}
             aria-label="A short silent film about what Ryvo builds: five automations, from the first contact until after the deed"
           >
-            <source src={`${M}/brand-film-v2.webm`} type="video/webm" />
-            <source src={`${M}/brand-film-v2.mp4`} type="video/mp4" />
+            <source src={`${M}/brand-film-v3.webm`} type="video/webm" />
+            <source src={`${M}/brand-film-v3.mp4`} type="video/mp4" />
           </video>
           <span className={f.glass} aria-hidden="true" />
         </div>

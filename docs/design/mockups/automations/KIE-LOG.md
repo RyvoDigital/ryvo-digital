@@ -80,3 +80,14 @@ Budget: up to 600 credits for footage. **Balance before: 1,633. Used: 539. Balan
 **Prompt:** "Premium product film. The single polished liquid-chrome object slowly turns about its vertical axis and floats gently up and down, centred, on a pure seamless black studio background. The camera is locked off. Soft studio light glides across the mirror chrome… It ends exactly in its starting pose, for a seamless loop. No other objects, no text, no logo, no people, no colour cast."
 
 Files: `video/public/clips/{01-concierge,02-reactivation,04-launch}.mp4` (source footage for Remotion; not served on the site).
+
+## Round 5 (18 Oct 2026): footage for 03 and 05 (Seedance 2.5)
+
+Budget about 360. **Price checked first** (round 4's measured rate: 480p costs 28 credits/s), so 4 s at 480p = 112 credits each, the same settings as 02 and 04. **Balance before: 1,094. Used: 224. Balance after: 870.**
+
+| # | Name | Task id | Credits | Settings | Verdict |
+|---|---|---|---|---|---|
+| 17 | 03-follow-up | ca970c2e98083df815868b667628e9ef | 112 | 480p (640 × 640), 4 s | **Kept.** The key turns edge-on and back; loops (first vs last frame: 2.8/255 mean difference) |
+| 18 | 05-deed | 89c545791db00a5a0aab308038fd7160 | 112 | 480p (640 × 640), 4 s | **Kept.** The pen rolls slowly, light gliding along the barrel; loops (0.8/255) |
+
+Input and prompt as in round 4 (each object's still as first and last frame, `aspect_ratio: adaptive`, no audio, `prompts/turn.txt`). They replace the 3D key and pen in the film, and all five clips now also turn the resting object in the hero's vitrine.

@@ -35,10 +35,6 @@ export const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as 
 
 export const OBJECTS = ["01-concierge", "02-reactivation", "03-follow-up", "04-launch", "05-deed"].map((n) => staticFile(`objects/${n}-v1-1200.webp`));
 
-// Real footage (Seedance 2.5, image-to-video from the stills; each loops) for
-// three objects; 03 and 05 are modelled in 3D (scenes/Chrome3D.tsx).
-export const CLIPS: Record<number, string> = {
-  0: staticFile("clips/01-concierge.mp4"),
-  1: staticFile("clips/02-reactivation.mp4"),
-  3: staticFile("clips/04-launch.mp4"),
-};
+// Real footage for all five (Seedance 2.5, image-to-video from the stills;
+// each begins and ends on its still, so it loops). See KIE-LOG.md.
+export const CLIPS = ["01-concierge", "02-reactivation", "03-follow-up", "04-launch", "05-deed"].map((n) => staticFile(`clips/${n}.mp4`));

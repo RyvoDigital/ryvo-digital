@@ -2,10 +2,9 @@ import { Video } from "@remotion/media";
 import { interpolate, useCurrentFrame } from "remotion";
 import { Letters, Line, Words } from "../parts";
 import { BEAT, C, CLIPS, EXPO, MONO, SANS, clamp } from "../theme";
-import { Chrome3D } from "./Chrome3D";
 
 // 3 · One moment per automation, 6 beats: the object in motion (its own
-// footage, or 03 and 05 in 3D) arrives out of focus and sharpens in front of
+// footage) arrives out of focus and sharpens in front of
 // its own giant numeral; light sweeps over it; the name rises letter by
 // letter and the tagline arrives word by word. A slow push throughout.
 
@@ -33,12 +32,8 @@ export const Moment = ({ index, title, tagline }: { index: number; title: string
         <Letters text={num} at={0} step={3} />
       </div>
       <div style={{ position: "absolute", left: 210, top: 250, width: OBJ, height: OBJ, scale: `${push}`, translate: `${drift}px 0`, filter: focus > 0.05 ? `blur(${focus}px)` : undefined, opacity: interpolate(frame, [0, 8], [0, 1], clamp) }}>
-        {clip && <div style={{ position: "absolute", inset: -40, borderRadius: "50%", background: "radial-gradient(closest-side, rgba(205,209,217,0.13), transparent 72%)" }} />}
-        {clip ? (
-          <Video src={clip} loop muted objectFit="contain" style={{ position: "absolute", inset: 0, width: OBJ, height: OBJ, mixBlendMode: "lighten", maskImage: "radial-gradient(closest-side, #000 78%, transparent)", WebkitMaskImage: "radial-gradient(closest-side, #000 78%, transparent)" }} />
-        ) : (
-          <div style={{ position: "absolute", inset: 0 }}><Chrome3D which={index === 2 ? "key" : "pen"} size={OBJ} /></div>
-        )}
+        <div style={{ position: "absolute", inset: -40, borderRadius: "50%", background: "radial-gradient(closest-side, rgba(205,209,217,0.13), transparent 72%)" }} />
+        <Video src={clip} loop muted objectFit="contain" style={{ position: "absolute", inset: 0, width: OBJ, height: OBJ, mixBlendMode: "lighten", maskImage: "radial-gradient(closest-side, #000 78%, transparent)", WebkitMaskImage: "radial-gradient(closest-side, #000 78%, transparent)" }} />
         {/* a band of light passing over the object */}
         <div style={{ position: "absolute", inset: 0, mixBlendMode: "screen", pointerEvents: "none", maskImage: "radial-gradient(closest-side, #000 55%, transparent)", WebkitMaskImage: "radial-gradient(closest-side, #000 55%, transparent)", background: `linear-gradient(115deg, transparent ${sweep - 14}%, rgba(240,242,246,0.16) ${sweep}%, transparent ${sweep + 14}%)` }} />
       </div>

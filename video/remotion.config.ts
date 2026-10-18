@@ -4,5 +4,3 @@ import { Config } from "@remotion/cli/config";
 // could not reach remotion.media to download Chrome Headless Shell), e.g.
 // REMOTION_CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 if (process.env.REMOTION_CHROME) Config.setBrowserExecutable(process.env.REMOTION_CHROME);
-// WebGL for the two 3D objects (scenes/Chrome3D.tsx).
-Config.setChromiumOpenGlRenderer("angle");

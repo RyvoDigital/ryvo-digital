@@ -9,19 +9,15 @@
     "render:poster": "remotion still src/index.ts BrandFilm out/brand-film-poster.png --frame=215"
   },
   "dependencies": {
-    "@react-three/fiber": "^9.8.2",
     "@remotion/cli": "4.0.536",
     "@remotion/fonts": "^4.0.536",
     "@remotion/google-fonts": "4.0.536",
     "@remotion/media": "^4.0.536",
     "@remotion/motion-blur": "^4.0.536",
-    "@remotion/three": "^4.0.536",
     "@remotion/transitions": "^4.0.536",
-    "@types/three": "^0.186.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "remotion": "4.0.536",
-    "three": "^0.186.1"
+    "remotion": "4.0.536"
   },
   "devDependencies": {
     "@types/react": "19.3.0",
