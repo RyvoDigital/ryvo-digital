@@ -139,6 +139,45 @@ Chromium (Playwright and Manuel's Chrome 154) refracts. WebKit (Playwright 2368)
 without the bend and has no console errors. Scrolling the whole palette at 1440: p95 frame 16.8 ms,
 one frame at 33 ms out of 629, with only the on-screen lenses live.
 
+### Glass round 3 (18 Oct 2026): three borderless specimens, `/lab/glass`
+Manuel on round 2: "Way more elegant, minimalistic and more beautiful. I don't like the borders… it's
+something you'd get for €5 at a cheap store, not a high-end Loro Piana glass item." Round 2 stacked
+effects (outline, bevel band, inner hairline, double rim, fringes, caustics, glossy knob); stacked
+effects read as cheap. Round 3 removes all of them. Nothing is rolled out until Manuel picks.
+
+**What makes the references feel expensive (study: Apple HIG Materials + Liquid Glass, visionOS,
+apple.com, rauno.me, emilkowal.ski, linear.app, vercel.com, arc.net, Mobbin, 21st.dev):**
+1. Glass is a separate, sparing layer for controls and navigation, never decoration on content. Apple says to use it "sparingly", never stacked glass on glass.
+2. The edge comes from the blur and a step in brightness against what is behind, never from a stroke. The best borderless examples (Bond, Halide on Mobbin) have no outline at all.
+3. Shadows are large, soft and almost invisible: several layers at 2–6% black (Vercel's menu stack). At most one quiet highlight.
+4. Legibility comes from tint (a "thicker" material where there is text), not from effects. Clear glass over bright content gets a dimming layer (Apple: 35%).
+5. Motion is short and starts fast with an ease-out, `cubic-bezier(.23,1,.32,1)` at 150–300 ms (Emil, Vercel, Linear), and nothing springs. Corners are continuous and concentric with their container.
+
+**The specimens** (`src/components/lab/Specimens.tsx`, `specimens.module.css`; one card, a two-option
+tab switch, two switch rows and a chip, over the light room, the mercury glow and a chrome object):
+- **A Satin:** acid-etched frost, `blur(28px) saturate(1.8)` with a whisper of white fading down; on dark backdrops it sits over a dim, thicker where there is text.
+- **B Crystal:** no blur. A low-strength edge bend in Chromium (the round-2 lens, scale ≤ 0.42 × bezel, least on pills), a 35% dim on dark backdrops, and a deeper dim under body text.
+- **C Smoked:** a deep dark tint over `blur(16px)`, like a watch crystal at night.
+
+Shared rules:
+- No borders, outlines, bevels, double rims or fringes.
+- One highlight only: a hairline on the top edge (1 px, or 0.5 px on retina) that fades out before the corners. It is clipped inside the shape so it can never float past a squircle corner.
+- Three soft shadow layers, about 4–8% on light backdrops.
+- `corner-shape: squircle` (radius × 1.6) where supported, with a plain radius elsewhere.
+- Plain switches: a soft filled track and a white knob with a soft shadow.
+- Motion: 0.25–0.32 s on Emil's ease-out; a 1 px lift on hover.
+
+**Checked:**
+- **Contrast:** worst-case contrast for every text sample was measured against the real pixels behind it (the 98th-percentile pixel, with the text hidden). That is body, title, tab, row label and chip, in 9 cells (45 samples), and all pass AA (≥ 4.5). The two lowest are Crystal's card over the chrome object (4.71) and Satin's tab there (4.75). Two fixes came out of this measurement, not from looking: Satin needed a dim under its frost over the chrome object (it was 1.37), and Crystal needed a dim (its inactive tab label was 1.92).
+- **Chromium (1440 and 390):** no console errors, no sideways scroll, 60 fps scrolling, and every label is the topmost element at its centre.
+- **WebKit:** no errors and no sideways scroll. **Playwright's headless WebKit does not render `backdrop-filter` at all**, not even on a bare test page (`glass-specimens/webkit-test-backdrop-filter-not-rendered.jpg`). So its screenshots show only the no-blur fallback (tint, hairline, shadow), which still reads as intentional. The frost itself has to be looked at in real Safari. (This also means round 2's "WebKit shows clean glass" was the fallback, not the frost.)
+- **WebKit layering:** a negative z-index layer inside an isolated element leaves the backdrop filter nothing to see, so the material uses neither.
+- **Screens** are in `glass-specimens/`:
+  - each specimen over each backdrop: `A-satin-over-room.jpg` and the rest;
+  - the 3 backdrop rows side by side;
+  - 3× corner crops for every specimen and backdrop: `*-corner-3x-*.jpg`;
+  - the WebKit rows and one 390 shot.
+
 ## C. Animated icons: the approach (palette piece 04)
 
 **Chosen: inline SVG line icons, drawn with GSAP.** Stroke-dashoffset is DrawSVG's technique, and

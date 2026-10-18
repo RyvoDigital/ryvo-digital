@@ -1,0 +1,128 @@
+/* Glass round 3: three borderless specimens (RESEARCH.md §B). Light and
+   shadow alone define the edge: no borders, outlines, bevels, double rims or
+   fringes. One light source, from above; at most one highlight, a hairline on
+   the top edge that fades out before the corners. */
+
+.page { padding: 0 var(--gutter) 120px; max-width: 1440px; margin: 0 auto; }
+.top { padding: 72px 0 36px; display: grid; gap: 14px; }
+.h1 { font-size: clamp(40px, 6vw, 84px); margin: 0; }
+.lead { max-width: 640px; color: var(--color-body); margin: 0; }
+
+.heads, .row { display: grid; gap: 16px; }
+@media (min-width: 1100px) { .heads, .row { grid-template-columns: repeat(3, 1fr); } }
+.heads { padding: 20px 0 14px; position: sticky; top: 0; z-index: 5; background: linear-gradient(180deg, var(--color-page) 70%, transparent); }
+@media (max-width: 1099px) { .heads { display: none; } }
+.head { display: grid; gap: 4px; }
+.headName { font-size: 20px; font-weight: 600; font-stretch: 108%; letter-spacing: -0.02em; margin: 0; }
+.headLine { margin: 0; color: var(--color-steel); font-size: 14px; }
+.rowLabel { padding: 34px 0 12px; }
+.cellLabel { display: none; }
+@media (max-width: 1099px) { .cellLabel { display: block; position: absolute; left: 20px; top: 16px; z-index: 2; } }
+
+/* ── Backdrops ─────────────────────────────────────────────────────────── */
+.panel { position: relative; overflow: hidden; border-radius: 28px; min-height: 600px; padding: 64px 28px 44px; display: grid; align-content: center; justify-items: center; }
+.room { background: #d9d6d1 url(/media/websites/gallery-1000.webp) center / cover no-repeat; }
+.glow { background: radial-gradient(55% 55% at 45% 42%, rgba(205, 209, 217, 0.26), transparent 70%), radial-gradient(40% 40% at 70% 78%, rgba(205, 209, 217, 0.12), transparent 70%), #0b0c0e; }
+.glowRing { position: absolute; left: 50%; top: 46%; width: 340px; height: 340px; translate: -50% -50%; border-radius: 50%; border: 16px solid transparent; background: var(--chrome) border-box; -webkit-mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); opacity: 0.55; }
+.object { background: radial-gradient(60% 60% at 50% 50%, rgba(205, 209, 217, 0.12), transparent 70%), #07080a; }
+.objectImg { position: absolute; left: 50%; top: 50%; width: 120%; max-width: 640px; translate: -50% -50%; -webkit-mask: radial-gradient(closest-side, #000 60%, transparent 100%); mask: radial-gradient(closest-side, #000 60%, transparent 100%); pointer-events: none; }
+
+.set { position: relative; z-index: 1; width: min(360px, 100%); display: grid; gap: 18px; justify-items: stretch; }
+.setRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+/* ── The material ──────────────────────────────────────────────────────── */
+.pane { --r: 26px; position: relative; border-radius: var(--r); color: var(--ink); transition: translate 0.3s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s cubic-bezier(0.23, 1, 0.32, 1); }
+.pill { --r: 999px; }
+/* Continuous corners where the browser can draw them. A squircle reads
+   tighter than a circle of the same radius, so the radius grows with it. */
+@supports (corner-shape: squircle) {
+  .pane { corner-shape: squircle; border-radius: calc(var(--r) * 1.6); }
+  .pill { border-radius: 999px; }
+}
+/* Content sits above the glass layer. No isolation and no negative z-index:
+   in WebKit either one leaves the backdrop filter nothing to see. */
+.pane > * { position: relative; z-index: 1; }
+.pane > .bg { position: absolute; inset: 0; border-radius: inherit; corner-shape: inherit; overflow: hidden; z-index: 0; pointer-events: none; }
+/* The one highlight: a hairline of light on the top edge, fading out well
+   before the corners. 1 px on standard screens, 0.5 px on retina. */
+.hair { position: absolute; top: 0; left: max(16%, calc(var(--r) * 0.9)); right: max(16%, calc(var(--r) * 0.9)); height: 1px; z-index: 0; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, var(--hair, 0.6)) 32%, rgba(255, 255, 255, var(--hair, 0.6)) 68%, transparent); transform-origin: top; }
+.pill .hair { left: 24%; right: 24%; }
+@media (min-resolution: 2dppx) { .hair { transform: scaleY(0.5); } }
+
+/* Shadows you notice only when you look for them: three soft layers. */
+.light { --ink: #0b0c0e; --ink2: #3a3e44; --sh: 0 1px 1px rgba(20, 22, 26, 0.04), 0 8px 22px rgba(20, 22, 26, 0.06), 0 26px 64px rgba(20, 22, 26, 0.08); --sh2: 0 1px 1px rgba(20, 22, 26, 0.05), 0 12px 28px rgba(20, 22, 26, 0.08), 0 34px 80px rgba(20, 22, 26, 0.1); }
+.dark { --ink: #f1f2f4; --ink2: #c4c8ce; --sh: 0 1px 1px rgba(0, 0, 0, 0.18), 0 10px 26px rgba(0, 0, 0, 0.22), 0 30px 70px rgba(0, 0, 0, 0.28); --sh2: 0 1px 1px rgba(0, 0, 0, 0.2), 0 14px 32px rgba(0, 0, 0, 0.26), 0 38px 90px rgba(0, 0, 0, 0.32); }
+.pane.lift { box-shadow: var(--sh); }
+@media (hover: hover) { .pane.lift:hover { translate: 0 -1px; box-shadow: var(--sh2); } }
+
+/* A Satin: acid-etched frost. Strong blur, gentle saturation, a whisper of
+   white fading from top to bottom. No grain. */
+.satin .bg { -webkit-backdrop-filter: blur(28px) saturate(1.8); backdrop-filter: blur(28px) saturate(1.8); }
+.satin.dark .bg { background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)), rgba(14, 15, 18, 0.3); }
+/* A thicker material where there is text: the frost sits over a dim, so a
+   bright object behind it never washes the words out. */
+.satin.dark.card .bg { background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)), rgba(14, 15, 18, 0.66); }
+.satin.light .bg { background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3)); }
+.satin { --hair: 0.7; }
+
+/* B Crystal: almost invisible. No blur; a soft lens bend at the very edge
+   (Chromium) and the hairline. A trace of tone keeps text legible. */
+.crystal .bg { background: rgba(255, 255, 255, 0.025); }
+.crystal.light .bg { background: rgba(255, 255, 255, 0.38); }
+/* Clear glass never sharpens text over bright detail on its own: like Apple's
+   clear material, it dims what is behind it (35% on dark backdrops), and the
+   text card dims further so body text stays AA. Still no blur: the backdrop
+   stays sharp, only darker. */
+.crystal.dark .bg { background: rgba(8, 9, 11, 0.52); }
+.crystal.dark.card .bg { background: rgba(8, 9, 11, 0.7); }
+.crystal.light.card .bg { background: rgba(255, 255, 255, 0.62); }
+.crystal { --hair: 0.85; }
+.crystal.dark { --hair: 0.45; }
+
+/* C Smoked: deep tinted glass, like a watch crystal at night. */
+.smoked { --ink: #f1f2f4; --ink2: #c4c8ce; }
+.smoked .bg { -webkit-backdrop-filter: blur(16px) saturate(1.15); backdrop-filter: blur(16px) saturate(1.15); background: linear-gradient(180deg, rgba(14, 15, 18, 0.66), rgba(9, 10, 12, 0.76)); }
+.smoked.light .bg { background: linear-gradient(180deg, rgba(14, 15, 18, 0.76), rgba(9, 10, 12, 0.84)); }
+.smoked { --hair: 0.32; }
+
+/* ── The set ───────────────────────────────────────────────────────────── */
+.card { padding: 30px 30px 32px; display: grid; gap: 10px; }
+.kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink2); opacity: 0.85; }
+.cardTitle { margin: 0; font-size: 22px; font-weight: 600; font-stretch: 106%; letter-spacing: -0.02em; line-height: 1.2; color: var(--ink); }
+.cardText { margin: 0; font-size: 15px; line-height: 1.55; color: var(--ink2); }
+
+.tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; }
+.tab { position: relative; z-index: 2; min-height: 40px; border: 0; background: none; font: 500 14px var(--font-sans); color: var(--ink2); cursor: pointer; transition: color 0.25s cubic-bezier(0.23, 1, 0.32, 1); border-radius: 999px; }
+.tab[aria-selected="true"] { color: var(--ink); }
+.crystal .tab { color: var(--ink); }
+.tab:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+.thumb { position: absolute; z-index: 1; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); transition: transform 0.32s cubic-bezier(0.23, 1, 0.32, 1); }
+.satin .thumb .bg { background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.12)); }
+.satin.light .thumb .bg { background: rgba(255, 255, 255, 0.82); }
+.crystal .thumb .bg { background: rgba(255, 255, 255, 0.08); }
+.crystal.light .thumb .bg { background: rgba(255, 255, 255, 0.5); }
+.smoked .thumb .bg { background: rgba(255, 255, 255, 0.12); }
+
+.swRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px 12px 22px; cursor: pointer; }
+.swLabel { font-size: 15px; color: var(--ink); transition: opacity 0.28s cubic-bezier(0.23, 1, 0.32, 1); }
+.swRow[data-on="false"] .swLabel { opacity: 0.45; }
+/* The switch: a soft filled track and a plain white knob with a soft shadow. */
+.sw { position: relative; flex: none; width: 52px; height: 32px; padding: 0; border: 0; border-radius: 999px; cursor: pointer; background: var(--off); transition: background 0.28s cubic-bezier(0.23, 1, 0.32, 1); -webkit-tap-highlight-color: transparent; }
+.sw::before { content: ""; position: absolute; inset: -6px -4px; }
+.dark .sw, .smoked .sw { --off: rgba(120, 120, 128, 0.32); --on: #a9aeb6; }
+.light .sw { --off: rgba(120, 120, 128, 0.2); --on: #2b2e33; }
+.smoked.light .sw { --off: rgba(120, 120, 128, 0.32); --on: #a9aeb6; }
+.sw[aria-checked="true"] { background: var(--on); }
+.sw:active .knob { width: 32px; }
+.sw[aria-checked="true"]:active .knob { transform: translateX(16px); }
+.sw:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.knob { position: absolute; top: 2px; left: 2px; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16), 0 3px 1px rgba(0, 0, 0, 0.04); transition: width 0.2s cubic-bezier(0.23, 1, 0.32, 1), transform 0.28s cubic-bezier(0.23, 1, 0.32, 1); }
+.sw[aria-checked="true"] .knob { transform: translateX(20px); }
+.swRow[data-on="false"] .sw { opacity: 0.7; }
+
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 12px; font-size: 13px; font-weight: 500; color: var(--ink); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.55; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pane, .thumb, .knob, .sw, .tab, .swLabel { transition: none; }
+}

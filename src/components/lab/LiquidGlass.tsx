@@ -35,7 +35,7 @@ type Props = {
 } & Record<string, unknown>;
 
 let chromium: boolean | null = null;
-function isChromium() {
+export function isChromium() {
   if (chromium === null) {
     // backdrop-filter: url() renders in Chromium only. WebKit parses it but
     // draws nothing; Firefox ignores it. iOS Chrome (CriOS) is WebKit.
@@ -48,7 +48,7 @@ function isChromium() {
 const maps = new Map<string, string>();
 
 /** The lens map: red/green hold the x/y displacement (0.5 = none). */
-function lensMap(w: number, h: number, r: number, bezel: number, magnify: number) {
+export function lensMap(w: number, h: number, r: number, bezel: number, magnify: number) {
   const key = `${w}|${h}|${r}|${bezel}|${magnify}`;
   const hit = maps.get(key);
   if (hit) return hit;
