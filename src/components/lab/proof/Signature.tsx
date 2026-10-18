@@ -10,8 +10,20 @@ import s from "./proof.module.css";
 // within 800 px of view; it renders from gsap.ticker only while on screen and
 // in a visible tab, at a pixel ratio of at most 2. Without WebGL the poster
 // stays; under reduced motion one still frame is drawn.
-export default function Signature({ sig, kind, objects, poster, label }: { sig: Sig; kind: StageKind; objects: number[]; poster: number; label: string }) {
+export type SignatureApi = { renderNow: () => void };
+
+type Props = {
+  sig: Sig; kind: StageKind; objects: number[]; poster: number; label: string;
+  // The hero's carousel: read every tick; told when the stage leaves or returns.
+  getPos?: () => number;
+  onVisible?: (visible: boolean) => void;
+  onReady?: (api: SignatureApi) => void;
+};
+
+export default function Signature({ sig, kind, objects, poster, label, getPos, onVisible, onReady }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
+  const hooks = useRef({ getPos, onVisible, onReady });
+  useEffect(() => { hooks.current = { getPos, onVisible, onReady }; });
   const canvas = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -49,7 +61,7 @@ export default function Signature({ sig, kind, objects, poster, label }: { sig: 
           stage!.resize();
         };
         measure();
-        const ro = new ResizeObserver(() => { measure(); if (!ticking) stage!.render(m.gsap.ticker.time); });
+        const ro = new ResizeObserver(() => { measure(); if (!ticking) { stage!.setPos(hooks.current.getPos?.() ?? 0); stage!.render(m.gsap.ticker.time); } });
         ro.observe(el!);
         m.ScrollTrigger.addEventListener("refresh", measure);
         cleanups.push(() => { ro.disconnect(); m.ScrollTrigger.removeEventListener("refresh", measure); });
@@ -73,6 +85,7 @@ export default function Signature({ sig, kind, objects, poster, label }: { sig: 
         }
 
         const tick = (time: number) => {
+          stage!.setPos(hooks.current.getPos?.() ?? 0);
           stage!.setScroll(progress());
           stage!.setPointer(ptr.x, ptr.y);
           stage!.render(time);
@@ -89,23 +102,29 @@ export default function Signature({ sig, kind, objects, poster, label }: { sig: 
         };
         cleanups.push(pause);
 
+        hooks.current.onReady?.({ renderNow: () => { stage!.setPos(hooks.current.getPos?.() ?? 0); stage!.render(m.gsap.ticker.time); } });
         if (reduced) {
           stage.setIntro(1);
           stage.render(0);
+          const vis = new IntersectionObserver(([e]) => hooks.current.onVisible?.(e.isIntersecting));
+          vis.observe(el!);
+          cleanups.push(() => vis.disconnect());
         } else {
           // The entrance: driven by a GSAP tween on the same ticker.
           const intro = { k: 0 };
-          const startIntro = () => m.gsap.to(intro, { k: 1, duration: kind === "hero" ? 2.6 : 2.2, ease: "expo.out", onUpdate: () => stage!.setIntro(intro.k) });
+          // The hero opens at rest (01 already inside the crystal); the close rises in.
+          const startIntro = () => kind === "hero" ? undefined : m.gsap.to(intro, { k: 1, duration: 2.2, ease: "expo.out", onUpdate: () => stage!.setIntro(intro.k) });
           let introStarted = false;
           const vis = new IntersectionObserver(([e]) => {
             onScreen = e.isIntersecting;
+            hooks.current.onVisible?.(onScreen && !document.hidden);
             if (onScreen && !document.hidden) {
               play();
               if (!introStarted) { introStarted = true; startIntro(); }
             } else pause();
           }, { rootMargin: "80px 0px" });
           vis.observe(el!);
-          const onVis = () => (document.hidden ? pause() : onScreen && play());
+          const onVis = () => { hooks.current.onVisible?.(onScreen && !document.hidden); if (document.hidden) pause(); else if (onScreen) play(); };
           document.addEventListener("visibilitychange", onVis);
           cleanups.push(() => { vis.disconnect(); document.removeEventListener("visibilitychange", onVis); });
           stage.render(0);

@@ -25,3 +25,15 @@ One family: same rig prompt for 01; 02–05 were made **from 01 as the reference
 **Cut-outs (free, local):** BiRefNet (`ZhengPeng7/BiRefNet`, MIT) at 1024 on Apple MPS. The HR-matting variant was tried first and rejected: it treats the dark mirror faces as see-through. Files: `public/media/proof/objects/`, AVIF + WebP at 480/800/1200 px, versioned `-v1`.
 
 No video generated.
+
+## Round 2 (18 Oct 2026): the display for the 01 film
+
+Cap left for this page: 384. **Balance before: 1,729. Used: 24 (1 × 24). Balance after: 1,705.** One take was enough, so the second budgeted take was not used.
+
+| # | Name | Task id | Credits | Ref | Verdict |
+|---|---|---|---|---|---|
+| 10 | display-a | f4bbeb4530cad9b58c71484ad2c0ed0b | 24 | none | **Kept.** Perfectly frontal, so the screen is an exact rectangle (2,954 × 1,654 px, 16:9) and the film needs no perspective warp. No logo or marks anywhere |
+
+**Prompt (16:9, 4K):** a premium desktop display, an ultra-thin slab of bead-blasted silver aluminium with a slim even black glass border, on a thin aluminium stand with a flat foot; perfectly front-on at the height of the screen's centre; the screen on, showing a flat uniform mid-grey (#7F7F7F) so its edges can be measured exactly; no logo, lettering, notch, buttons or brand marks anywhere; seamless deep black; one strip light high left, a rim light behind right, a faint glow under the foot.
+
+**Processing:** cut out with BiRefNet; the screen found from the grey (x 1277–4230, y 474–2127) and painted dark glass; cropped and exported to `public/media/proof/device/display-v1-{760,1200,1800}.{avif,webp}`. The film plays in code over the screen rectangle (left 4.404%, top 5.753%, width 91.687%, height 67.564% of the image).

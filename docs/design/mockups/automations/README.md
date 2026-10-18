@@ -2,10 +2,11 @@
 
 One page, built to decide the signature. Dev only: 404 in production, noindex, linked from nowhere. The real `/automations` is untouched.
 
+> **Round 2 (18 Oct):** one version now (crystal hero, mercury close, no `?sig` switch); see `round2/README.md`. Round 1's notes below are kept as the record.
+
 ```
 cd ~/ryvo-website-automations && npx next dev -p 3001
-localhost:3001/lab/automations/proof?sig=crystal   (the default)
-localhost:3001/lab/automations/proof?sig=chrome
+localhost:3001/lab/automations/proof
 ```
 
 Code: `src/app/lab/automations/proof/page.tsx`, `src/components/lab/proof/`. Objects: `public/media/proof/objects/` (see `KIE-LOG.md`). What I took from the study: `NOTES.md`.

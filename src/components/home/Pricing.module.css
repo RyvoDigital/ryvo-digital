@@ -140,3 +140,8 @@
 @media (min-width: 1024px) {
   .itemName { font-size: 19px; }
 }
+
+/* Only with addOns (the /automations picker): the row's amount, right-aligned. */
+.itemPrice { margin-left: auto; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--color-body); }
+.item[data-on="false"] .itemPrice { color: var(--color-steel); }
+@media (min-width: 1024px) { .itemPrice { font-size: 16px; } }

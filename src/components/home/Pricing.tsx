@@ -6,12 +6,15 @@ import type { Locale } from "@/i18n/config";
 import DigitRoll from "@/components/chrome/DigitRoll";
 import { BookButton } from "@/components/chrome/Icons";
 import { euros } from "@/lib/numbers";
-import { monthly, setup } from "@/lib/pricing";
+import { ADD_ON, BASE_MONTHLY, monthly, setup } from "@/lib/pricing";
 import styles from "./Pricing.module.css";
 
 // Tick any automations: the monthly and the one-time setup roll to their new
 // values together. Default: 01 + 02 (the approved design's Core).
-export default function Pricing({ lang, t, names, bookHref = "#book" }: { lang: Locale; t: Dictionary["pricing"]; names: string[]; bookHref?: string }) {
+// addOns (off by default, so the homepage is unchanged): each row also shows
+// what it adds. Of the chosen, the one with the highest add-on carries the
+// €350 base; every other row shows its +€ add-on.
+export default function Pricing({ lang, t, names, bookHref = "#book", addOns = false }: { lang: Locale; t: Dictionary["pricing"]; names: string[]; bookHref?: string; addOns?: boolean }) {
   const [chosen, setChosen] = useState<number[]>([0, 1]);
   const [seen, setSeen] = useState(false);
   const priceRef = useRef<HTMLSpanElement>(null);
@@ -25,6 +28,7 @@ export default function Pricing({ lang, t, names, bookHref = "#book" }: { lang: 
     return () => io.disconnect();
   }, []);
 
+  const lead = none ? -1 : chosen.reduce((a, b) => (ADD_ON[b] > ADD_ON[a] ? b : a));
   const toggle = (i: number) => setChosen((c) => (c.includes(i) ? c.filter((x) => x !== i) : [...c, i].sort()));
 
   return (
@@ -71,6 +75,7 @@ export default function Pricing({ lang, t, names, bookHref = "#book" }: { lang: 
                     </span>
                     <span className="font-mono text-[12px] text-silver">0{i + 1}</span>
                     <span className={styles.itemName}>{name}</span>
+                    {addOns && <span className={styles.itemPrice}>{i === lead ? euros(BASE_MONTHLY, lang) : `+${euros(ADD_ON[i], lang)}`}</span>}
                   </button>
                 </li>
               );

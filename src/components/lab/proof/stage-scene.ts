@@ -30,6 +30,7 @@ export type Stage = {
   setScroll: (p: number) => void; // 0 at rest, 1 when the stage has scrolled past
   setPointer: (x: number, y: number) => void; // -1..1, already smoothed by the caller
   setIntro: (k: number) => void; // 0 → 1, driven by a GSAP tween
+  setPos: (p: number) => void; // hero: object k rests in the crystal at p = k (wraps every 5)
   dispose: () => void;
 };
 
@@ -48,22 +49,12 @@ function studio(renderer: WebGLRenderer) {
     m.rotation.set(...rot);
     env.add(m);
   };
-  strip(9, 0.32, 5.5, [-5, 4.5, 2], [0.5, 0.9, 0.25]); // the long key strip, high left
+  strip(9, 0.32, 5.5, [-5, 4.5, -2.5], [0.5, 0.9, 0.25]); // the long key strip, high left (behind, so it lands on the rim)
   strip(0.22, 9, 4, [6.5, 0.5, -3], [0, -0.9, 0]); // the rim, behind right
-  strip(14, 0.12, 2.2, [0, 6.5, -2], [Math.PI / 2, 0, 0]); // a fine overhead line
-  strip(6, 3, 0.18, [0, -6, 2], [-Math.PI / 2, 0, 0]); // a faint bounce from below, so faces never go flat black
-  // In front, behind the camera: what the crystal's faces and edges mirror.
-  // Two long, narrow diagonals give the crisp streaks; nothing broad, so no glare.
-  const front = (w: number, h: number, power: number, pos: [number, number, number], tilt: number) => {
-    const m = new Mesh(new PlaneGeometry(w, h), new MeshBasicMaterial({ color: new Color().setScalar(power), side: DoubleSide }));
-    m.position.set(...pos);
-    m.lookAt(0, 0, 0);
-    m.rotateZ(tilt);
-    env.add(m);
-  };
-  front(16, 0.16, 7, [-3.5, 3.2, 7], -0.62);
-  front(10, 0.07, 5, [3.8, -1.2, 7.5], -0.62);
-  front(0.12, 12, 3.2, [7.5, 1, 4], 0);
+  strip(14, 0.12, 0.9, [0, 6.5, -4], [Math.PI / 2, 0, 0]); // a fine overhead line, set back so it lands on the rim
+  strip(6, 3, 0.08, [0, -6, -1], [-Math.PI / 2, 0, 0]); // a faint bounce from below, so faces never go flat black
+  // (Round 2: lights in front of the crystal drew a second line partway round
+  // its bevel, so every strip now sits level with or behind it.)
   const pmrem = new PMREMGenerator(renderer);
   const tex = pmrem.fromScene(env, 0).texture;
   pmrem.dispose();
@@ -237,20 +228,26 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     const common = { color: 0xffffff, ior: 1.5, envMap: envTex, envMapIntensity: 1.35, specularIntensity: 1, roughness: 0 };
     // A trace of emissive on the front faces only (the back pass would add it
     // twice and grey the slab): the volume reads as catching light, never as a hole.
-    front = new TransmissionMaterial({ ...common, side: FrontSide, emissive: new Color(0.0011, 0.0012, 0.0014) }, 12);
+    front = new TransmissionMaterial({ ...common, side: FrontSide, emissive: new Color(0.0011, 0.0012, 0.0014) }, 8);
     front.t.uThickness.value = opts.kind === "hero" ? 0.75 : 0.8;
-    front.t.uChroma.value = 0.09;
+    front.t.uChroma.value = 0.045; // a subtle split at the edge, not a smear
     front.t.uAniso.value = 0.06;
-    back = new TransmissionMaterial({ ...common, side: BackSide, envMapIntensity: 0.6 }, 6);
+    // The back faces mirror the studio faintly: at full strength their rim read
+    // as a second, broken line inside the front one.
+    back = new TransmissionMaterial({ ...common, side: BackSide, envMapIntensity: 0.04 }, 4);
     back.t.uThickness.value = 0.35;
-    back.t.uChroma.value = 0.04;
+    back.t.uChroma.value = 0.02;
     back.t.uAniso.value = 0.04;
     crystal = new Mesh(geo, front);
     crystal.position.z = opts.kind === "hero" ? 0.9 : 1.0;
     scene.add(crystal);
+    // The buffers the crystal refracts. The rim's crispness comes from the
+    // canvas itself (antialiased); these only feed the refraction, which the
+    // samples soften anyway, so half resolution is enough. The background
+    // buffer needs no MSAA (flat textured planes); the back faces get 2×.
     const rtOpts = { type: HalfFloatType, colorSpace: LinearSRGBColorSpace, depthBuffer: true };
     rtMain = new WebGLRenderTarget(2, 2, rtOpts);
-    rtBack = new WebGLRenderTarget(2, 2, rtOpts);
+    rtBack = new WebGLRenderTarget(2, 2, { ...rtOpts, samples: 2 });
   }
 
   // ── Signature: chrome ──────────────────────────────────────────────────
@@ -281,7 +278,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
   }
 
   // ── State ──────────────────────────────────────────────────────────────
-  let scroll = 0, px = 0, py = 0, intro = opts.reduced ? 1 : 0;
+  let scroll = 0, px = 0, py = 0, intro = opts.reduced || opts.kind === "hero" ? 1 : 0, pos = 0;
   let w = 1, h = 1, aspect = 1;
   let lastActive = 0;
   let focusX = 0;
@@ -295,15 +292,16 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     // Phones are taller than wide: step back so the row and the signature fit.
     const narrow = aspect < 1.1;
     camera.fov = narrow ? 34 : 28;
-    camera.position.set(0, 0.5, narrow ? (opts.kind === "hero" ? 10.2 : 11) : opts.kind === "hero" ? 9.2 : 10.5);
-    camera.lookAt(lookAt);
+    // Hero: the crystal fills about half the stage's height, centred.
+    camera.position.set(0, 0.5, opts.kind === "hero" ? (narrow ? 11.4 : 14.6) : narrow ? 11 : 10.5);
+    // Wide hero: look a little higher, so the crystal sits just below the
+    // middle, clear of the headline above and the caption below.
+    camera.lookAt(opts.kind === "hero" && !narrow ? lookAt.clone().setY(0.42) : lookAt);
     camera.updateProjectionMatrix();
     const dpr = renderer.getPixelRatio();
-    // The buffer the crystal refracts: 60% of the drawing size is plenty, the
-    // samples blur it anyway.
     if (poolMat) renderer.getDrawingBufferSize(poolMat.uniforms.uRes.value);
-    rtMain?.setSize(Math.round(w * dpr * 0.6), Math.round(h * dpr * 0.6));
-    rtBack?.setSize(Math.round(w * dpr * 0.6), Math.round(h * dpr * 0.6));
+    rtMain?.setSize(Math.round(w * dpr * 0.5), Math.round(h * dpr * 0.5));
+    rtBack?.setSize(Math.round(w * dpr * 0.5), Math.round(h * dpr * 0.5));
   };
   resize();
 
@@ -313,39 +311,34 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     const t = opts.reduced ? 0 : time;
     const n = planes.length;
     if (opts.kind === "hero") {
-      // The row glides in from the right through the crystal, then follows the
-      // scroll: one object moves on as the hero leaves.
-      const active = -2.6 * (1 - easeOutExpo(intro)) + scroll * 1.15;
+      // A loop, not a scroll: the carousel drives pos. Each object glides in,
+      // passes through the crystal and rests centred inside it, then moves on.
+      // Neighbours wait smaller and further back, and fade out before the
+      // point where the row wraps, so 05 → 01 is seamless.
       const narrow = aspect < 1.1;
-      // Wide: the crystal and the active object sit right of centre, the copy
-      // to their left. Narrow: centred, the copy is above the stage.
-      focusX = narrow ? 0 : Math.min(2.4, (aspect - 1.2) * 1.1);
-      const spacing = narrow ? SPACING * 0.92 : SPACING;
-      const reach = narrow ? 3.6 : 8.4;
+      const spacing = narrow ? 3.1 : 4.1;
       planes.forEach((m, i) => {
-        const x = focusX + (i - active) * spacing + px * 0.12;
-        const bob = Math.sin(t * 0.55 + i * 1.7) * 0.05;
-        m.position.set(x, 0.12 + bob + py * 0.05, OBJ_Z);
-        const dx = x - focusX;
-        // On wide screens an object that has passed through to the left
-        // dissolves, so it never sits behind the copy.
-        const left = narrow ? Math.min(1, Math.max(0, (reach + dx) / 1.6)) : Math.min(1, Math.max(0, 1 + (dx + 0.55 * spacing) / (0.5 * spacing)));
-        const right = Math.min(1, Math.max(0, (reach - dx) / 1.6));
-        const fade = Math.min(left, right);
-        (m.material as MeshBasicMaterial).opacity = fade * Math.min(1, intro * 1.6);
+        let d = (((i - pos) % n) + n) % n;
+        if (d > n / 2) d -= n;
+        const ad = Math.abs(d);
+        const near = Math.min(1, ad);
+        const x = d * spacing + px * 0.1;
+        const bob = Math.sin(t * 0.55 + i * 1.7) * 0.045;
+        m.position.set(x, 0.18 + bob + py * 0.04, OBJ_Z - near * 0.9);
+        m.scale.setScalar(1 - near * 0.3);
+        const fade = Math.max(0, Math.min(1, 1 - (ad - 0.45) * 0.78));
+        (m.material as MeshBasicMaterial).opacity = fade;
         const g = glows[i];
-        g.position.set(x, -1.42, OBJ_Z - 0.01);
-        (g.material as MeshBasicMaterial).opacity = fade * 0.5 * intro;
+        // The glow sits clear of the crystal's lower bevel, which would smear it into a band.
+        g.position.set(x, -1.12 + near * 0.12, m.position.z - 0.01);
+        g.scale.setScalar(1 - near * 0.3);
+        (g.material as MeshBasicMaterial).opacity = fade * 0.34;
       });
-      const nearest = Math.max(0, Math.min(n - 1, Math.round(active)));
-      if (poolMat && nearest !== lastActive && intro > 0.6) {
-        poolMat.uniforms.uWave.value.set(planes[nearest].position.x, OBJ_Z, time, 1);
-        lastActive = nearest;
-      }
       if (crystal) {
-        crystal.rotation.set(-0.05 + py * 0.08 + Math.cos(t * 0.21) * 0.02, -0.2 + px * 0.14 + Math.sin(t * 0.26) * 0.045 + scroll * 0.3, 0.0);
-        crystal.position.x = focusX;
-        crystal.position.y = 0.1 + scroll * 0.4;
+        // Tipped a touch toward the camera and barely turned: the top and side
+        // faces stay edge-on, so the rim reads as one clean line of light.
+        crystal.rotation.set(0.05 + py * 0.035 + Math.cos(t * 0.21) * 0.01, px * 0.07 + Math.sin(t * 0.26) * 0.02, 0.0);
+        crystal.position.set(0, 0.12 + scroll * 0.35, 0.9);
       }
     } else {
       const m = planes[0];
@@ -419,6 +412,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     setScroll: (p) => { scroll = p; },
     setPointer: (x, y) => { px = x; py = y; },
     setIntro: (k) => { intro = k; },
+    setPos: (p) => { pos = p; },
     dispose: () => {
       planes.forEach((m) => { m.geometry.dispose(); (m.material as MeshBasicMaterial).dispose(); });
       glows.forEach((m) => { m.geometry.dispose(); (m.material as MeshBasicMaterial).dispose(); });
