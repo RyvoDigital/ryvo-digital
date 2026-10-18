@@ -1,0 +1,54 @@
+/* Questions: a sticky side column beside numbered questions in larger type. */
+.faq {
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 36px;
+  max-width: calc(1240px + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(112px, 14vw, 200px);
+}
+.side { position: relative; }
+.sticky { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.h2 { margin: 0; font-size: clamp(40px, 5vw, 72px); }
+.line { margin: 0; max-width: 30ch; font-size: 17px; line-height: 1.55; color: var(--color-body); }
+
+.list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--color-line); counter-reset: none; }
+.row { border-bottom: 1px solid var(--color-line); }
+.qh { margin: 0; font: inherit; }
+.q {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 20px;
+  align-items: baseline;
+  gap: 16px;
+  width: 100%;
+  min-height: 76px;
+  padding: 24px 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.num { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; color: var(--color-silver); }
+.qText { font-size: clamp(19px, 1.9vw, 26px); font-weight: 500; font-stretch: 106%; letter-spacing: -0.02em; line-height: 1.25; transition: transform 0.5s var(--ease); }
+@media (hover: hover) { .q:hover .qText { transform: translateX(4px); } }
+.plus { position: relative; align-self: center; width: 16px; height: 16px; transition: transform 0.6s var(--ease); }
+.plus::before, .plus::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px; margin-top: -0.75px; border-radius: 1px; background: var(--color-silver); }
+.plus::after { transform: rotate(90deg); }
+.row[data-open="true"] .plus { transform: rotate(45deg); }
+
+/* The answer: a soft panel under its question, aligned to the question text. */
+.answer { margin: 0 0 26px 64px; padding: 22px 26px; border-radius: 20px; background: var(--color-surface); }
+.answer p { margin: 0; max-width: 58ch; font-size: 16.5px; line-height: 1.65; color: var(--color-body); }
+
+@media (max-width: 767px) {
+  .q { grid-template-columns: 34px minmax(0, 1fr) 16px; gap: 10px; padding: 20px 0; }
+  .answer { margin-left: 0; padding: 18px 20px; }
+}
+@media (min-width: 1024px) {
+  .faq { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: 56px; }
+  /* Sticky with the page, never pinned by script: it simply stays in view. */
+  .sticky { position: sticky; top: 120px; }
+}

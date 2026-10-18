@@ -1,0 +1,36 @@
+/* The brand film on a MacBook. The device is the whole section: as large as
+   one screen allows (its height is the viewport minus padding), always whole. */
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: calc(1240px + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: clamp(64px, 9vw, 120px) var(--gutter) clamp(24px, 4vw, 48px);
+}
+.device { position: relative; width: min(100%, calc((100svh - 150px) * 1.4836)); }
+.deviceImg { position: relative; z-index: 1; display: block; width: 100%; height: auto; pointer-events: none; }
+/* The film sits behind the render, showing through its screen hole. */
+.screen { position: absolute; z-index: 0; overflow: hidden; background: #000; }
+.video { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* A subtle glass reflection over the screen. */
+.glass { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 22%, transparent 38%); }
+.play {
+  position: absolute;
+  z-index: 2;
+  right: 15%;
+  bottom: 27%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-text);
+  color: var(--color-obsidian);
+  cursor: pointer;
+}
+@media (min-width: 1024px) {
+  .section { min-height: 100svh; justify-content: center; padding-top: 48px; padding-bottom: 48px; }
+}

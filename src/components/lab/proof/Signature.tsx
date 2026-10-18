@@ -16,14 +16,15 @@ type Props = {
   sig: Sig; kind: StageKind; objects: number[]; poster: number; label: string;
   // The hero's carousel: read every tick; told when the stage leaves or returns.
   getPos?: () => number;
+  getHover?: () => number;
   onVisible?: (visible: boolean) => void;
   onReady?: (api: SignatureApi) => void;
 };
 
-export default function Signature({ sig, kind, objects, poster, label, getPos, onVisible, onReady }: Props) {
+export default function Signature({ sig, kind, objects, poster, label, getPos, getHover, onVisible, onReady }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
-  const hooks = useRef({ getPos, onVisible, onReady });
-  useEffect(() => { hooks.current = { getPos, onVisible, onReady }; });
+  const hooks = useRef({ getPos, getHover, onVisible, onReady });
+  useEffect(() => { hooks.current = { getPos, getHover, onVisible, onReady }; });
   const canvas = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -86,6 +87,7 @@ export default function Signature({ sig, kind, objects, poster, label, getPos, o
 
         const tick = (time: number) => {
           stage!.setPos(hooks.current.getPos?.() ?? 0);
+          stage!.setHover(hooks.current.getHover?.() ?? 0);
           stage!.setScroll(progress());
           stage!.setPointer(ptr.x, ptr.y);
           stage!.render(time);

@@ -49,3 +49,16 @@ Cap left for this page: 360. **Balance before: 1,705. Used: 24 (1 × 24). Balanc
 **Prompt (4:3, 4K):** as round 2's, plus: the whole device fully in frame with generous black space; thin, perfectly even black borders on all four sides; a fine aluminium edge with one even highlight all the way round; a slim stand of one thin aluminium sheet curving softly to a small flat foot ("a slender, gently tapering neck, never a box"); soft even light from above and both sides.
 
 **Processing:** not cut out this time, because BiRefNet reads the black bezel on black as background and drops it. Instead every pixel darker than the page was lifted to the page colour (#07080A), so the image needs no alpha. The screen was measured from the grey (x 725–4074, y 615–2504, 3,350 × 1,890) and painted dark. Exported as `public/media/proof/device/display-v2-{760,1200,1800}.{avif,webp}`. Screen rectangle: left 5.592%, top 7.236%, width 88.842%, height 65.196% of the 3,773 × 2,902 image.
+
+## Round 3, corrected brief (18 Oct 2026): the MacBook for the brand film
+
+Cap left for this page: 336. **Balance before: 1,681. Used: 48 (2 × 24). Balance after: 1,633.** (`display-b`, from the earlier draft of this round, is no longer used on the page.)
+
+| # | Name | Task id | Credits | Ref | Verdict |
+|---|---|---|---|---|---|
+| 12 | macbook-a | 7ccb900629ca5362a9ed91c15d038849 | 24 | none | **Kept.** A full laptop, front-on: thin, even bezels, the notch at top centre, a thin slice of the base, no stand, no logo or lettering anywhere (the chin was checked at full size) |
+| 13 | macbook-b | 8a1b8a3f98a909fac786a5e721bbb1e2 | 24 | none | Rejected: it came back on a white background. Asked for a taller screen; not needed, since take A's screen measured 16:10 within 1% |
+
+**Prompt (16:9, 4K):** a premium ultra-thin laptop, open, perfectly front-on; thin even dark bezels; a small rounded camera notch at the top centre; the screen flat mid-grey (#7F7F7F, for exact measurement), visible area 16:10; only a thin slice of the keyboard base and hinge below the lid; no logo, lettering, stickers or ports; seamless deep black; soft even light from above and both sides.
+
+**Processing:** the screen found as the largest grey region (its shape keeps the notch and the rounded corners), grown by 3 px past the anti-aliased edge, and made **transparent**: the film plays behind the image, so the bezels and notch sit on top of it exactly. Screen: 2,866 × 1,806 px (1.587, i.e. 16:10 within 1%). The black around it was lifted to the page colour. Exported as `public/media/lab/automations/macbook-v1-{800,1400,2000}.{avif,webp}` (with alpha). Screen hole: left 12.329%, top 7.137%, width 75.342%, height 70.437% of the 3,804 × 2,564 image.

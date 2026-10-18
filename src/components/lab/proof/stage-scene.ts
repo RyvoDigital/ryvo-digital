@@ -6,7 +6,7 @@
 // It never runs its own animation loop: the page calls render() from
 // gsap.ticker while the stage is on screen, and never otherwise.
 import {
-  BackSide, CanvasTexture, Color, DoubleSide, FrontSide, HalfFloatType, LatheGeometry, LinearSRGBColorSpace,
+  AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, FrontSide, HalfFloatType, LatheGeometry, LinearSRGBColorSpace,
   Mesh, MeshBasicMaterial, NoToneMapping, PerspectiveCamera, PlaneGeometry, PMREMGenerator,
   Scene, ShaderMaterial, SRGBColorSpace, Texture, TextureLoader, Vector2, Vector3, Vector4, WebGLRenderer, WebGLRenderTarget,
   type BufferGeometry,
@@ -31,6 +31,7 @@ export type Stage = {
   setPointer: (x: number, y: number) => void; // -1..1, already smoothed by the caller
   setIntro: (k: number) => void; // 0 → 1, driven by a GSAP tween
   setPos: (p: number) => void; // hero: object k rests in the crystal at p = k (wraps every 5)
+  setHover: (k: number) => void; // hero: 0 → 1 while the pointer is over the scene
   dispose: () => void;
 };
 
@@ -50,6 +51,7 @@ function studio(renderer: WebGLRenderer) {
     env.add(m);
   };
   strip(9, 0.32, 5.5, [-5, 4.5, -2.5], [0.5, 0.9, 0.25]); // the long key strip, high left (behind, so it lands on the rim)
+  strip(12, 0.14, 4.2, [0, 8, 1.2], [Math.PI / 2, 0, 0]); // straight overhead: one crisp, bright top edge on the crystal
   strip(0.22, 9, 4, [6.5, 0.5, -3], [0, -0.9, 0]); // the rim, behind right
   strip(14, 0.12, 0.9, [0, 6.5, -4], [Math.PI / 2, 0, 0]); // a fine overhead line, set back so it lands on the rim
   strip(6, 3, 0.08, [0, -6, -1], [-Math.PI / 2, 0, 0]); // a faint bounce from below, so faces never go flat black
@@ -193,7 +195,23 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
 
   // The objects: one plane each, facing the camera.
   const SIZE = opts.kind === "hero" ? 3.1 : 3.2;
+  // 70% of the crystal's inner face (2.28 × 3.03) as seen on screen. The objects
+  // sit 2.5 units behind it, so perspective shrinks them by about 0.85: the box
+  // at their depth is larger by 1/0.85.
+  const FIT_W = 0.7 * 2.28 / 0.85, FIT_H = 0.7 * 3.03 / 0.85;
   const SPACING = 3.7;
+  // Each object's real bounds (from its alpha), so every object can be fitted
+  // to the same visual box inside the crystal, whatever its shape.
+  const bounds = textures.map((t) => {
+    const img = t.image as HTMLImageElement;
+    const N = 128, c = document.createElement("canvas"); c.width = c.height = N;
+    const g = c.getContext("2d", { willReadFrequently: true })!;
+    g.drawImage(img, 0, 0, N, N);
+    const d = g.getImageData(0, 0, N, N).data;
+    let x0 = N, y0 = N, x1 = 0, y1 = 0;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (d[(y * N + x) * 4 + 3] > 24) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    return { w: (x1 - x0 + 1) / N, h: (y1 - y0 + 1) / N, cx: (x0 + x1 + 1) / 2 / N - 0.5, cy: 0.5 - (y0 + y1 + 1) / 2 / N };
+  });
   const planes = textures.map((map) => {
     const m = new Mesh(new PlaneGeometry(SIZE, SIZE), new MeshBasicMaterial({ map, transparent: true, depthWrite: false, toneMapped: false }));
     m.position.z = OBJ_Z;
@@ -233,6 +251,42 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
       })
     : [];
 
+  // Hero: soft caustic light pooled beneath the crystal, and a faint reflection
+  // of its lower edge. Drawn only in the final pass, never in the buffers the
+  // crystal refracts, so its bevel can never cut them into a band.
+  let caustic: Mesh | null = null, reflection: Mesh | null = null;
+  if (opts.kind === "hero" && opts.sig === "crystal") {
+    const paint = (w: number, h: number, draw: (g: CanvasRenderingContext2D) => void) => {
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      draw(c.getContext("2d")!);
+      const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace; return t;
+    };
+    const ct = paint(512, 160, (g) => {
+      const r = g.createRadialGradient(256, 80, 0, 256, 80, 250);
+      r.addColorStop(0, "rgba(205,209,217,0.30)"); r.addColorStop(0.5, "rgba(205,209,217,0.08)"); r.addColorStop(1, "rgba(205,209,217,0)");
+      g.save(); g.scale(1, 0.32); g.translate(0, 170); g.fillStyle = r; g.fillRect(0, -170, 512, 500); g.restore();
+      // A few soft, curved threads of focused light, as a crystal throws.
+      g.filter = "blur(2.5px)"; g.strokeStyle = "rgba(255,255,255,0.22)"; g.lineWidth = 2;
+      for (const [a, b, c2] of [[140, 70, 360], [170, 92, 330], [200, 60, 300], [120, 100, 390]]) { g.beginPath(); g.moveTo(a, 80); g.quadraticCurveTo(256, b, c2, 82); g.stroke(); }
+    });
+    caustic = new Mesh(new PlaneGeometry(4.6, 1.3), new MeshBasicMaterial({ map: ct, transparent: true, depthWrite: false, toneMapped: false, blending: AdditiveBlending, opacity: 0.5 }));
+    caustic.position.set(0, -2.22, 0.5);
+    caustic.renderOrder = 4;
+    scene.add(caustic);
+    const rt2 = paint(512, 96, (g) => {
+      const v = g.createLinearGradient(0, 0, 0, 96);
+      v.addColorStop(0, "rgba(220,224,230,0.22)"); v.addColorStop(0.18, "rgba(220,224,230,0.06)"); v.addColorStop(1, "rgba(220,224,230,0)");
+      g.fillStyle = v; g.fillRect(24, 0, 464, 96);
+      const hz = g.createLinearGradient(0, 0, 512, 0);
+      hz.addColorStop(0, "rgba(0,0,0,1)"); hz.addColorStop(0.15, "rgba(0,0,0,0)"); hz.addColorStop(0.85, "rgba(0,0,0,0)"); hz.addColorStop(1, "rgba(0,0,0,1)");
+      g.globalCompositeOperation = "destination-out"; g.fillStyle = hz; g.fillRect(0, 0, 512, 96);
+    });
+    reflection = new Mesh(new PlaneGeometry(2.9, 0.55), new MeshBasicMaterial({ map: rt2, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.6 }));
+    reflection.position.set(0, -1.98, 0.9);
+    reflection.renderOrder = 4;
+    scene.add(reflection);
+  }
+
   // ── Signature: crystal ─────────────────────────────────────────────────
   let crystal: Mesh | null = null;
   let front: TransmissionMaterial | null = null;
@@ -240,7 +294,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
   let rtMain: WebGLRenderTarget | null = null;
   let rtBack: WebGLRenderTarget | null = null;
   if (opts.sig === "crystal") {
-    const geo: BufferGeometry = opts.kind === "hero" ? new RoundedBoxGeometry(3.0, 3.75, 0.72, 16, 0.36) : lensGeometry(1.25, 0.2, 0.2, 0.12);
+    const geo: BufferGeometry = opts.kind === "hero" ? new RoundedBoxGeometry(3.0, 3.75, 1.0, 16, 0.3) : lensGeometry(1.25, 0.2, 0.2, 0.12);
     const common = { color: 0xffffff, ior: 1.5, envMap: envTex, envMapIntensity: 1.35, specularIntensity: 1, roughness: 0 };
     // A trace of emissive on the front faces only (the back pass would add it
     // twice and grey the slab): the volume reads as catching light, never as a hole.
@@ -294,7 +348,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
   }
 
   // ── State ──────────────────────────────────────────────────────────────
-  let scroll = 0, px = 0, py = 0, intro = opts.reduced || opts.kind === "hero" ? 1 : 0, pos = 0;
+  let scroll = 0, px = 0, py = 0, intro = opts.reduced || opts.kind === "hero" ? 1 : 0, pos = 0, hover = 0;
   let w = 1, h = 1, aspect = 1;
   let lastActive = 0;
   let focusX = 0;
@@ -340,14 +394,23 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
         const near = Math.min(1, ad);
         const x = d * spacing + px * 0.1;
         const bob = Math.sin(t * 0.55 + i * 1.7) * 0.045;
-        m.position.set(x, 0.18 + bob + py * 0.04, OBJ_Z - near * 0.9);
-        m.scale.setScalar(1 - near * 0.3);
+        // The same visual box for every object: its real content fits at most
+        // 70% of the crystal's inner face, centred.
+        const b = bounds[i];
+        const fit = Math.min(FIT_W / (SIZE * b.w), FIT_H / (SIZE * b.h));
+        const k = fit * (1 - near * 0.3);
+        // Hover: the resting object lifts a little and turns.
+        const lift = hover * (1 - near) * 0.09;
+        m.position.set(x - b.cx * SIZE * k, 0.18 + bob + py * 0.04 + lift - b.cy * SIZE * k, OBJ_Z - near * 0.9);
+        m.scale.setScalar(k);
+        m.rotation.z = hover * (1 - near) * -0.06;
         const fade = Math.max(0, Math.min(1, 1 - (ad - 0.45) * 0.78));
         (m.material as MeshBasicMaterial).opacity = fade;
         const c = crisp[i];
         if (c) {
           c.position.copy(m.position);
           c.scale.copy(m.scale);
+          c.rotation.copy(m.rotation);
           // Fully crisp within 0.04 of rest, back to pure refraction by 0.3.
           const rest = 1 - Math.min(1, Math.max(0, (ad - 0.04) / 0.26));
           const k = rest * rest * (3 - 2 * rest);
@@ -364,8 +427,16 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
       if (crystal) {
         // Tipped a touch toward the camera and barely turned: the top and side
         // faces stay edge-on, so the rim reads as one clean line of light.
-        crystal.rotation.set(0.05 + py * 0.035 + Math.cos(t * 0.21) * 0.01, px * 0.07 + Math.sin(t * 0.26) * 0.02, 0.0);
+        // Front-on, as a thick block: a very slow idle sway (±3.5°) and a gentle
+        // pointer parallax (±5°) turn it just enough to show its depth.
+        crystal.rotation.set(0.04 + Math.cos(t * 0.17) * 0.03 + py * 0.06, Math.sin(t * 0.21) * 0.061 + px * 0.087, 0.0);
         crystal.position.set(0, 0.12 + scroll * 0.35, 0.9);
+        if (caustic && reflection) {
+          caustic.scale.set(1 + Math.sin(t * 0.3) * 0.03, 1, 1);
+          (caustic.material as MeshBasicMaterial).opacity = 0.5 + Math.sin(t * 0.47) * 0.06;
+          caustic.position.y = -2.22 + scroll * 0.35;
+          reflection.position.y = -1.98 + scroll * 0.35;
+        }
       }
     } else {
       const m = planes[0];
@@ -396,6 +467,8 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
       // faces refracting that, then the front faces refracting both.
       const shown = crisp.map((c) => c.visible);
       crisp.forEach((c) => (c.visible = false));
+      if (caustic) caustic.visible = false;
+      if (reflection) reflection.visible = false;
       // In the buffer the crystal refracts, a settling object fades out as its
       // crisp copy fades in on top: a cross-dissolve, never two images at once.
       const base = planes.map((m) => (m.material as MeshBasicMaterial).opacity);
@@ -412,6 +485,8 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
       front.t.uBuffer.value = rtBack.texture;
       renderer.setRenderTarget(null);
       crisp.forEach((c, i) => (c.visible = shown[i]));
+      if (caustic) caustic.visible = true;
+      if (reflection) reflection.visible = true;
       planes.forEach((m, i) => ((m.material as MeshBasicMaterial).opacity = base[i]));
     }
     renderer.render(scene, camera);
@@ -448,9 +523,11 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
     setPointer: (x, y) => { px = x; py = y; },
     setIntro: (k) => { intro = k; },
     setPos: (p) => { pos = p; },
+    setHover: (k) => { hover = k; },
     dispose: () => {
       planes.forEach((m) => { m.geometry.dispose(); (m.material as MeshBasicMaterial).dispose(); });
       crisp.forEach((m) => (m.material as MeshBasicMaterial).dispose());
+      for (const x of [caustic, reflection]) if (x) { x.geometry.dispose(); (x.material as MeshBasicMaterial).map?.dispose(); (x.material as MeshBasicMaterial).dispose(); }
       glows.forEach((m) => { m.geometry.dispose(); (m.material as MeshBasicMaterial).dispose(); });
       textures.forEach((t) => t.dispose());
       glowTex.dispose();

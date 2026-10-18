@@ -5,13 +5,14 @@ import Link from "next/link";
 import type { Dictionary } from "@/i18n";
 import type { Pages } from "@/i18n/pages";
 import SiteNav from "@/components/chrome/SiteNav";
-import SiteFooter from "@/components/chrome/SiteFooter";
 import { BookButton } from "@/components/chrome/Icons";
 import Pricing from "@/components/home/Pricing";
 import Signature from "./Signature";
 import HeroScene from "./HeroScene";
-import Film from "./Film";
+import BrandFilm from "./BrandFilm";
+import Report from "./Report";
 import Faq from "./Faq";
+import ProofFooter from "./ProofFooter";
 import Dock from "./Dock";
 import { objectSrc } from "./objects";
 import { refreshWhenSettled, startMotion } from "./motion";
@@ -20,6 +21,16 @@ import s from "./proof.module.css";
 type P = Pages["automations"];
 
 const BOOK = "/en/book";
+
+// A short bold title for every point, taken from the point itself (listed for
+// approval in docs/design/mockups/automations/round3/README.md).
+const POINT_TITLES: string[][] = [
+  ["Seconds, day and night", "Always disclosed", "The right questions", "Books the viewing", "Hands over to a person", "The right consultant", "“Stop” is honoured"],
+  ["Years of contacts", "Sorted by origin", "Invited back", "No cold outreach"],
+  ["Kept close", "Which buyers it suits", "No CRM needed", "Rules set with you"],
+  ["Four languages", "Legal lines in place", "Approved by your consultant"],
+  ["At the right moment", "Everyone is asked"],
+];
 
 function ObjectPicture({ i }: { i: number }) {
   const set = (ext: "avif" | "webp") => [480, 800].map((w) => `${objectSrc(i, w as 480, ext)} ${w}w`).join(", ");
@@ -31,16 +42,9 @@ function ObjectPicture({ i }: { i: number }) {
   );
 }
 
-export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; ctaLabel: string }) {
+export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p: P; ctaLabel: string; place: string }) {
   const root = useRef<HTMLDivElement>(null);
   const names = t.automationNames;
-  const first = p.items[0].points;
-  // The film's three beats reuse 01's own points (first sentence where a point is long).
-  const beats = [
-    { title: "Enquiry", text: first[0] },
-    { title: "Booked", text: "Offers free times from your Google Calendar, within your working hours, and books the viewing." },
-    { title: "Handover", text: first[5] },
-  ];
 
   useEffect(() => {
     const el = root.current;
@@ -52,13 +56,15 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
       if (cancelled) return;
       const { gsap, ScrollTrigger, SplitText, reduced } = m;
       el.dataset.motion = reduced ? "reduced" : "on";
-      if (reduced) return; // Everything is already in place: no smoothing, no scrubs.
+      if (reduced) return; // Everything is already in place: no smoothing, no scrubs, no autoplay.
 
       const ctx = gsap.context(() => {
         const q = <T extends Element = HTMLElement>(sel: string, scope: ParentNode = el) => Array.from(scope.querySelectorAll<T>(sel) as NodeListOf<T>);
+        const once = (trigger: Element, start: string, fn: () => void) => ScrollTrigger.create({ trigger, start, once: true, onEnter: fn });
         const fine = matchMedia("(pointer: fine)").matches;
+        const desk = matchMedia("(min-width: 1024px)").matches;
 
-        // ── Hero: the headline rises out of its mask; leaving, it all eases away ─
+        // ── Hero: the headline rises out of its mask; leaving, it eases away ─
         const hero = el.querySelector<HTMLElement>("[data-hero]")!;
         for (const h of q("[data-split]", hero)) {
           SplitText.create(h, {
@@ -73,27 +79,65 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
         gsap.to(q("[data-hero-copy]", hero), { y: -40, opacity: 0, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom 15%", scrub: true } });
         gsap.to(hero.querySelector("[data-hero-stage]"), { y: -60, opacity: 0, scale: 0.97, ease: "none", scrollTrigger: { trigger: hero, start: "35% top", end: "bottom top", scrub: true } });
 
-        // ── The intro line and the index ───────────────────────────────────
+        // ── Simple sections settle in once ─────────────────────────────────
         for (const sec of q("[data-section]")) {
           const items = q("[data-reveal]", sec);
           gsap.set(items, { opacity: 0, y: 24 });
-          ScrollTrigger.create({ trigger: sec, start: "top 78%", once: true, onEnter: () => gsap.to(items, { opacity: 1, y: 0, duration: 1.15, stagger: 0.06, ease: "expo.out" }) });
+          once(sec, "top 78%", () => gsap.to(items, { opacity: 1, y: 0, duration: 1.15, stagger: 0.06, ease: "expo.out" }));
         }
 
-        // ── Spreads, in page order ─────────────────────────────────────────
+        // ── The brand film: the device rises into place ─────────────────────
+        const film = el.querySelector<HTMLElement>("[data-film-section]")!;
+        gsap.set(q("[data-reveal]", film), { opacity: 0, y: 16 });
+        once(film, "top 75%", () => gsap.to(q("[data-reveal]", film), { opacity: 1, y: 0, duration: 1.1, ease: "expo.out" }));
+        gsap.fromTo(film.querySelector("[data-device]"), { y: 80, scale: 0.95 }, { y: 0, scale: 1, ease: "none", scrollTrigger: { trigger: film, start: "top bottom", end: "top 20%", scrub: true } });
+
+        // ── Five spreads, each with its own entrance ───────────────────────
         const dockLinks = q<HTMLAnchorElement>("[data-dock-link]");
         const setDock = (i: number) => dockLinks.forEach((a, k) => (a.dataset.active = String(k === i)));
-
         for (const node of q("[data-spread]")) {
           const i = Number(node.dataset.spread);
+          const numeral = node.querySelector<HTMLElement>("[data-numeral]")!;
+          const head = q("[data-head]", node);
           const obj = node.querySelector<HTMLElement>("[data-obj]")!;
-          const tilt = node.querySelector<HTMLElement>("[data-tilt]")!;
+          const pts = q("[data-point]", node);
+          const rules = q("[data-pt-rule]", node);
           const float = node.querySelector<HTMLElement>("[data-float]")!;
-          const items = q("[data-reveal]", node);
+          const tilt = node.querySelector<HTMLElement>("[data-tilt]")!;
+          gsap.set(head, { opacity: 0, y: 22 });
+          gsap.set(obj, { opacity: 0 });
+          const headIn = (d = 0) => gsap.to(head, { opacity: 1, y: 0, duration: 1.1, stagger: 0.07, ease: "expo.out", delay: d });
+          let enter: () => void;
+          if (i === 0) {
+            // 01 · the numeral slides in from the edge; the points cascade down.
+            gsap.set(numeral, { x: "-40vw", opacity: 0 });
+            gsap.set(pts, { opacity: 0, y: 30 });
+            enter = () => { gsap.to(numeral, { x: 0, opacity: 1, duration: 1.5, ease: "expo.out" }); headIn(0.15); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.3 }); gsap.to(pts, { opacity: 1, y: 0, duration: 1, stagger: 0.07, ease: "expo.out", delay: 0.35 }); };
+          } else if (i === 1) {
+            // 02 · a hairline draws over each point, then its words appear.
+            gsap.set(numeral, { opacity: 0, y: 30 });
+            gsap.set(rules, { scaleX: 0 });
+            gsap.set(pts, { opacity: 0 });
+            enter = () => { gsap.to(numeral, { opacity: 1, y: 0, duration: 1.2, ease: "expo.out" }); headIn(0.1); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.2 }); gsap.to(pts, { opacity: 1, duration: 0.9, stagger: 0.12, ease: "power2.out", delay: 0.75 }); gsap.to(rules, { scaleX: 1, duration: 1.1, stagger: 0.12, ease: "expo.inOut", delay: 0.25 }); };
+          } else if (i === 2) {
+            // 03 · the numeral rises out of its own mask; the points rise by column.
+            gsap.set(numeral, { yPercent: 100 });
+            gsap.set(pts, { opacity: 0, yPercent: 40 });
+            enter = () => { gsap.to(numeral, { yPercent: 0, duration: 1.3, ease: "expo.out" }); headIn(0.2); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.25 }); gsap.to(pts, { opacity: 1, yPercent: 0, duration: 1.1, stagger: { each: 0.1, grid: "auto", from: "start", axis: "x" }, ease: "expo.out", delay: 0.4 }); };
+          } else if (i === 3) {
+            // 04 · the points fan in like cards; the object turns into place.
+            gsap.set(numeral, { opacity: 0, x: 40 });
+            gsap.set(pts, { opacity: 0, x: 70, rotation: 3, transformOrigin: "0% 100%" });
+            gsap.set(obj, { rotation: -18 });
+            enter = () => { gsap.to(numeral, { opacity: 1, x: 0, duration: 1.2, ease: "expo.out" }); headIn(0.1); gsap.to(obj, { opacity: 1, rotation: 0, duration: 1.5, ease: "expo.out", delay: 0.15 }); gsap.to(pts, { opacity: 1, x: 0, rotation: 0, duration: 1.2, stagger: 0.12, ease: "expo.out", delay: 0.35 }); };
+          } else {
+            // 05 · the numeral settles from a soft focus; the points unveil left to right.
+            gsap.set(numeral, { opacity: 0, scale: 1.3, filter: "blur(14px)", transformOrigin: "0% 60%" });
+            gsap.set(pts, { clipPath: "inset(0 100% 0 0)" });
+            enter = () => { gsap.to(numeral, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.4, ease: "expo.out", clearProps: "filter" }); headIn(0.15); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.2 }); gsap.to(pts, { clipPath: "inset(0 0% 0 0)", duration: 1.3, stagger: 0.18, ease: "expo.inOut", delay: 0.4 }); };
+          }
+          once(node, "top 72%", enter);
 
-          gsap.set(items, { opacity: 0, y: 22 });
-          ScrollTrigger.create({ trigger: node, start: "top 72%", once: true, onEnter: () => gsap.to(items, { opacity: 1, y: 0, duration: 1.1, stagger: 0.045, ease: "expo.out" }) });
-          gsap.fromTo(obj, { y: 50, opacity: 0, scale: 0.9 }, { y: -20, opacity: 1, scale: 1, ease: "none", scrollTrigger: { trigger: node, start: "top 92%", end: "top 30%", scrub: true } });
           const bob = gsap.to(float, { y: -8, duration: 3.4, ease: "sine.inOut", yoyo: true, repeat: -1, paused: true });
           ScrollTrigger.create({ trigger: node, start: "top bottom", end: "bottom top", onToggle: (st) => (st.isActive ? bob.play() : bob.pause()) });
           ScrollTrigger.create({ trigger: node, start: "top 55%", end: "bottom 55%", onToggle: (st) => st.isActive && setDock(i) });
@@ -109,22 +153,32 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
             node.addEventListener("pointerleave", () => { rx(0); ry(0); });
           }
         }
-        const film = el.querySelector<HTMLElement>("[data-film-section]")!;
-        gsap.set(q("[data-reveal]", film), { opacity: 0, y: 20 });
-        ScrollTrigger.create({ trigger: film, start: "top 75%", once: true, onEnter: () => gsap.to(q("[data-reveal]", film), { opacity: 1, y: 0, duration: 1.1, ease: "expo.out" }) });
-        gsap.fromTo(film.querySelector("[data-device]"), { y: 70, scale: 0.96 }, { y: 0, scale: 1, ease: "none", scrollTrigger: { trigger: film, start: "top bottom", end: "top 25%", scrub: true } });
-        ScrollTrigger.create({ trigger: film, start: "top 55%", end: "bottom 55%", onToggle: (st) => st.isActive && setDock(0) });
-        // The dock steps aside while the film is on screen, so it never sits over the beats.
-        ScrollTrigger.create({ trigger: film, start: "top 70%", end: "bottom 30%", onToggle: (st) => (el.querySelector<HTMLElement>("[data-dock]")!.dataset.aside = String(st.isActive)) });
 
         // ── "Switched on only after its checks": the words light as you read ─
         const checks = el.querySelector<HTMLElement>("[data-checks]")!;
         gsap.fromTo(q("[data-word]", checks), { opacity: 0.16 }, { opacity: 1, stagger: 0.12, ease: "none", scrollTrigger: { trigger: checks, start: "top 78%", end: "bottom 52%", scrub: true } });
 
-        const sheet = el.querySelector<HTMLElement>("[data-sheet]")!;
-        gsap.fromTo(sheet, { y: 80, rotation: -1.2 }, { y: -30, rotation: 0, ease: "none", scrollTrigger: { trigger: sheet, start: "top bottom", end: "bottom top", scrub: true } });
+        // ── The report: figures count up, bars grow, the dividers draw ─────
+        const report = el.querySelector<HTMLElement>("[data-report]")!;
+        const card = report.querySelector<HTMLElement>("[data-report-card]")!;
+        const counts = q("[data-count]", report);
+        const bars = q("[data-bar]", report);
+        const rRules = q("[data-draw]", report);
+        counts.forEach((c) => (c.textContent = "0"));
+        gsap.set(bars, { scaleX: 0 });
+        gsap.set(rRules, desk ? { scaleY: 0 } : { scaleX: 0 });
+        gsap.set(card, { opacity: 0, y: 40 });
+        once(report, "top 70%", () => {
+          gsap.to(card, { opacity: 1, y: 0, duration: 1.2, ease: "expo.out" });
+          gsap.to(rRules, { ...(desk ? { scaleY: 1 } : { scaleX: 1 }), duration: 1.2, stagger: 0.15, ease: "expo.inOut", delay: 0.3 });
+          gsap.to(bars, { scaleX: 1, duration: 1.4, stagger: 0.1, ease: "expo.out", delay: 0.55 });
+          counts.forEach((c, k) => {
+            const to = Number(c.dataset.count); const o = { v: 0 };
+            gsap.to(o, { v: to, duration: 1.6, ease: "expo.out", delay: 0.4 + k * 0.04, onUpdate: () => { c.textContent = String(Math.round(o.v)); } });
+          });
+        });
 
-        // ── The closing call: its headline rises, the dock steps aside ─────
+        // ── The closing call ───────────────────────────────────────────────
         const cta = el.querySelector<HTMLElement>("[data-cta]")!;
         const h2 = cta.querySelector<HTMLElement>("[data-cta-split]")!;
         const ctaRise = q("[data-cta-rise]", cta);
@@ -136,10 +190,41 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
             return gsap.from(self.lines, { yPercent: 108, duration: 1.25, stagger: 0.08, ease: "expo.out", scrollTrigger: { trigger: cta, start: "top 60%", once: true } });
           },
         });
-        ScrollTrigger.create({ trigger: cta, start: "top 55%", once: true, onEnter: () => gsap.to(ctaRise, { opacity: 1, y: 0, duration: 1.1, stagger: 0.08, delay: 0.35, ease: "expo.out" }) });
+        once(cta, "top 55%", () => gsap.to(ctaRise, { opacity: 1, y: 0, duration: 1.1, stagger: 0.08, delay: 0.35, ease: "expo.out" }));
 
+        // ── The footer's moment: a hairline from the centre, the letters rise,
+        // one glint crosses the wordmark (and again on hover) ──────────────
+        const footer = el.querySelector<HTMLElement>("[data-footer]")!;
+        const letters = q("[data-footer-letter]", footer);
+        const glint = footer.querySelector<HTMLElement>("[data-footer-glint]")!;
+        const fRule = footer.querySelector<HTMLElement>("[data-footer-rule]")!;
+        gsap.set(letters, { yPercent: 110 });
+        gsap.set(fRule, { scaleX: 0 });
+        const sweep = () => gsap.fromTo(glint, { backgroundPosition: "120% 0" }, { backgroundPosition: "-20% 0", duration: 1.6, ease: "power2.inOut", overwrite: true });
+        once(footer, "top 85%", () => {
+          gsap.to(fRule, { scaleX: 1, duration: 1.4, ease: "expo.inOut" });
+          gsap.to(letters, { yPercent: 0, duration: 1.2, stagger: 0.07, ease: "expo.out", delay: 0.15 });
+          gsap.delayedCall(0.9, sweep);
+        });
+        footer.querySelector("[data-footer-mark]")!.addEventListener("pointerenter", sweep);
+
+        // ── The dock: in range from the hero to the close; shown only while
+        // scrolling up (to navigate), hidden while reading or scrolling down,
+        // and always aside over the film, the close and the footer ──────────
         const dock = el.querySelector<HTMLElement>("[data-dock]")!;
         ScrollTrigger.create({ trigger: hero, start: "bottom 65%", endTrigger: cta, end: "top 80%", onToggle: (st) => (dock.dataset.show = String(st.isActive)) });
+        const zones = [film, cta, footer];
+        for (const zone of zones) ScrollTrigger.create({ trigger: zone, start: "top 92%", end: "bottom 8%", onToggle: (st) => (zone.dataset.dockAside = String(st.isActive)) });
+        const aside = () => zones.some((z) => z.dataset.dockAside === "true");
+        let idle: ReturnType<typeof setTimeout> | undefined;
+        ScrollTrigger.create({
+          trigger: el.querySelector("main"), start: "top top", end: "bottom bottom",
+          onUpdate: (st) => {
+            dock.dataset.up = String(st.direction < 0 && !aside());
+            clearTimeout(idle);
+            idle = setTimeout(() => (dock.dataset.up = "false"), 2200);
+          },
+        });
         gsap.fromTo(dock.querySelector("[data-dock-progress]"), { scaleX: 0 }, { scaleX: 1, ease: "none", scrollTrigger: { trigger: el.querySelector("main"), start: "top top", end: "bottom bottom", scrub: true } });
       }, el);
 
@@ -162,8 +247,8 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
       </header>
 
       <main>
-        {/* ── Hero: one screen. The headline frames the crystal from two corners. */}
-        <section className={s.hero} data-hero aria-labelledby="proof-title">
+        {/* ── Hero: one screen; the headline reads across the top band ────── */}
+        <section id="top" className={s.hero} data-hero aria-labelledby="proof-title">
           <div className={s.heroA}>
             {/* The scroll fade moves these wrappers; the rise and the line split
                 move what is inside them, so no element has two owners. */}
@@ -184,10 +269,13 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
           </div>
         </section>
 
-        {/* ── The sub, just after the hero, and the index ─────────────────── */}
+        {/* ── The sub, then the brand film, then the index ───────────────── */}
         <section className={s.intro} data-section="intro" aria-label="About these automations">
           <p className={s.introText} data-reveal>{p.sub}</p>
         </section>
+
+        <BrandFilm label="What Ryvo builds" />
+
         <nav className={s.index} data-section="index" aria-label="The five automations">
           <ol className={s.indexList}>
             {names.map((n, i) => (
@@ -202,33 +290,34 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
           </ol>
         </nav>
 
-        {/* ── Five editorial spreads; 01 is followed by its film ──────────── */}
+        {/* ── Five editorial spreads ─────────────────────────────────────── */}
         {names.map((n, i) => {
           const pts = p.items[i].points;
           return (
-            <div key={n}>
-              <section id={`a0${i + 1}`} className={s.spread} data-spread={i} aria-labelledby={`a0${i + 1}-name`}>
-                <span className={`${s.numeral} chrome-text`} aria-hidden="true" data-reveal>0{i + 1}</span>
-                <div className={s.spreadHead}>
-                  <span className={s.stageNum} data-reveal>0{i + 1} / 05</span>
-                  <h2 id={`a0${i + 1}-name`} className={`display ${s.spreadName}`} data-reveal>{n}</h2>
-                  <p className={s.spreadLead} data-reveal>{p.items[i].tagline}</p>
-                </div>
-                <div className={s.spreadObj} data-obj aria-hidden="true">
-                  <div className={s.objGlow} />
-                  <div className={s.objTilt} data-tilt><div data-float><ObjectPicture i={i} /></div></div>
-                </div>
-                <ol className={s.pointGrid} data-cols={pts.length === 3 ? 3 : 2}>
-                  {pts.map((pt, k) => (
-                    <li key={pt} className={s.point} data-reveal>
-                      <span className={s.pointIdx}>{String(k + 1).padStart(2, "0")}</span>
+            <section key={n} id={`a0${i + 1}`} className={s.spread} data-spread={i} aria-labelledby={`a0${i + 1}-name`}>
+              <span className={s.numeralMask} aria-hidden="true"><span className={`${s.numeral} chrome-text`} data-numeral>0{i + 1}</span></span>
+              <div className={s.spreadHead}>
+                <span className={s.stageNum} data-head>0{i + 1} / 05</span>
+                <h2 id={`a0${i + 1}-name`} className={`display ${s.spreadName}`} data-head>{n}</h2>
+                <p className={s.spreadLead} data-head>{p.items[i].tagline}</p>
+              </div>
+              <div className={s.spreadObj} data-obj aria-hidden="true">
+                <div className={s.objGlow} />
+                <div className={s.objTilt} data-tilt><div data-float><ObjectPicture i={i} /></div></div>
+              </div>
+              <ol className={s.pointGrid} data-cols={pts.length === 3 ? 3 : 2}>
+                {pts.map((pt, k) => (
+                  <li key={pt} className={s.point} data-point>
+                    <span className={s.ptRule} data-pt-rule aria-hidden="true" />
+                    <span className={s.pointIdx}>{String(k + 1).padStart(2, "0")}</span>
+                    <span className={s.pointBody}>
+                      <strong className={s.ptTitle}>{POINT_TITLES[i][k]}</strong>
                       <span className={s.pointText}>{pt}</span>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-              {i === 0 && <Film t={t} name={n} tagline={p.items[0].tagline} beats={beats} />}
-            </div>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
           );
         })}
 
@@ -239,41 +328,14 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
           </p>
         </section>
 
-        {/* ── The weekly report ──────────────────────────────────────────── */}
-        <section className={s.report} aria-labelledby="report-title" data-section="report">
-          <div className={s.reportText}>
-            <span className="mono-label" data-reveal>{p.report.label}</span>
-            <h2 id="report-title" className={`display ${s.h2}`} data-reveal>{p.report.title[0]} <span className={s.dim}>{p.report.title[1]}</span></h2>
-            <p className={s.reportLead} data-reveal>{p.report.body}</p>
-          </div>
-          <div className={s.sheetWrap}>
-            <article className={s.sheet} data-sheet aria-label={t.how.report.title}>
-              <header className={s.sheetHead}>
-                <span className={s.sheetTag}>{t.how.report.tag}</span>
-                <h3 className={s.sheetTitle}>{t.how.report.title}</h3>
-              </header>
-              <div className={s.sheetTop}>
-                {t.how.report.top.map(([v, k]) => (
-                  <div key={k}><span className={s.sheetBig}>{v}</span><span className={s.sheetSmall}>{k}</span></div>
-                ))}
-              </div>
-              {(t.how.report.sections as unknown as [string, [string, string][]][]).map(([title, rows]) => (
-                <div key={title} className={s.sheetSec}>
-                  <span className={s.sheetSecTitle}>{title}</span>
-                  {rows.map(([k, v]) => <div key={k} className={s.sheetRow}><span>{k}</span><span className="tnum">{v}</span></div>)}
-                </div>
-              ))}
-              <p className={s.sheetNote}>{t.how.report.note}</p>
-            </article>
-          </div>
-        </section>
+        <Report p={p} rep={t.how.report} />
 
         {/* ── Pricing: the homepage's own picker, with each row's amount ──── */}
         <div className={s.pricingHome}>
           <Pricing lang="en" t={{ ...t.pricing, label: p.pricingLabel }} names={names} bookHref={BOOK} addOns />
         </div>
 
-        <Faq label={p.faqLabel} items={p.faq} />
+        <Faq label={p.faqLabel} items={p.faq} line={p.cta.body.split(". ").slice(-1)[0]} book={t.nav.book} bookHref={BOOK} />
 
         {/* ── Closing: the mercury ───────────────────────────────────────── */}
         <section className={s.cta} data-cta data-after-faq aria-labelledby="cta-title">
@@ -292,7 +354,7 @@ export default function ProofPage({ t, p, ctaLabel }: { t: Dictionary; p: P; cta
         </section>
       </main>
 
-      <div data-after-faq><SiteFooter lang="en" t={t} /></div>
+      <div data-after-faq><ProofFooter t={t} place={place} bookHref={BOOK} /></div>
       <Dock names={names} bookHref={BOOK} book={t.nav.book} />
     </div>
   );

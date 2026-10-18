@@ -15,5 +15,5 @@ export const metadata: Metadata = {
 export default function AutomationsProof() {
   if (process.env.NODE_ENV === "production") notFound();
   const pages = getPages("en");
-  return <ProofPage t={getDictionary("en")} p={pages.automations} ctaLabel={pages.ctaLabel} />;
+  return <ProofPage t={getDictionary("en")} p={pages.automations} ctaLabel={pages.ctaLabel} place={pages.about.title[1].replace(/\.$/, "")} />;
 }

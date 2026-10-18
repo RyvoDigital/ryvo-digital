@@ -19,6 +19,7 @@ const wrap = (p: number) => ((p % N) + N) % N;
 
 export default function HeroScene({ names, taglines }: { names: string[]; taglines: string[] }) {
   const pos = useRef({ p: 0 });
+  const hov = useRef({ k: 0 }); // the hover lift, eased
   const [target, setTarget] = useState(0); // the number lit in the progress mark
   const [shown, setShown] = useState(0); // the label under the crystal
   const [labelOn, setLabelOn] = useState(true);
@@ -125,8 +126,8 @@ export default function HeroScene({ names, taglines }: { names: string[]; taglin
       const steps = Math.max(1, Math.round(Math.abs(drift)));
       go(dir ? Math.round(p0) + dir * steps : Math.round(pos.current.p), { quick: true });
     };
-    const enter = (e: PointerEvent) => { if (e.pointerType === "mouse") { state.current.hover = true; syncRest(); } };
-    const leave = (e: PointerEvent) => { if (e.pointerType === "mouse") { state.current.hover = false; syncRest(); } };
+    const enter = (e: PointerEvent) => { if (e.pointerType === "mouse") { state.current.hover = true; syncRest(); if (m && !reduced) m.gsap.to(hov.current, { k: 1, duration: 1.1, ease: "expo.out", overwrite: true }); } };
+    const leave = (e: PointerEvent) => { if (e.pointerType === "mouse") { state.current.hover = false; syncRest(); if (m) m.gsap.to(hov.current, { k: 0, duration: 1.1, ease: "expo.out", overwrite: true }); } };
     el.addEventListener("pointerdown", down);
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerup", up);
@@ -152,7 +153,7 @@ export default function HeroScene({ names, taglines }: { names: string[]; taglin
     <div className={s.heroScene}>
       <div ref={scene} className={s.heroCanvas} data-hero-scene>
         <Signature sig="crystal" kind="hero" objects={[0, 1, 2, 3, 4]} poster={0} label="The five automations as chrome objects, passing through a crystal"
-          getPos={() => pos.current.p} onVisible={onVisible} onReady={(a) => { api.current = a; }} />
+          getPos={() => pos.current.p} getHover={() => hov.current.k} onVisible={onVisible} onReady={(a) => { api.current = a; }} />
       </div>
       <div className={s.heroCaption} aria-live="polite">
         <p className={s.capLine} data-on={labelOn}>

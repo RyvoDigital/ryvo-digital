@@ -2,15 +2,17 @@
 
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { BookButton } from "@/components/chrome/Icons";
 import { startMotion } from "./motion";
-import s from "./proof.module.css";
+import q from "./faq.module.css";
 
-// Nine questions, hairline rows. Opening one never animates height: the layout
+// Questions: a sticky column (the heading, one line, Book a call) beside the
+// nine numbered questions. Opening one never animates height: the layout
 // changes once, then everything below it is moved back to where it was and
-// glides into place on a transform (FLIP), while the answer fades up.
-export default function Faq({ label, items }: { label: string; items: [string, string][] }) {
+// glides into place on a transform (FLIP), while the answer panel rises in.
+export default function Faq({ label, items, line, book, bookHref }: { label: string; items: [string, string][]; line: string; book: string; bookHref: string }) {
   const [open, setOpen] = useState<number | null>(null);
-  const list = useRef<HTMLDListElement>(null);
+  const list = useRef<HTMLOListElement>(null);
 
   const toggle = async (i: number) => {
     const root = list.current;
@@ -24,41 +26,46 @@ export default function Faq({ label, items }: { label: string; items: [string, s
     const next = open === i ? null : i;
     // Commit the new layout now, so it can be measured in the same frame.
     flushSync(() => setOpen(next));
-    {
-      if (m.reduced) return;
-      followers.forEach((el, k) => {
-        const dy = before[k] - el.getBoundingClientRect().top;
-        if (Math.abs(dy) < 0.5) return;
-        m.gsap.fromTo(el, { y: dy }, { y: 0, duration: 0.7, ease: "expo.out", clearProps: "transform,willChange", onStart: () => { el.style.willChange = "transform"; } });
-      });
-      const ans = next === null ? null : root.querySelector<HTMLElement>(`[data-faq-answer="${next}"]`);
-      if (ans) m.gsap.fromTo(ans, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out", clearProps: "transform" });
-    }
+    if (m.reduced) return;
+    followers.forEach((el, k) => {
+      const dy = before[k] - el.getBoundingClientRect().top;
+      if (Math.abs(dy) < 0.5) return;
+      m.gsap.fromTo(el, { y: dy }, { y: 0, duration: 0.75, ease: "expo.out", clearProps: "transform,willChange", onStart: () => { el.style.willChange = "transform"; } });
+    });
+    const panel = next === null ? null : root.querySelector<HTMLElement>(`[data-faq-answer="${next}"]`);
+    if (panel) m.gsap.fromTo(panel, { opacity: 0, y: -10, scale: 0.985 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "expo.out", clearProps: "transform" });
   };
 
+  const title = label.charAt(0) + label.slice(1).toLowerCase();
   return (
-    <section className={s.faq} aria-labelledby="faq-title" data-section="faq">
-      <div className={s.faqHead}>
-        <h2 id="faq-title" className={`display ${s.h2}`} data-reveal>{label.charAt(0) + label.slice(1).toLowerCase()}</h2>
+    <section className={q.faq} aria-labelledby="faq-title" data-section="faq">
+      <div className={q.side}>
+        <div className={q.sticky}>
+          <span className="mono-label" data-reveal>{String(items.length).padStart(2, "0")} · {label}</span>
+          <h2 id="faq-title" className={`display ${q.h2}`} data-reveal>{title}</h2>
+          <p className={q.line} data-reveal>{line}</p>
+          <div data-reveal><BookButton href={bookHref} label={book} /></div>
+        </div>
       </div>
-      <dl ref={list} className={s.faqList}>
-        {items.map(([q, a], i) => {
+      <ol ref={list} className={q.list}>
+        {items.map(([question, answer], i) => {
           const isOpen = open === i;
           return (
-            <div key={q} className={s.faqRow} data-faq-row data-open={isOpen}>
-              <dt>
-                <button type="button" className={s.faqQ} aria-expanded={isOpen} aria-controls={`faq-a-${i}`} id={`faq-q-${i}`} onClick={() => toggle(i)}>
-                  <span>{q}</span>
-                  <span className={s.plus} aria-hidden="true" />
+            <li key={question} className={q.row} data-faq-row data-open={isOpen} data-reveal>
+              <h3 className={q.qh}>
+                <button type="button" className={q.q} aria-expanded={isOpen} aria-controls={`faq-a-${i}`} id={`faq-q-${i}`} onClick={() => toggle(i)}>
+                  <span className={q.num}>{String(i + 1).padStart(2, "0")}</span>
+                  <span className={q.qText}>{question}</span>
+                  <span className={q.plus} aria-hidden="true" />
                 </button>
-              </dt>
-              <dd id={`faq-a-${i}`} role="region" aria-labelledby={`faq-q-${i}`} className={s.faqA} hidden={!isOpen} data-faq-answer={i}>
-                <p>{a}</p>
-              </dd>
-            </div>
+              </h3>
+              <div id={`faq-a-${i}`} role="region" aria-labelledby={`faq-q-${i}`} className={q.answer} hidden={!isOpen} data-faq-answer={i}>
+                <p>{answer}</p>
+              </div>
+            </li>
           );
         })}
-      </dl>
+      </ol>
     </section>
   );
 }

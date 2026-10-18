@@ -2,7 +2,7 @@
 
 One page, built to decide the signature. Dev only: 404 in production, noindex, linked from nowhere. The real `/automations` is untouched.
 
-> **Round 3 (18 Oct):** the 01 film rebuilt (whole device, motion graphics, beats beside it) and hero polish; see `round3/README.md`.
+> **Round 3 (18 Oct, corrected brief):** the Remotion brand film on a MacBook, a thicker crystal with equal objects, titled spreads with their own entrances, a landscape report with one accent, a richer FAQ and a new footer; see `round3/README.md` (the earlier draft run is in `round3-draft/`).
 >
 > **Round 2 (18 Oct):** one version now (crystal hero, mercury close, no `?sig` switch); see `round2/README.md`. Round 1's notes below are kept as the record.
 
