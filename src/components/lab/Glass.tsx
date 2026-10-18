@@ -1,84 +1,27 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { withMotion, prefersReducedMotion } from "@/lib/gsap";
+import { prefersReducedMotion } from "@/lib/gsap";
+import { LiquidGlass, type GlassVariant } from "./LiquidGlass";
 import s from "./palette.module.css";
 
-// The SVG that bends the glass rim. A low-frequency, smoothed noise so the rim
-// bends calmly (scale 9), never wobbles. Turned on only where backdrop-filter
-// accepts an SVG url (Chromium), by setting html[data-refract].
-export function RefractFilter() {
-  const lens = useRef<SVGFEImageElement>(null);
-  useEffect(() => {
-    try {
-      if (CSS.supports("backdrop-filter", "url(#lab-refract) blur(1px)")) document.documentElement.dataset.refract = "";
-      // A baked lens map for the switch knob (the jahed technique, drawn here):
-      // red/green hold the outward bend, strongest near the rim, neutral inside.
-      const N = 64, cv = document.createElement("canvas");
-      cv.width = cv.height = N;
-      const ctx = cv.getContext("2d")!, img = ctx.createImageData(N, N);
-      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-        const nx = (x + 0.5) / (N / 2) - 1, ny = (y + 0.5) / (N / 2) - 1, r = Math.hypot(nx, ny);
-        const k = r >= 1 ? 0 : Math.pow(Math.min(1, Math.max(0, (r - 0.35) / 0.65)), 2);
-        const i = (y * N + x) * 4;
-        img.data[i] = 128 - 127 * nx * k; img.data[i + 1] = 128 - 127 * ny * k; img.data[i + 2] = 128; img.data[i + 3] = 255;
-      }
-      ctx.putImageData(img, 0, 0);
-      lens.current?.setAttribute("href", cv.toDataURL());
-    } catch {}
-  }, []);
+/**
+ * Every glass surface in the palette: the round-2 system (LiquidGlass), smoked
+ * by default so body text stays AA. Pass variant="clear" for controls.
+ */
+export function Glass({ as = "div", className = "", variant = "smoked", children, ...rest }: { as?: "div" | "article" | "section" | "nav" | "button" | "aside" | "span"; className?: string; variant?: GlassVariant; children: ReactNode } & Record<string, unknown>) {
   return (
-    <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute" }}>
-      <filter id="lab-refract" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.011 0.014" numOctaves="2" seed="7" result="n" />
-        <feGaussianBlur in="n" stdDeviation="3" result="nb" />
-        <feDisplacementMap in="SourceGraphic" in2="nb" scale="9" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-      <filter id="lab-lens" x="0" y="0" width="1" height="1" filterUnits="objectBoundingBox" primitiveUnits="objectBoundingBox" colorInterpolationFilters="sRGB">
-        <feImage ref={lens} x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="map" />
-        <feDisplacementMap in="SourceGraphic" in2="map" scale="0.24" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </svg>
-  );
-}
-
-/** The liquid-glass surface. The specular follows a fine pointer, eased (expo, 0.6 s). */
-export function Glass({ as: Tag = "div", className = "", children, ...rest }: { as?: "div" | "article" | "section" | "nav" | "button" | "aside"; className?: string; children: ReactNode } & Record<string, unknown>) {
-  const el = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const node = el.current;
-    if (!node || prefersReducedMotion() || !matchMedia("(pointer: fine)").matches) return;
-    return withMotion(({ gsap }) => {
-      // A plain proxy, eased, written to the two custom properties.
-      const p = { x: 30, y: -10 };
-      const paint = () => { node.style.setProperty("--mx", `${p.x}%`); node.style.setProperty("--my", `${p.y}%`); };
-      const x = gsap.quickTo(p, "x", { duration: 0.6, ease: "expo.out", onUpdate: paint });
-      const y = gsap.quickTo(p, "y", { duration: 0.6, ease: "expo.out", onUpdate: paint });
-      const move = (e: PointerEvent) => {
-        const r = node.getBoundingClientRect();
-        x(((e.clientX - r.left) / r.width) * 100);
-        y(((e.clientY - r.top) / r.height) * 100);
-      };
-      const leave = () => { x(30); y(-10); };
-      node.addEventListener("pointermove", move);
-      node.addEventListener("pointerleave", leave);
-      return () => { node.removeEventListener("pointermove", move); node.removeEventListener("pointerleave", leave); };
-    });
-  }, []);
-  const T = Tag as "div";
-  return (
-    <T ref={el as React.Ref<HTMLDivElement>} className={`${s.glass} ${className}`} {...rest}>
-      <span className={s.rim} aria-hidden="true" />
+    <LiquidGlass as={as} variant={variant} className={className} {...rest}>
       {children}
-    </T>
+    </LiquidGlass>
   );
 }
 
 export function GlassCard() {
   const cards = [
-    ["Answers in seconds", "Every enquiry answered in a few seconds, in the buyer’s language, and the viewing booked."],
+    ["Answers in seconds", "Every enquiry answered in a few seconds, in the buyer\u2019s language, and the viewing booked."],
     ["Price stays with you", "The moment price or negotiation comes up, your consultant gets a card on WhatsApp."],
-    ["Always disclosed", "Its first message says plainly that it is your agency’s AI assistant, not a person."],
+    ["Always disclosed", "Its first message says plainly that it is your agency\u2019s AI assistant, not a person."],
   ];
   return (
     <div className={s.stage}>
@@ -99,7 +42,9 @@ export function GlassCard() {
   );
 }
 
-// A glass track with a solid off-white thumb that glides to the chosen tab.
+// A clear glass pill; the active thumb is a thick clear lens that magnifies
+// the label under it as it glides (expo, 0.45 s). The labels sit under the
+// lens, so what you read on the active tab is seen through the glass.
 export function GlassSegmented() {
   const tabs = [
     ["Automations", "A short call with Manuel or Martim. We show you the system working."],
@@ -115,8 +60,7 @@ export function GlassSegmented() {
   }, [on]);
   return (
     <div className={s.stage}>
-      <Glass className={s.seg} role="tablist" aria-label="Call type">
-        <span className={s.segThumb} style={{ transform: `translateX(${thumb.x}px)`, width: thumb.w }} aria-hidden="true" />
+      <LiquidGlass variant="clear" className={s.seg} role="tablist" aria-label="Call type">
         {tabs.map(([t], i) => (
           <button key={t} ref={(n) => { btns.current[i] = n; }} role="tab" aria-selected={on === i} className={s.segBtn} onClick={() => setOn(i)}
             onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const n = (i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length; setOn(n); btns.current[n]?.focus(); } }}
@@ -124,18 +68,19 @@ export function GlassSegmented() {
             {t}
           </button>
         ))}
-      </Glass>
+        <LiquidGlass as="span" variant="clear" flat magnify={0.14} refract={1.3} blur={0} className={s.segThumb} style={{ transform: `translateX(${thumb.x}px)`, width: thumb.w }} aria-hidden="true" />
+      </LiquidGlass>
       <p className={s.segPanel} role="tabpanel">{tabs[on][1]}</p>
     </div>
   );
 }
 
-const TRAVEL = 26; // knob travel: 58 track − 26 knob − 2 × 3 inset
+const TRAVEL = 28; // knob travel: 56 track − 22 knob − 2 × 3 inset
 
 /**
- * The glass switch, shared by every on/off in the palette. A glass lens glides
- * over a recessed track (expo, 0.45 s) and stretches a little in travel; on,
- * the track fills with a mercury glow. Click, Space or Enter toggles; it can
+ * The glass switch, shared by every on/off in the palette: a clear glass pill
+ * holding a recessed track; a glossy solid pearl glides along it (expo, 0.45 s)
+ * and stretches a little in travel; on, the track fills with a mercury glow. Click, Space or Enter toggles; it can
  * also be dragged, and snaps to the nearer side on release.
  */
 export function GlassSwitch({ checked, onChange, labelledBy }: { checked: boolean; onChange: (next: boolean) => void; labelledBy?: string }) {
@@ -187,10 +132,10 @@ export function GlassSwitch({ checked, onChange, labelledBy }: { checked: boolea
       onPointerUp={up}
       onPointerCancel={up}
     >
-      <span className={s.gsTrack} aria-hidden="true" />
-      <span className={s.gsKnob} aria-hidden="true">
-        <span className={s.gsLens}><span className={s.gsBend} /></span>
-      </span>
+      <LiquidGlass as="span" variant="clear" flat blur={0} className={s.gsPill} aria-hidden="true">
+        <span className={s.gsTrack} />
+        <span className={s.gsKnob}><span className={s.gsPearl} /></span>
+      </LiquidGlass>
     </button>
   );
 }

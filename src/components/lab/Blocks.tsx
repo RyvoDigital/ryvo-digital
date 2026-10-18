@@ -200,20 +200,23 @@ export function GlassFaq() {
 export function CtaBand() {
   const ref = useStagger<HTMLDivElement>("[data-line]");
   return (
-    <div ref={ref} id="cta" className={s.cta}>
-      <h2 className={`display ${s.ctaTitle}`}>
-        <span data-line style={{ display: "block" }}>See it working,</span>
-        <span data-line className="chrome-text" style={{ display: "block" }}>then decide.</span>
-      </h2>
-      <div data-line>
-        <p className={s.ctaBody}>A short call: we show you the system working, learn how your agency works and adapt it to you. If it is not the right moment, just say so.</p>
-        <a className="btn" href="#cta">
-          Book a call
-          <span className="btn-arrow" aria-hidden="true">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M8 7h9v9" /></svg>
-          </span>
-        </a>
-      </div>
+    <div ref={ref} id="cta" className={s.ctaStage}>
+      <img className={s.ctaObj} src="/media/objects/02-reactivation-800.webp" alt="" loading="lazy" />
+      <Glass className={s.cta}>
+        <h2 className={`display ${s.ctaTitle}`}>
+          <span data-line style={{ display: "block" }}>See it working,</span>
+          <span data-line className="chrome-text" style={{ display: "block" }}>then decide.</span>
+        </h2>
+        <div data-line>
+          <p className={s.ctaBody}>A short call: we show you the system working, learn how your agency works and adapt it to you. If it is not the right moment, just say so.</p>
+          <a className="btn" href="#cta">
+            Book a call
+            <span className="btn-arrow" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M8 7h9v9" /></svg>
+            </span>
+          </a>
+        </div>
+      </Glass>
     </div>
   );
 }

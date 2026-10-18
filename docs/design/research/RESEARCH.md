@@ -85,21 +85,59 @@ Not found on 21st.dev: a glass modal or a glass slider. Use the glass recipe plu
 `<input type=range>`. Code still to read when the free quota resets (18 Oct): ids **12460** (jahed's
 baked map) and **25977** (bevelui Prism Hero).
 
-### The glass recipe (built in the palette, piece 01)
-1. **Body:** `backdrop-filter: blur(14px) saturate(160%) brightness(1.04)` over a near-neutral silver tint.
-2. **Refracting rim:** a 10 px band masked with `mask-composite: exclude`, carrying
-   `backdrop-filter: url(#refract) blur(2px)`. It uses an SVG displacement (smoothed noise, scale 9) and
-   is gated by `CSS.supports` to **Chromium only**. Safari and Firefox keep the frost and the light.
-   (In the first render, scale 14 read as a hard inner frame with streaks, so it was calmed. A baked
-   map like jahed's is the next refinement.)
-3. **Light:** a 1 px rim of the **mercury gradient** (`plus-lighter`, 30%), an inset top highlight,
-   an inset bottom shade.
-4. **Specular:** a soft radial light that follows a fine pointer (`gsap.quickTo`, expo 0.6 s, no
-   spring), off under reduced motion.
-5. **Shadow:** two layers, deep and soft.
-6. **Backdrop rule:** glass always sits over a glow, an object or an image (the palette's `.stage`).
+### The glass recipe, round 2 (17–18 Oct 2026): one shared system
+Manuel's note on round 1: "It should look like premium actual glass, not slightly smudged and forced."
+The round-1 recipe (noise displacement, heavy blur, soft rims) is **replaced**. One component,
+`LiquidGlass` (`src/components/lab/LiquidGlass.tsx` + `glass.module.css`), now draws every glass piece:
+01 card, 02 tab switch, 03/09 switch, 09 receipt, 13 FAQ, 14 CTA band, 15 dock, the timeline's card and
+chips, the bento tiles and the story cards. Buttons stay the solid off-white pills (locked homepage rule).
 
----
+1. **Lens refraction from a bezel profile, not noise.** Each element gets its own displacement map,
+   drawn in code from its measured size and corner radius. The map uses a circular-arc squircle bezel:
+   zero displacement on the flat face, rising smoothly to the rim (bezel ≈ 30% of the short side,
+   10–30 px), so the image bends **only near the edge** (ref 01). It is applied with
+   `backdrop-filter: url(#lens)` in Chromium, regenerated when the element resizes (ResizeObserver),
+   cached by size, and attached **only while the element is on screen** (IntersectionObserver).
+   Safari and Firefox get no displacement but keep every other layer.
+2. **A clear centre.** Clear glass has 0–0.6 px blur and an almost-zero tint. Smoked glass (cards
+   with body text) has a dark tint and 2 px blur, so text stays AA: about 7:1 for body text even over
+   the brightest backdrop in the palette. No grain or noise on glass.
+3. **Visible thickness.** A bevel band (5–10 px, scaled to size) in a gradient: bright top-left, in
+   shade bottom-right, with a hairline where it meets the face.
+4. **Crisp speculars.** A sharp 1.5 px white line rides the top curve, and a shorter one sits on the
+   opposite corner. A faint prism fringe (blue above, pink below, under 0.4 alpha) is the only colour.
+   They drift up to 3 px toward a fine pointer (GSAP quickTo, expo 0.8 s); off with reduced motion.
+5. **Light passing through.** A glow pools on the inner bottom edge, with a bright 1.5 px line. Under
+   the object sit a silver caustic pool (offset down-right, blurred) and a soft contact shadow.
+6. **Backdrop rule:** glass always sits over a glow, an object or an image.
+
+**Pieces:** the **tab switch** is a clear pill whose active thumb is a thick clear lens (magnify
+0.14) gliding over the labels (expo 0.45 s). The **switch** is a clear glass pill holding a recessed
+track and a **glossy solid pearl** knob that glides and stretches; it still supports drag, Space and
+Enter and has a 66 × 38 target. Off rows dim to ~45% through a dark veil and dimmed content.
+
+**Two traps found while building this** (both cost the round-1 glass its refraction without anyone
+seeing it):
+- Any `mix-blend-mode` layer inside the glass element stops Chromium from applying the `url()`
+  backdrop filter. The caustic originally used `plus-lighter`, and round 1's rim did too. Rule: no
+  blend modes inside glass.
+- `opacity < 1` or `filter` on a glass element (or an ancestor) cuts its lens off from the page
+  behind. Dim the content, not the glass.
+- Also: in Chromium `-webkit-backdrop-filter` is an alias, so Chromium gets only the unprefixed property.
+
+**Checked** (screens in `glass-refs/`, `compare-01-clear-pill.jpg` and
+`compare-02-slabs-and-controls.jpg` put ours next to the two references):
+- clear centre, no smudge or wobble: pass;
+- bends only at the edge: pass (the ring and the arch bend at the pill ends and slab edges);
+- edge thickness visible: pass;
+- crisp top highlight: pass;
+- bottom inner edge glows: pass;
+- caustic pool and contact shadow: pass;
+- reads as an object, not a grey layer: pass.
+
+Chromium (Playwright and Manuel's Chrome 154) refracts. WebKit (Playwright 2368) shows clean glass
+without the bend and has no console errors. Scrolling the whole palette at 1440: p95 frame 16.8 ms,
+one frame at 33 ms out of 629, with only the on-screen lenses live.
 
 ## C. Animated icons: the approach (palette piece 04)
 

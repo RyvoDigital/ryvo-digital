@@ -32,67 +32,8 @@
 .stageObject { position: absolute; width: min(46%, 360px); right: 4%; top: 50%; translate: 0 -50%; opacity: 0.9; pointer-events: none; -webkit-mask: radial-gradient(closest-side, #000 62%, transparent 100%); mask: radial-gradient(closest-side, #000 62%, transparent 100%); }
 .stageRing { position: absolute; width: 340px; height: 340px; left: 8%; top: 50%; translate: 0 -50%; border-radius: 50%; border: 18px solid transparent; background: var(--chrome) border-box; -webkit-mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); opacity: 0.55; filter: blur(0.3px); }
 
-/* ── 01 Liquid glass ─────────────────────────────────────────────────────── */
-.glass {
-  --mx: 30%;
-  --my: -10%;
-  position: relative;
-  isolation: isolate;
-  border-radius: 28px;
-  background: linear-gradient(160deg, rgba(205, 209, 217, 0.11), rgba(205, 209, 217, 0.035) 60%, rgba(205, 209, 217, 0.06));
-  -webkit-backdrop-filter: blur(14px) saturate(160%) brightness(1.04);
-  backdrop-filter: blur(14px) saturate(160%) brightness(1.04);
-  box-shadow:
-    inset 0 1px 0 rgba(250, 251, 252, 0.32),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    inset 0 -28px 40px -34px rgba(0, 0, 0, 0.7),
-    0 30px 80px -24px rgba(0, 0, 0, 0.65),
-    0 2px 6px rgba(0, 0, 0, 0.35);
-}
-/* The chrome rim light: a 1px ring of the mercury gradient, added light. */
-.glass::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: var(--chrome);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  opacity: 0.3;
-  mix-blend-mode: plus-lighter;
-  pointer-events: none;
-}
-/* The specular: a soft light that follows the pointer (GSAP quickTo). */
-.glass::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(320px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.13), transparent 62%);
-  pointer-events: none;
-  z-index: 1;
-}
-/* The refracting rim: a 12px band of the backdrop, bent by an SVG displacement.
-   Chromium only (html[data-refract]); elsewhere the frost and light remain. */
-.rim { display: none; }
-:global(html[data-refract]) .rim {
-  display: block;
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 10px;
-  -webkit-backdrop-filter: url(#lab-refract) blur(2px) saturate(165%);
-  backdrop-filter: url(#lab-refract) blur(2px) saturate(165%);
-  opacity: 0.85;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  pointer-events: none;
-  z-index: 0;
-}
-.glassBody { position: relative; z-index: 2; }
+/* ── 01 Glass: see glass.module.css (the round-2 system). ─────────────────── */
+.glassBody { position: relative; z-index: 3; }
 
 .cardRow { position: relative; display: grid; gap: 18px; }
 @media (min-width: 768px) { .cardRow { grid-template-columns: repeat(3, 1fr); } }
@@ -101,10 +42,10 @@
 .cardText { font-size: 14px; color: var(--color-body); margin: 0; line-height: 1.55; }
 
 /* ── 02 Segmented / 03 Toggle ────────────────────────────────────────────── */
-.seg { position: relative; display: inline-flex; padding: 5px; border-radius: 999px; }
+.seg { display: inline-flex; padding: 6px; border-radius: 999px; }
 .segBtn { position: relative; z-index: 3; min-height: 44px; padding: 0 22px; border: 0; background: none; color: var(--color-steel); font: 600 14px var(--font-sans); cursor: pointer; transition: color 0.5s var(--ease-out-expo); white-space: nowrap; }
-.segBtn[aria-selected="true"] { color: var(--color-obsidian); }
-.segThumb { position: absolute; z-index: 2; top: 5px; bottom: 5px; left: 0; border-radius: 999px; background: var(--color-text); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.12); transition: transform 0.7s var(--ease-out-expo), width 0.7s var(--ease-out-expo); }
+.segBtn[aria-selected="true"] { color: var(--color-text); }
+.segThumb { position: absolute !important; z-index: 4; top: 6px; bottom: 6px; left: 0; border-radius: 999px; pointer-events: none; transition: transform 0.45s var(--ease-out-expo), width 0.45s var(--ease-out-expo); }
 .segPanel { margin-top: 22px; color: var(--color-body); font-size: 15px; min-height: 48px; }
 
 .toggles { display: grid; gap: 10px; max-width: 460px; }
@@ -172,49 +113,43 @@
 
 /* ── 03 Glass switch (shared: the toggle piece and the pricing module) ────── */
 /* A row: the whole row toggles; off, it dims and desaturates. */
-.gRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px 14px 20px; border-radius: 20px; cursor: pointer; transition: opacity 0.5s var(--ease-out-expo), filter 0.5s var(--ease-out-expo); user-select: none; }
-.gRow > * { position: relative; z-index: 2; }
-.gRow[data-on="false"] { opacity: 0.45; filter: saturate(0.6); }
-.gRow[data-on="false"]::after { opacity: 0.4; }
+.gRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px 12px 20px; border-radius: 22px; cursor: pointer; user-select: none; }
+.gRow > :not([aria-hidden="true"]) { position: relative; z-index: 4; transition: opacity 0.5s var(--ease-out-expo), filter 0.5s var(--ease-out-expo); }
+/* Off: the row dims to about 45% and desaturates. Never with opacity or a
+   filter on the glass itself (that would cut the lens off from the backdrop):
+   the content dims, and a dark veil settles over the glass. */
+.gRow::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; background: rgba(7, 8, 10, 0.5); opacity: 0; pointer-events: none; transition: opacity 0.5s var(--ease-out-expo); }
+.gRow[data-on="false"]::after { opacity: 1; }
+.gRow[data-on="false"] > :not([aria-hidden="true"]) { opacity: 0.45; filter: saturate(0.6); }
 
-/* The switch: 56 × 32 visible, a 44 px target. Touch scrolls the page vertically. */
-.gs { --x: 0px; position: relative; flex: none; width: 58px; height: 32px; padding: 0; border: 0; border-radius: 999px; background: none; cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
-.gs::before { content: ""; position: absolute; inset: -6px -4px; }
+/* The switch: a clear glass pill (66 × 38, a 44 px target) holding a recessed
+   track; a glossy solid pearl glides inside. Touch keeps vertical scroll. */
+.gs { --x: 0px; position: relative; flex: none; width: 66px; height: 38px; padding: 0; border: 0; border-radius: 999px; background: none; cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.gs::before { content: ""; position: absolute; inset: -3px -2px; }
 .gs:focus-visible { outline: 2px solid var(--color-silver); outline-offset: 4px; border-radius: 999px; }
-
-/* The track: recessed glass. On, a soft mercury glow fills it. */
-.gsTrack { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(24, 25, 29, 0.55)); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.07), 0 1px 0 rgba(255, 255, 255, 0.05); }
-.gsTrack::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(90% 140% at 32% 50%, rgba(250, 251, 252, 0.5), rgba(169, 174, 182, 0.22) 50%, transparent 80%), linear-gradient(90deg, rgba(205, 209, 217, 0.32), rgba(142, 147, 155, 0.1)); opacity: 0; transition: opacity 0.5s var(--ease-out-expo); }
-.gsTrack::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(205, 209, 217, 0.1); transition: box-shadow 0.5s var(--ease-out-expo); }
+.gsPill { position: absolute !important; inset: 0; border-radius: 999px; display: block; }
+/* The track: recessed, dark and quiet; on, a soft mercury glow fills it. */
+.gsTrack { position: absolute; z-index: 3; inset: 5px; border-radius: 999px; overflow: hidden; background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(18, 19, 22, 0.55)); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.75), inset 0 -1px 0 rgba(255, 255, 255, 0.08); }
+.gsTrack::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(90% 150% at 30% 50%, rgba(250, 251, 252, 0.55), rgba(169, 174, 182, 0.25) 50%, transparent 82%), linear-gradient(90deg, rgba(205, 209, 217, 0.34), rgba(142, 147, 155, 0.12)); opacity: 0; transition: opacity 0.5s var(--ease-out-expo); }
 .gs[aria-checked="true"] .gsTrack::before { opacity: 1; }
-.gs[aria-checked="true"] .gsTrack::after { box-shadow: inset 0 0 0 1px rgba(205, 209, 217, 0.3), inset 0 0 12px rgba(250, 251, 252, 0.18); }
-
-/* The knob: a glass lens. It glides (expo, 0.45 s) and stretches in travel. */
-.gsKnob { position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; transform: translateX(var(--x)); transition: transform 0.45s var(--ease-out-expo); will-change: transform; }
+/* The knob: a glossy solid pearl with a crisp highlight and a soft shadow. */
+.gsKnob { position: absolute; z-index: 4; top: 8px; left: 8px; width: 22px; height: 22px; transform: translateX(var(--x)); transition: transform 0.45s var(--ease-out-expo); will-change: transform; }
 .gs[data-drag="true"] .gsKnob { transition: none; }
-.gsLens { position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
-  /* Clear glass: the track shows through; a caustic gathers at the bottom. */
-  background: radial-gradient(120% 90% at 50% 108%, rgba(250, 251, 252, 0.34), transparent 58%), linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.02) 55%, rgba(255, 255, 255, 0.07));
-  -webkit-backdrop-filter: blur(1.5px) saturate(185%) brightness(1.18);
-  backdrop-filter: blur(1.5px) saturate(185%) brightness(1.18);
-  box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.6), inset 0 -3px 5px rgba(0, 0, 0, 0.28), inset 0 0 0 0.5px rgba(255, 255, 255, 0.28), 0 4px 10px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.45);
-  transition: scale 0.25s var(--ease-out-expo); }
-/* The specular: a soft crescent of light across the top of the lens. */
-.gsLens::after { content: ""; position: absolute; left: 17%; right: 17%; top: 6%; height: 36%; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0)); pointer-events: none; }
-.gsLens::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: var(--chrome); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); opacity: 0.6; mix-blend-mode: plus-lighter; }
-/* Chromium: the lens bends what is under it (a baked lens map, not noise). */
-.gsBend { display: none; }
-:global(html[data-refract]) .gsBend { display: block; position: absolute; inset: 0; border-radius: inherit; -webkit-backdrop-filter: url(#lab-lens) brightness(1.2); backdrop-filter: url(#lab-lens) brightness(1.2); }
-.gs[data-st="a"] .gsLens { animation: gsStretchA 0.45s var(--ease-out-expo); }
-.gs[data-st="b"] .gsLens { animation: gsStretchB 0.45s var(--ease-out-expo); }
+.gsPearl { position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #ffffff 0 16%, #f1f3f5 38%, #d4d8dd 72%, #b6bbc2 100%);
+  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.16), inset 0 1px 1px #fff, 0 3px 7px rgba(0, 0, 0, 0.55), 0 1px 1.5px rgba(0, 0, 0, 0.45);
+  transition: scale 0.25s var(--ease-out-expo), filter 0.5s var(--ease-out-expo); }
+.gsPearl::after { content: ""; position: absolute; left: 22%; top: 11%; width: 44%; height: 26%; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0)); }
+.gs[aria-checked="false"] .gsPearl { filter: brightness(0.82); }
+.gs[data-st="a"] .gsPearl { animation: gsStretchA 0.45s var(--ease-out-expo); }
+.gs[data-st="b"] .gsPearl { animation: gsStretchB 0.45s var(--ease-out-expo); }
 @keyframes gsStretchA { 40% { scale: 1.3 0.9; } }
 @keyframes gsStretchB { 40% { scale: 1.3 0.9; } }
-.gs[data-drag="true"] .gsLens { scale: 1.16 0.94; }
-.gs[aria-checked="false"] .gsLens { opacity: 0.82; }
+.gs[data-drag="true"] .gsPearl { scale: 1.16 0.94; }
 
 @media (prefers-reduced-motion: reduce) {
   .gsKnob, .gsTrack::before, .gRow { transition: none; }
-  .gs[data-st] .gsLens { animation: none; }
+  .gs[data-st] .gsPearl { animation: none; }
 }
 
 .receiptRow { transition: opacity 0.5s var(--ease-out-expo); }
@@ -229,7 +164,7 @@
   .tlStage { display: grid; position: sticky; top: 14vh; align-self: start; height: min(68vh, 560px); place-items: center; }
 }
 .tlCard { width: min(420px, 100%); padding: 32px; display: grid; gap: 14px; }
-.tlCard > * { position: relative; z-index: 2; }
+.tlCard > :not([aria-hidden="true"]) { position: relative; z-index: 3; }
 .tlCardIn { animation: tlIn 0.7s var(--ease-out-expo) both; }
 @keyframes tlIn { from { opacity: 0; translate: 0 14px; filter: blur(6px); } }
 .tlBig { width: 64px; height: 64px; color: var(--color-text); }
@@ -331,8 +266,11 @@
 .faqA p { margin: 0; padding: 0 24px 22px; color: var(--color-body); font-size: 15px; max-width: 64ch; }
 
 /* ── 14 CTA ─────────────────────────────────────────────────────────────── */
-.cta { position: relative; overflow: hidden; border-radius: 34px; padding: clamp(32px, 6vw, 72px); background: radial-gradient(70% 90% at 80% 110%, rgba(205, 209, 217, 0.26), transparent 70%), radial-gradient(40% 60% at 10% 0%, rgba(205, 209, 217, 0.1), transparent 70%), var(--color-obsidian); border: 1px solid var(--color-line); display: grid; gap: 26px; }
-@media (min-width: 900px) { .cta { grid-template-columns: 1.4fr 1fr; align-items: end; } }
+.ctaStage { position: relative; overflow: hidden; border-radius: 34px; padding: clamp(28px, 5vw, 64px); background: radial-gradient(60% 80% at 82% 100%, rgba(205, 209, 217, 0.3), transparent 70%), radial-gradient(40% 60% at 8% 0%, rgba(205, 209, 217, 0.12), transparent 70%), var(--color-obsidian); border: 1px solid var(--color-line); }
+.ctaObj { position: absolute; right: -2%; bottom: -12%; width: min(52%, 460px); pointer-events: none; -webkit-mask: radial-gradient(closest-side, #000 62%, transparent 100%); mask: radial-gradient(closest-side, #000 62%, transparent 100%); }
+.cta { border-radius: 30px; padding: clamp(28px, 4.5vw, 56px); display: grid; gap: 26px; }
+.cta > :not([aria-hidden="true"]) { position: relative; z-index: 3; }
+@media (min-width: 900px) { .cta { grid-template-columns: 1.4fr 1fr; align-items: end; width: min(860px, 100%); } }
 .ctaTitle { font-size: clamp(40px, 6vw, 80px); margin: 0; }
 .ctaBody { color: var(--color-body); margin: 0 0 18px; }
 

@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import s from "@/components/lab/palette.module.css";
-import { GlassCard, GlassSegmented, GlassToggle, GlassDock, RefractFilter } from "@/components/lab/Glass";
+import { GlassCard, GlassSegmented, GlassToggle, GlassDock } from "@/components/lab/Glass";
 import { StickyStory, Timeline, ProofStats } from "@/components/lab/Scroll";
 import { CitiesGlobe } from "@/components/lab/Globe";
 import { Bento, PricingModule, GlassFaq, CtaBand, ObjectFrame, Principles } from "@/components/lab/Blocks";
 import { AutomationIcons } from "@/components/lab/AnimatedIcons";
+import { GlassStudy } from "@/components/lab/LiquidGlass";
 
 // Step 1 of the page redesign: the pieces the four pages (/automations,
 // /websites, /about, /book) will be built from, live with their motion, in the
@@ -13,9 +14,10 @@ export default function PalettePage() {
   if (process.env.NODE_ENV === "production") notFound();
 
   const pieces: { id: string; n: string; name: string; use: string; node: React.ReactNode }[] = [
-    { id: "glass-card", n: "01", name: "Liquid-glass card", use: "Base surface for every card, plan, panel and modal. Six layers: frost body, refracting rim (Chromium), chrome rim light, pointer specular, bottom shade, drop shadow.", node: <GlassCard /> },
-    { id: "segmented", n: "02", name: "Glass tab switch", use: "Automations | Websites switch on /book and /how-we-work; any two- or three-way choice.", node: <GlassSegmented /> },
-    { id: "toggle", n: "03", name: "Glass switch", use: "One shared switch: a glass lens over a recessed track, a mercury glow when on, a liquid glide; drag or click. Off, the whole row dims. Used by the pricing module.", node: <GlassToggle /> },
+    { id: "glass-study", n: "00", name: "Glass study", use: "The glass system on its own: the same pill and slab, clear and smoked, over a detailed image and over the mercury glow. Judged against the two references in docs/design/research/glass-refs.", node: <GlassStudy /> },
+    { id: "glass-card", n: "01", name: "Glass card (smoked slab)", use: "The shared glass system, smoked so body text stays AA: a clear edge that bends what is behind it (Chromium), a visible bevel, crisp speculars, light pooling on the inner bottom edge, a caustic and a contact shadow underneath.", node: <GlassCard /> },
+    { id: "segmented", n: "02", name: "Glass tab switch", use: "A clear glass pill; the active thumb is a thick clear lens that magnifies the label under it as it glides. Automations | Websites on /book; any two- or three-way choice.", node: <GlassSegmented /> },
+    { id: "toggle", n: "03", name: "Glass switch", use: "One shared switch: a clear glass pill with a recessed track and a glossy solid pearl that glides and stretches; a mercury glow when on; drag, click, Space or Enter. Off, the whole row dims. Used by the pricing module.", node: <GlassToggle /> },
     { id: "icons", n: "04", name: "Animated icon set", use: "The five automations, drawn on scroll-in, a small gesture each on hover. Inline SVG + GSAP stroke drawing.", node: <AutomationIcons /> },
     { id: "bento", n: "05", name: "Bento grid", use: "The five automations at a glance on /automations; the services on /websites.", node: <Bento /> },
     { id: "object", n: "06", name: "Object frame", use: "A chrome object (Kie render) on a ring of light, floating, tilting toward the pointer.", node: <ObjectFrame /> },
@@ -32,7 +34,6 @@ export default function PalettePage() {
 
   return (
     <div className={s.page}>
-      <RefractFilter />
       <header className={s.top}>
         <span className="mono-label">RYVO LAB · DEV ONLY · NOINDEX</span>
         <h1 className={`display ${s.h1}`}>Component palette</h1>
