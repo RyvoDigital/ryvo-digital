@@ -178,6 +178,61 @@ Shared rules:
   - 3× corner crops for every specimen and backdrop: `*-corner-3x-*.jpg`;
   - the WebKit rows and one 390 shot.
 
+### Glass round 4 (18 Oct 2026): Crystal, `/lab/glass`
+Manuel picked **B · Crystal**, especially over a chrome object: "I want it to feel even more premium,
+like an actual crystal… Super crispy." Target: ref-03 (`glass-refs/glass-ref-03-crystal-weather-card.png`).
+`/lab/glass` now shows **B (round 3) · C1 (CSS crystal) · C2 (WebGL crystal)** over a chrome object,
+the mercury glow and the light room, with round 3 kept below. Nothing is rolled out yet.
+
+**C1 · CSS crystal** (`Crystal.tsx`, `crystal.module.css`, the lens map in `LiquidGlass.tsx`):
+1. **Zero blur in Chromium:** the centre is untouched.
+2. **A thick optical edge:** a lens map drawn per element from its real size and radius. The band is
+   15% of the short side (30% on pills), at least 10 px. The profile is a **tapered crystal bevel**:
+   zero at the rim, peaking about a third of the way in, zero on the face. The first try (strongest at
+   the rim) made the backdrop jump at the edge, so a curved corner read as square. With the taper the
+   backdrop flows continuously into the glass and bends inside the band, as in ref-03. Strength is 1.25
+   × the band (0.9 on pills); 1.7 looked melted over chrome.
+3. **Dispersion:** R, G and B are displaced separately (±1.6/S, about 0.8 px each way at the peak) and
+   screened back together, so colour appears only where the image bends.
+4. **The rim:** one device pixel (0.5 CSS px on retina), bright top-left, a faint counter-highlight
+   bottom-right and 13–16% in between, so the curve always reads. It turns a few degrees toward the
+   pointer (quickTo 0.9 s), off under reduced motion.
+5. **The material:** brightness and contrast +4%, saturation +6%. On light backdrops the slab carries
+   34% white, so dark type holds AA.
+6. **Type and composition:** pure white type with a barely visible 1 px shadow on dark. The busy chrome
+   rides the card's top edge and corner (the card keeps an empty top band, as ref-03 does), never sits
+   behind body text. A soft local shade sits behind the text block only, never a blur.
+7. **Fallbacks:** Safari and Firefox get no bend; they get a 1 px blur, the lift and the rim.
+8. **Speed:** live lens filters only while on screen.
+
+**C2 · WebGL crystal** (`crystal-scene.ts`): a three.js `RoundedBoxGeometry` slab with
+`MeshPhysicalMaterial` (transmission 1, roughness 0, ior 1.75, thickness 0.7, dispersion 3.5) over the
+same composition painted into the scene. It loads near view, pauses off-screen and in hidden tabs, caps
+DPR at 2, and keeps a poster if WebGL fails. It is real optics: a thick edge, true dispersion and an
+inner reflection at the corner. But it reads as a heavy dark object, can only refract what we paint
+into its scene (never DOM content), and costs a WebGL context per stage.
+
+**Two Chromium findings worth keeping:**
+- A `url()` backdrop filter **is** clipped to the rounded corner (proved with a red flood). A corner
+  that "looks square" over busy chrome is the bent and unbent backdrop meeting at the edge, so the
+  rim's in-between light is what makes the curve read.
+- A plain `<img>` or `isolation` beside the glass changes nothing. Removing the masked `<img>` was not
+  the fix; the taper was.
+
+**Checked:**
+- **AA:** 48 text samples (C1 kicker, title, body, tab, row and chip; C2 title and body, over 3 backdrops
+  at 1440 and 390), measured against the real pixels behind them. All pass; lowest 5.46 at 1440, 4.79 at
+  390.
+- **Errors and layout:** no console errors and no sideways scroll at either width. WebKit: no errors and
+  no sideways scroll; headless WebKit draws no backdrop filters (see round 3), so Safari must be judged
+  in real Safari.
+- **Scroll:** the headless browser in this run was capped at 30 fps for every page, including the
+  locked homepage (33.3 ms p50 for both). Removing C1's filters, C2's stages or B changed nothing, so the
+  glass adds no measurable cost, but 60 fps could not be measured this time.
+
+Screens are in `glass-crystal/`: each column over each backdrop, the rows, 3× corner crops, a 390
+shot and the WebKit rows.
+
 ## C. Animated icons: the approach (palette piece 04)
 
 **Chosen: inline SVG line icons, drawn with GSAP.** Stroke-dashoffset is DrawSVG's technique, and

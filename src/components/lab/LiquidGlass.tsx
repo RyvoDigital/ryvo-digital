@@ -48,8 +48,8 @@ export function isChromium() {
 const maps = new Map<string, string>();
 
 /** The lens map: red/green hold the x/y displacement (0.5 = none). */
-export function lensMap(w: number, h: number, r: number, bezel: number, magnify: number) {
-  const key = `${w}|${h}|${r}|${bezel}|${magnify}`;
+export function lensMap(w: number, h: number, r: number, bezel: number, magnify: number, taper = false) {
+  const key = `${w}|${h}|${r}|${bezel}|${magnify}|${taper}`;
   const hit = maps.get(key);
   if (hit) return hit;
   const res = Math.min(1, Math.sqrt(90000 / (w * h)));
@@ -74,7 +74,9 @@ export function lensMap(w: number, h: number, r: number, bezel: number, magnify:
       if (sd < 0) {
         // A circular-arc bezel: flat inside, curving down to the rim.
         const t = Math.min(1, -sd / bezel), u = 1 - t;
-        const m = 1 - Math.sqrt(Math.max(0, 1 - u * u));
+        // taper: a crystal bevel, zero at the rim and on the face, peaking a
+        // third of the way in, so the backdrop stays continuous at the edge.
+        const m = taper ? Math.sin(Math.PI * Math.pow(t, 0.75)) : 1 - Math.sqrt(Math.max(0, 1 - u * u));
         dx = -nx * m - (px / bx) * magnify;
         dy = -ny * m - (py / by) * magnify;
       }
