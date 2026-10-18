@@ -112,6 +112,7 @@ export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p:
         // ── Simple sections settle in once ─────────────────────────────────
         for (const sec of q("[data-section]")) {
           const items = q("[data-reveal]", sec);
+          if (!items.length) continue; // (the intro has the word reveal instead)
           gsap.set(items, { opacity: 0, y: 24 });
           once(sec, "top 78%", () => gsap.to(items, { opacity: 1, y: 0, duration: 1.15, stagger: 0.06, ease: "expo.out" }));
         }

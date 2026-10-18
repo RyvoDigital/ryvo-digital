@@ -5,105 +5,107 @@ import Signature, { type SignatureApi } from "./Signature";
 import { startMotion, isReduced, type ProofMotion } from "./motion";
 import s from "./proof.module.css";
 
-// The hero's film loop: the five objects pass through the crystal in turn,
-// 01 → 05 and back to 01. Nothing is tied to scroll and nothing pins. Each
-// object rests in the crystal for a beat (its number fills as it waits), then
-// the next arrives. A visitor can take over, but never has to: click a number,
-// drag or swipe the scene, or hover to hold it. Every move starts from where
-// the row is, so a click mid-glide never jumps.
+// The hero's loop: the five objects pass into the vitrine in turn, 01 → 05 and
+// back to 01. Nothing is tied to scroll and nothing pins. Each object rests in
+// the case for a beat (its number fills as it waits), then the next arrives.
+// The loop and its progress run wherever the pointer is; it pauses only off
+// screen, in a hidden tab, and under reduced motion. Click a number to go
+// there (its progress restarts), or drag and swipe the scene.
+//
+// The row's position is a critically damped spring, integrated exactly with
+// the real frame time: a glide eases in and settles with no overshoot and no
+// snap, runs at the same speed whatever the frame rate, and a click mid-glide
+// retargets it smoothly, keeping its velocity.
 const N = 5;
-const REST = 2.8; // seconds an object rests in the crystal
-const GLIDE = 1.7; // seconds from one object to the next
+const REST = 3.4; // seconds an object rests in the case
+const OMEGA = 3.4; // the spring's stiffness: about 1.4 s to settle
+const SETTLED = 0.004; // within this of the target (and nearly still), it rests
 
 const wrap = (p: number) => ((p % N) + N) % N;
 
 export default function HeroScene({ names, taglines }: { names: string[]; taglines: string[] }) {
-  const pos = useRef({ p: 0 });
-  const hov = useRef({ k: 0 }); // the hover lift, eased
+  const pos = useRef({ p: 0 }); // what the scene reads: the row's position, wrapped
   const [target, setTarget] = useState(0); // the number lit in the progress mark
-  const [shown, setShown] = useState(0); // the label under the crystal
+  const [shown, setShown] = useState(0); // the label under the case
   const [labelOn, setLabelOn] = useState(true);
-  const ctl = useRef<{ go: (i: number, opts?: { quick?: boolean }) => void } | null>(null);
+  const ctl = useRef<{ go: (i: number) => void } | null>(null);
   const api = useRef<SignatureApi | null>(null);
   const scene = useRef<HTMLDivElement>(null);
   const fills = useRef<(HTMLSpanElement | null)[]>([]);
-  const state = useRef({ visible: true, hover: false, dragging: false });
-  const hold = useRef<() => void>(() => {});
+  const state = useRef({ visible: true, dragging: false });
 
   useEffect(() => {
     let m: ProofMotion | null = null;
-    let glide: gsap.core.Tween | null = null;
-    let rest: gsap.core.Tween | null = null;
     let cancelled = false;
     const reduced = isReduced();
+    // x: the row (unwrapped), v: its velocity, to: the target (an integer).
+    const k = { x: 0, v: 0, to: 0, resting: true, restT: 0 };
+    const fill = (i: number, f: number) => fills.current.forEach((el, j) => { if (el) el.style.transform = `scaleX(${j === i ? f : 0})`; });
 
-    const held = () => !state.current.visible || state.current.hover || state.current.dragging;
-    const syncRest = () => {
-      // Off-screen, the glide waits too, so coming back never shows a jump.
-      if (state.current.visible) glide?.resume(); else glide?.pause();
-      if (!rest) return;
-      if (held()) rest.pause(); else rest.resume();
-    };
-    hold.current = syncRest;
-
-    const startRest = (i: number) => {
-      if (!m || reduced) return;
-      rest?.kill();
-      fills.current.forEach((f) => f && m!.gsap.set(f, { scaleX: 0 }));
-      const fill = fills.current[i];
-      rest = m.gsap.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: REST, ease: "none", onComplete: () => go(wrap(i + 1)) });
-      syncRest();
-    };
-
-    // Move to object i along the shorter way round, from wherever the row is.
-    function go(i: number, opts: { quick?: boolean } = {}) {
+    function go(i: number) {
       if (!m) return;
       i = wrap(i);
       setTarget(i);
-      rest?.kill(); rest = null;
-      fills.current.forEach((f) => f && m!.gsap.set(f, { scaleX: 0 }));
       if (reduced) {
         // No glide under reduced motion: a simple fade.
         const el = scene.current!;
         m.gsap.to(el, { opacity: 0, duration: 0.25, ease: "power1.out", onComplete: () => {
-          pos.current.p = i; setShown(i); api.current?.renderNow();
+          k.x = k.to = i; pos.current.p = i; setShown(i); api.current?.renderNow();
           m!.gsap.to(el, { opacity: 1, duration: 0.35, ease: "power1.out" });
         } });
         return;
       }
-      let d = wrap(i - pos.current.p);
+      let d = wrap(i - k.x);
       if (d > N / 2) d -= N;
-      if (Math.abs(d) < 0.001 && !glide?.isActive()) { startRest(i); return; }
+      k.to = Math.round(k.x + d);
+      k.restT = 0;
+      fill(i, 0);
+      // Already there (a click on the resting number): its progress restarts.
+      if (Math.abs(k.to - k.x) < SETTLED && k.resting) return;
+      k.resting = false;
       setLabelOn(false);
-      glide?.kill();
-      glide = m.gsap.to(pos.current, {
-        p: pos.current.p + d,
-        duration: opts.quick ? 0.9 : GLIDE * Math.min(1.35, 0.75 + Math.abs(d) * 0.25),
-        ease: opts.quick ? "expo.out" : "expo.inOut",
-        onComplete: () => {
-          pos.current.p = wrap(Math.round(pos.current.p));
-          setShown(i);
-          setLabelOn(true);
-          startRest(i);
-        },
-      });
     }
+
+    const tick = (_time: number, deltaMs: number) => {
+      if (!state.current.visible || state.current.dragging) return;
+      // Real frame time, clamped so a long stall never jumps the row.
+      const dt = Math.min(deltaMs / 1000, 1 / 15);
+      if (!k.resting) {
+        // Exact critically damped step: x(t) = to + (e + (v + ω e) t) e^(−ω t).
+        const e = k.x - k.to;
+        const decay = Math.exp(-OMEGA * dt);
+        const c = k.v + OMEGA * e;
+        k.x = k.to + (e + c * dt) * decay;
+        k.v = (c - OMEGA * (e + c * dt)) * decay;
+        if (Math.abs(k.x - k.to) < SETTLED && Math.abs(k.v) < 0.02) {
+          k.x = k.to; k.v = 0; k.resting = true; k.restT = 0;
+          const i = wrap(k.to);
+          setShown(i); setLabelOn(true);
+        }
+      } else {
+        k.restT += dt;
+        fill(wrap(k.to), Math.min(1, k.restT / REST));
+        if (k.restT >= REST) go(wrap(k.to) + 1);
+      }
+      pos.current.p = wrap(k.x);
+    };
 
     startMotion().then((motion) => {
       if (cancelled) return;
       m = motion;
       ctl.current = { go };
-      startRest(0);
+      if (!reduced) m.gsap.ticker.add(tick);
     });
 
-    // Drag or swipe: the row follows the pointer, then settles on the next or
-    // previous object. Vertical swipes stay the page's own scroll (pan-y).
+    // Drag or swipe: the row follows the pointer, then the spring carries it,
+    // with the flick's velocity, to the next or previous object. Vertical
+    // swipes stay the page's own scroll (pan-y).
     const el = scene.current!;
-    let x0 = 0, p0 = 0, lastX = 0, lastT = 0, v = 0, moved = false;
+    let x0 = 0, p0 = 0, lastX = 0, lastT = 0, vel = 0, moved = false;
     const down = (e: PointerEvent) => {
       if (!m || reduced || e.button > 0) return;
-      x0 = lastX = e.clientX; lastT = performance.now(); v = 0; moved = false;
-      p0 = pos.current.p;
+      x0 = lastX = e.clientX; lastT = performance.now(); vel = 0; moved = false;
+      p0 = k.x;
       state.current.dragging = true;
       el.setPointerCapture(e.pointerId);
     };
@@ -111,49 +113,46 @@ export default function HeroScene({ names, taglines }: { names: string[]; taglin
       if (!state.current.dragging || !m) return;
       const dx = e.clientX - x0;
       if (!moved && Math.abs(dx) < 6) return;
-      if (!moved) { moved = true; glide?.kill(); rest?.kill(); rest = null; setLabelOn(false); fills.current.forEach((f) => f && m!.gsap.set(f, { scaleX: 0 })); }
+      if (!moved) { moved = true; k.resting = false; setLabelOn(false); fill(-1, 0); }
       const now = performance.now();
-      v = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now;
-      pos.current.p = p0 - dx / (el.clientWidth * 0.42);
+      const w = el.clientWidth * 0.42;
+      vel = (-(e.clientX - lastX) / w) / Math.max(0.001, (now - lastT) / 1000); lastX = e.clientX; lastT = now;
+      k.x = p0 - dx / w;
+      pos.current.p = wrap(k.x);
     };
     const up = () => {
       if (!state.current.dragging) return;
       state.current.dragging = false;
-      if (!moved) { syncRest(); return; }
+      if (!moved) return;
       // Past a fifth of a step, or a quick flick, moves on; less springs back.
-      const drift = pos.current.p - p0 - v * 0.6;
+      const drift = k.x - p0 + vel * 0.12;
       const dir = Math.abs(drift) > 0.2 ? Math.sign(drift) : 0;
       const steps = Math.max(1, Math.round(Math.abs(drift)));
-      go(dir ? Math.round(p0) + dir * steps : Math.round(pos.current.p), { quick: true });
+      k.v = Math.max(-6, Math.min(6, vel));
+      go(dir ? Math.round(p0) + dir * steps : Math.round(k.x));
     };
-    const enter = (e: PointerEvent) => { if (e.pointerType === "mouse") { state.current.hover = true; syncRest(); if (m && !reduced) m.gsap.to(hov.current, { k: 1, duration: 1.1, ease: "expo.out", overwrite: true }); } };
-    const leave = (e: PointerEvent) => { if (e.pointerType === "mouse") { state.current.hover = false; syncRest(); if (m) m.gsap.to(hov.current, { k: 0, duration: 1.1, ease: "expo.out", overwrite: true }); } };
     el.addEventListener("pointerdown", down);
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
-    el.addEventListener("pointerenter", enter);
-    el.addEventListener("pointerleave", leave);
 
     return () => {
       cancelled = true;
-      glide?.kill(); rest?.kill();
+      m?.gsap.ticker.remove(tick);
       el.removeEventListener("pointerdown", down);
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerup", up);
       el.removeEventListener("pointercancel", up);
-      el.removeEventListener("pointerenter", enter);
-      el.removeEventListener("pointerleave", leave);
     };
   }, []);
 
-  const onVisible = (v: boolean) => { state.current.visible = v; hold.current(); };
+  const onVisible = (v: boolean) => { state.current.visible = v; };
 
   return (
     <div className={s.heroScene}>
       <div ref={scene} className={s.heroCanvas} data-hero-scene>
-        <Signature sig="crystal" kind="hero" objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/proof/vitrine-poster-v1.webp" label="The five automations as chrome objects, shown one at a time in a lit glass case"
-          getPos={() => pos.current.p} getHover={() => hov.current.k} onVisible={onVisible} onReady={(a) => { api.current = a; }} />
+        <Signature sig="crystal" kind="hero" objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/proof/vitrine-poster-v2.webp" label="The five automations as chrome objects, shown one at a time in a lit glass case"
+          getPos={() => pos.current.p} onVisible={onVisible} onReady={(a) => { api.current = a; }} />
       </div>
       <div className={s.heroCaption} aria-live="polite">
         <p className={s.capLine} data-on={labelOn}>

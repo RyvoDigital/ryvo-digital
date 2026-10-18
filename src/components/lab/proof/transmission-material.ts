@@ -15,6 +15,11 @@ export type TransmissionUniforms = {
   uAttenDist: { value: number };
   uAttenColor: { value: Color };
   uBuffer: { value: Texture | null };
+  // Light from below (the vitrine's slot): off unless uUpOn is 1.
+  uUpOn: { value: number };
+  uUpY: { value: number }; // the height of the light
+  uUpZ: { value: number }; // the slot's depth position
+  uUpCol: { value: Color };
 };
 
 export class TransmissionMaterial extends MeshPhysicalMaterial {
@@ -30,6 +35,10 @@ export class TransmissionMaterial extends MeshPhysicalMaterial {
       uAttenDist: { value: 0 },
       uAttenColor: { value: new Color(1, 1, 1) },
       uBuffer: { value: null },
+      uUpOn: { value: 0 },
+      uUpY: { value: 0 },
+      uUpZ: { value: 0 },
+      uUpCol: { value: new Color(1, 1, 1) },
     };
     this.customProgramCacheKey = () => `ryvo-transmission-${samples}`;
     this.onBeforeCompile = (shader) => {
@@ -47,6 +56,10 @@ export class TransmissionMaterial extends MeshPhysicalMaterial {
   uniform float uAttenDist;
   uniform vec3 uAttenColor;
   uniform sampler2D uBuffer;
+  uniform float uUpOn;
+  uniform float uUpY;
+  uniform float uUpZ;
+  uniform vec3 uUpCol;
   uniform mat4 modelMatrix;
   uniform mat4 projectionMatrix;
   varying vec3 vWorldPosition;
@@ -70,6 +83,26 @@ export class TransmissionMaterial extends MeshPhysicalMaterial {
   }
 #endif
 `,
+      );
+
+      // The glass catching light from below: bright glints where the lower
+      // edges turn away (Fresnel), and a soft gradient rising up the faces.
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <emissivemap_fragment>",
+        /* glsl */ `#include <emissivemap_fragment>
+#ifdef USE_TRANSMISSION
+  if (uUpOn > 0.5) {
+    vec3 upV = normalize(cameraPosition - vWorldPosition);
+    vec3 upN = transformNormalByInverseViewMatrix(normal, viewMatrix);
+    float upF = pow(1.0 - clamp(abs(dot(upN, upV)), 0.0, 1.0), 2.2);
+    float upH = max(vWorldPosition.y - uUpY, 0.0);
+    vec2 upD = vec2(vWorldPosition.x, vWorldPosition.z - uUpZ);
+    float upLat = exp(-dot(upD, upD) / 2.6);
+    float glint = exp(-upH / 0.07) * upF * 1.6;
+    float wash = exp(-upH / 0.8) * (0.004 + upF * 0.05);
+    totalEmissiveRadiance += uUpCol * upLat * (glint + wash);
+  }
+#endif`,
       );
 
       shader.fragmentShader = shader.fragmentShader.replace(
