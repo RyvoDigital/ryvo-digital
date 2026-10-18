@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { startMotion, isReduced } from "./motion";
-import type { CrystalForm, Sig, Stage, StageKind } from "./stage-scene";
-import { objectSrc } from "./objects";
+import type { Sig, Stage, StageKind } from "./stage-scene";
+import { clipSrc, objectSrc } from "./objects";
 import s from "./proof.module.css";
 
 // One signature moment. three.js and the scene load only when the stage comes
@@ -14,7 +14,7 @@ export type SignatureApi = { renderNow: () => void };
 
 type Props = {
   sig: Sig; kind: StageKind; objects: number[]; poster: number; label: string;
-  form?: CrystalForm;
+  posterSrc?: string; // a rendered frame of the scene, shown when WebGL is off
   // The hero's carousel: read every tick; told when the stage leaves or returns.
   getPos?: () => number;
   getHover?: () => number;
@@ -22,7 +22,7 @@ type Props = {
   onReady?: (api: SignatureApi) => void;
 };
 
-export default function Signature({ sig, kind, objects, poster, label, form, getPos, getHover, onVisible, onReady }: Props) {
+export default function Signature({ sig, kind, objects, poster, label, posterSrc, getPos, getHover, onVisible, onReady }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const hooks = useRef({ getPos, getHover, onVisible, onReady });
   useEffect(() => { hooks.current = { getPos, getHover, onVisible, onReady }; });
@@ -33,7 +33,7 @@ export default function Signature({ sig, kind, objects, poster, label, form, get
   useEffect(() => {
     const el = wrap.current, cv = canvas.current;
     if (!el || !cv) return;
-    let stage: Stage | null = null;
+    let stage: (Stage & { setPlaying?: (on: boolean) => void }) | null = null;
     let disposed = false;
     let onScreen = false;
     let ticking = false;
@@ -52,9 +52,14 @@ export default function Signature({ sig, kind, objects, poster, label, form, get
       try {
         const probe = document.createElement("canvas");
         if (!(probe.getContext("webgl2") || probe.getContext("webgl"))) throw new Error("no webgl");
-        const [{ createStage }, m] = await Promise.all([import("./stage-scene"), startMotion()]);
+        const m = await startMotion();
+        const srcs = objects.map((i) => objectSrc(i, 800, "webp"));
+        // The hero is the vitrine; the close is the mercury stage.
+        const made = kind === "hero"
+          ? import("./vitrine-scene").then(({ createVitrine }) => createVitrine(cv!, { objects: srcs, clips: objects.map((i) => clipSrc(i)), reduced }))
+          : import("./stage-scene").then(({ createStage }) => createStage(cv!, { sig, kind, objects: srcs, reduced }));
         if (disposed) return;
-        stage = await createStage(cv!, { sig, kind, objects: objects.map((i) => objectSrc(i, 800, "webp")), reduced, form });
+        stage = await made;
         if (disposed) { stage.dispose(); return; }
 
         const measure = () => {
@@ -96,11 +101,13 @@ export default function Signature({ sig, kind, objects, poster, label, form, get
         const play = () => {
           if (ticking || reduced) return;
           ticking = true;
+          stage!.setPlaying?.(true);
           m.gsap.ticker.add(tick);
         };
         const pause = () => {
           if (!ticking) return;
           ticking = false;
+          stage!.setPlaying?.(false);
           m.gsap.ticker.remove(tick);
         };
         cleanups.push(pause);
@@ -145,15 +152,15 @@ export default function Signature({ sig, kind, objects, poster, label, form, get
       stage?.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sig, kind, form, objects.join(",")]);
+  }, [sig, kind, objects.join(",")]);
 
   return (
     <div ref={wrap} className={s.sig} data-kind={kind} data-ready={ready} role="img" aria-label={label}>
       <div className={s.sigPoster} data-show={failed} aria-hidden="true">
-        <picture>
+        {posterSrc ? <img src={posterSrc} alt="" decoding="async" className={s.sigPosterFull} data-failed={failed} /> : <picture>
           <source type="image/avif" srcSet={`${objectSrc(poster, 800, "avif")} 800w, ${objectSrc(poster, 1200, "avif")} 1200w`} sizes="(min-width: 1024px) 40vw, 80vw" />
           <img src={objectSrc(poster, 800, "webp")} srcSet={`${objectSrc(poster, 800, "webp")} 800w, ${objectSrc(poster, 1200, "webp")} 1200w`} sizes="(min-width: 1024px) 40vw, 80vw" width={1200} height={1200} alt="" decoding="async" data-failed={failed} />
-        </picture>
+        </picture>}
       </div>
       <canvas ref={canvas} className={s.sigCanvas} aria-hidden="true" />
     </div>

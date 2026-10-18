@@ -9,15 +9,12 @@ import { navLinks } from "@/components/chrome/nav-links";
 import { startMotion } from "./motion";
 import s from "./footer.module.css";
 
-// Round 4: two footers to choose from, both without a back-to-top button and
-// without LinkedIn. The legal block is the landing page's own, unchanged (the
-// same LEGAL text and the same privacy and terms links).
-//   a  The crystal: RYVO set very large in clear crystal; a soft light follows
-//      the pointer across it and its edges catch the light where it passes.
-//   b  The mercury horizon: the email as large type above a living line of
-//      liquid mercury that runs the width of the page.
-// Both: the email can be copied in one tap, the local time in Lisbon and
-// Madrid, the pages and the language switch.
+// The footer: the mercury horizon (Manuel's pick, round 4). The email as large
+// type above a living line of liquid mercury that runs the width of the page;
+// below it a small chrome RYVO, the pages, the language switch and the local
+// time in Lisbon and Madrid. The email can be copied in one tap. No back-to-top
+// button and no LinkedIn. The legal block is the landing page's own, unchanged
+// (the same LEGAL text and the same privacy and terms links).
 
 const MAIL = "hello@ryvodigital.com";
 const lang = "en";
@@ -112,7 +109,7 @@ const horizon = (t: number) => {
   return d;
 };
 
-export default function ProofFooter({ t, place, bookHref, variant }: { t: Dictionary; place: string; bookHref: string; variant: "a" | "b" }) {
+export default function ProofFooter({ t, place, bookHref }: { t: Dictionary; place: string; bookHref: string }) {
   const root = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -124,98 +121,38 @@ export default function ProofFooter({ t, place, bookHref, variant }: { t: Dictio
       if (cancelled) return;
       const { gsap, ScrollTrigger, reduced } = m;
       const ctx = gsap.context(() => {
-        if (variant === "a") {
-          // The crystal wordmark: a soft light rests on it and follows the
-          // pointer while it is over it; the wordmark rises once on entry.
-          const mark = el.querySelector<HTMLElement>("[data-crystal]")!;
-          const fine = matchMedia("(pointer: fine)").matches;
-          if (!reduced) {
-            gsap.set("[data-crystal-rise]", { yPercent: 100 });
-            // On entry it rises, and one sweep of light crosses it (the only
-            // light a touch screen sees).
-            ScrollTrigger.create({
-              trigger: el, start: "top 85%", once: true,
-              onEnter: () => {
-                gsap.to("[data-crystal-rise]", { yPercent: 0, duration: 1.6, ease: "expo.out" });
-                gsap.fromTo(mark, { "--mx": -20, "--lit": 0.7 }, { "--mx": 30, "--lit": 0, duration: 2.6, ease: "power2.inOut", delay: 0.5 });
-              },
-            });
-          }
-          if (fine && !reduced) {
-            const mx = gsap.quickTo(mark, "--mx", { duration: 0.9, ease: "expo.out" });
-            const my = gsap.quickTo(mark, "--my", { duration: 0.9, ease: "expo.out" });
-            const lit = gsap.quickTo(mark, "--lit", { duration: 0.8, ease: "power2.out" });
-            const move = (e: PointerEvent) => { const r = mark.getBoundingClientRect(); mx(((e.clientX - r.left) / r.width) * 100); my(((e.clientY - r.top) / r.height) * 100); };
-            const enter = () => lit(1);
-            const leave = () => { lit(0); mx(30); my(30); };
-            mark.addEventListener("pointermove", move);
-            mark.addEventListener("pointerenter", enter);
-            mark.addEventListener("pointerleave", leave);
-            cleanup = () => { mark.removeEventListener("pointermove", move); mark.removeEventListener("pointerenter", enter); mark.removeEventListener("pointerleave", leave); };
-          }
-        } else {
-          const paths = Array.from(el.querySelectorAll<SVGPathElement>("[data-horizon]"));
-          const fill = el.querySelector<SVGPathElement>("[data-horizon-fill]")!;
-          const sheen = el.querySelector<SVGLinearGradientElement>("[data-horizon-sheen]")!;
-          const draw = (time: number) => {
-            const d = horizon(time);
-            paths.forEach((p) => p.setAttribute("d", d));
-            fill.setAttribute("d", `${d} L${HW} ${HH} L0 ${HH} Z`);
-            sheen.setAttribute("gradientTransform", `translate(${((time * 0.05) % 1.6 - 0.8).toFixed(3)} 0)`);
-          };
-          draw(0);
-          if (reduced) return;
-          const tick = (time: number) => draw(time);
-          ScrollTrigger.create({ trigger: el, start: "top bottom", end: "bottom top", onToggle: (st) => (st.isActive ? gsap.ticker.add(tick) : gsap.ticker.remove(tick)) });
-          gsap.set("[data-mail-rise]", { yPercent: 105 });
-          gsap.set("[data-horizon-wrap]", { clipPath: "inset(0 50% 0 50%)" });
-          ScrollTrigger.create({
-            trigger: el, start: "top 85%", once: true,
-            onEnter: () => {
-              gsap.to("[data-horizon-wrap]", { clipPath: "inset(0 0% 0 0%)", duration: 1.8, ease: "expo.inOut" });
-              gsap.to("[data-mail-rise]", { yPercent: 0, duration: 1.4, ease: "expo.out", delay: 0.3 });
-            },
-          });
-          cleanup = () => gsap.ticker.remove(tick);
-        }
+        const paths = Array.from(el.querySelectorAll<SVGPathElement>("[data-horizon]"));
+        const fill = el.querySelector<SVGPathElement>("[data-horizon-fill]")!;
+        const sheen = el.querySelector<SVGLinearGradientElement>("[data-horizon-sheen]")!;
+        const draw = (time: number) => {
+          const d = horizon(time);
+          paths.forEach((p) => p.setAttribute("d", d));
+          fill.setAttribute("d", `${d} L${HW} ${HH} L0 ${HH} Z`);
+          sheen.setAttribute("gradientTransform", `translate(${((time * 0.05) % 1.6 - 0.8).toFixed(3)} 0)`);
+        };
+        draw(0);
+        if (reduced) return;
+        const tick = (time: number) => draw(time);
+        ScrollTrigger.create({ trigger: el, start: "top bottom", end: "bottom top", onToggle: (st) => (st.isActive ? gsap.ticker.add(tick) : gsap.ticker.remove(tick)) });
+        gsap.set("[data-mail-rise]", { yPercent: 105 });
+        gsap.set("[data-horizon-wrap]", { clipPath: "inset(0 50% 0 50%)" });
+        ScrollTrigger.create({
+          trigger: el, start: "top 85%", once: true,
+          onEnter: () => {
+            gsap.to("[data-horizon-wrap]", { clipPath: "inset(0 0% 0 0%)", duration: 1.8, ease: "expo.inOut" });
+            gsap.to("[data-mail-rise]", { yPercent: 0, duration: 1.4, ease: "expo.out", delay: 0.3 });
+          },
+        });
+        cleanup = () => gsap.ticker.remove(tick);
       }, el);
       const prev = cleanup;
       cleanup = () => { prev?.(); ctx.revert(); };
     });
     return () => { cancelled = true; cleanup?.(); };
-  }, [variant]);
-
-  if (variant === "a") {
-    return (
-      <footer ref={root} className={`${s.footer} ${s.fa}`} data-footer data-variant="a">
-        <div className={s.inner}>
-          <div className={s.aTop}>
-            <div className={s.aLead}>
-              <span className={s.colLabel}>Contact</span>
-              <Mail big />
-              <div className={s.cta}><BookButton href={bookHref} label={t.nav.book} /></div>
-            </div>
-            <Clocks />
-            <Columns t={t} />
-          </div>
-          <Link href={`/${lang}`} className={s.crystalWrap} aria-label="Ryvo Digital, home">
-            <span className={s.crystalMask}>
-              <span className={s.crystal} data-crystal data-crystal-rise aria-hidden="true">
-                <span className={s.cBody}>RYVO</span>
-                <span className={s.cLight}>RYVO</span>
-                <span className={s.cEdge}>RYVO</span>
-              </span>
-            </span>
-            <span className={s.place}>{place}</span>
-          </Link>
-          <Legal />
-        </div>
-      </footer>
-    );
-  }
+  }, []);
 
   return (
-    <footer ref={root} className={`${s.footer} ${s.fb}`} data-footer data-variant="b">
+    <footer ref={root} className={s.footer} data-footer>
       <div className={s.inner}>
         <div className={s.bTop}>
           <span className={s.colLabel}>Contact</span>

@@ -138,6 +138,7 @@
 .sigPoster { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transition: opacity 0.8s var(--expo); }
 .sigPoster[data-show="true"] { opacity: 1; }
 .sigPoster img { width: min(70%, 560px); height: auto; }
+.sigPoster img.sigPosterFull { width: 100%; height: 100%; object-fit: cover; }
 
 /* ── Index ───────────────────────────────────────────────────────────────── */
 .index { max-width: calc(1180px + 2 * var(--pad)); margin: 0 auto; padding: 48px var(--pad) 0; }
@@ -193,49 +194,33 @@
 .stageNum { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--color-steel); }
 .spreadName { margin: 0; font-size: clamp(34px, 4.2vw, 64px); }
 .spreadLead { margin: 6px 0 0; max-width: 30ch; font-size: clamp(19px, 1.7vw, 25px); line-height: 1.36; letter-spacing: -0.012em; color: var(--color-text); }
-/* The points (round 4): no numbers; each a title in the display face, wide,
-   then a softer, smaller description of two or three lines. Two variants:
-   a  a three-column grid with generous gaps, long points spanning two;
-   b  an editorial list: the title large on the left, its words on the
-      right, a thin hairline between rows. */
+/* The points: no numbers; an editorial list. Each title in the display face,
+   wide, large on the left; its description softer and smaller on the right
+   (above it on phones); a thin hairline between rows, drawn in on entry. */
 .spread { overflow-x: clip; }
-.pointGrid { grid-column: 1 / -1; grid-row: 3; list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 34px; }
-.point { position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.ptRule { display: none; }
-.ptTitle { font-family: "Archivo", "Archivo Wide Fallback", var(--font-sans); font-size: 20px; font-weight: 500; font-stretch: 118%; letter-spacing: -0.03em; line-height: 1.15; color: var(--color-text); }
+.pointGrid { grid-column: 1 / -1; grid-row: 3; list-style: none; margin: 30px 0 0; padding: 0; display: flex; flex-direction: column; }
+.point { position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 26px 0 28px; }
+.ptRule { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--color-line); transform-origin: 0 50%; }
+.ptTitle { font-family: "Archivo", "Archivo Wide Fallback", var(--font-sans); font-size: 22px; font-weight: 500; font-stretch: 118%; letter-spacing: -0.03em; line-height: 1.15; color: var(--color-text); }
 .pointText { font-size: 14.5px; line-height: 1.62; color: #a3a8af; max-width: 56ch; }
 .ptRest { animation: pt-rest 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes pt-rest { from { opacity: 0; } }
 .ptMore {
-  display: inline-grid; place-items: center; vertical-align: -2px;
+  position: relative; display: inline-grid; place-items: center; vertical-align: -2px;
   width: 20px; height: 20px; margin: -6px 0; padding: 0;
   border: 1px solid var(--color-line-2); border-radius: 50%; background: none;
   color: var(--color-silver); cursor: pointer;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, color 0.3s;
 }
-/* a 44 px target around the 20 px mark */
-.ptMore { position: relative; }
-.ptMore::after { content: ""; position: absolute; inset: -12px; }
+.ptMore::after { content: ""; position: absolute; inset: -12px; } /* a 44 px target */
 .ptMore:hover { border-color: var(--color-silver); color: var(--color-text); }
 .ptMore[aria-expanded="true"] { transform: rotate(45deg); }
 
-/* b: rows divided by a thin hairline (drawn in on entry). */
-.pointGrid[data-v="b"] { gap: 0; margin-top: 30px; }
-.pointGrid[data-v="b"] .point { padding: 26px 0 28px; }
-.pointGrid[data-v="b"] .ptRule { display: block; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--color-line); transform-origin: 0 50%; }
-.pointGrid[data-v="b"] .ptTitle { font-size: 22px; }
-
 @media (min-width: 1024px) {
-  .pointGrid[data-v="a"] { grid-column: 1 / -1; margin-top: 72px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px 56px; }
-  .pointGrid[data-v="b"] { grid-column: 1 / -1; margin-top: 64px; }
-  .pointGrid[data-v="b"] .point { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 48px; align-items: baseline; padding: 30px 0 32px; }
-  .pointGrid[data-v="b"] .ptTitle { font-size: 24px; }
-  .pointGrid[data-v="b"] .pointText { font-size: 15px; max-width: none; }
-  .pointGrid[data-v="a"] .point[data-wide] .pointText { max-width: 96ch; }
-}
-@media (max-width: 1023.98px) {
-  /* one column: the grid's spans fall away */
-  .pointGrid[data-v="a"] > .point { grid-column: auto !important; }
+  .pointGrid { grid-column: 1 / -1; margin-top: 64px; }
+  .point { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 48px; align-items: baseline; padding: 30px 0 32px; }
+  .ptTitle { font-size: 24px; }
+  .pointText { font-size: 15px; max-width: none; }
 }
 
 @media (min-width: 900px) {
@@ -401,3 +386,7 @@
 /* Round 4: the closing label sits where the mercury's reflection can pass
    under it; silver keeps it AA over the brightest of that reflection. */
 .ctaText :global(.mono-label) { color: var(--color-silver); }
+
+/* The intro's word reveal is a colour scrub; under reduced motion every word
+   is fully lit from the start. */
+:global([data-motion="reduced"]) .introText :global([data-word]) { --lit: 1 !important; }

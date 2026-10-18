@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Signature, { type SignatureApi } from "./Signature";
-import type { CrystalForm } from "./stage-scene";
 import { startMotion, isReduced, type ProofMotion } from "./motion";
 import s from "./proof.module.css";
 
@@ -18,7 +17,7 @@ const GLIDE = 1.7; // seconds from one object to the next
 
 const wrap = (p: number) => ((p % N) + N) % N;
 
-export default function HeroScene({ names, taglines, form = "a" }: { names: string[]; taglines: string[]; form?: CrystalForm }) {
+export default function HeroScene({ names, taglines }: { names: string[]; taglines: string[] }) {
   const pos = useRef({ p: 0 });
   const hov = useRef({ k: 0 }); // the hover lift, eased
   const [target, setTarget] = useState(0); // the number lit in the progress mark
@@ -153,7 +152,7 @@ export default function HeroScene({ names, taglines, form = "a" }: { names: stri
   return (
     <div className={s.heroScene}>
       <div ref={scene} className={s.heroCanvas} data-hero-scene>
-        <Signature sig="crystal" kind="hero" form={form} objects={[0, 1, 2, 3, 4]} poster={0} label="The five automations as chrome objects, passing through a crystal"
+        <Signature sig="crystal" kind="hero" objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/proof/vitrine-poster-v1.webp" label="The five automations as chrome objects, shown one at a time in a lit glass case"
           getPos={() => pos.current.p} getHover={() => hov.current.k} onVisible={onVisible} onReady={(a) => { api.current = a; }} />
       </div>
       <div className={s.heroCaption} aria-live="polite">

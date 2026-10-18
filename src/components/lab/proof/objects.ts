@@ -8,3 +8,9 @@ export const OBJECT_SIZES = [480, 800, 1200] as const;
 export function objectSrc(i: number, size: (typeof OBJECT_SIZES)[number], ext: "avif" | "webp") {
   return `/media/proof/objects/${OBJECTS[i]}-${OBJECT_VERSION}-${size}.${ext}`;
 }
+
+// Each object's turning footage for the vitrine (Seedance 2.5, from its own
+// still; 512 px, about 60–160 KB). Its first frame is the still's pose.
+export function clipSrc(i: number) {
+  return { webm: `/media/proof/turn/${OBJECTS[i]}-v1.webm`, mp4: `/media/proof/turn/${OBJECTS[i]}-v1.mp4` };
+}

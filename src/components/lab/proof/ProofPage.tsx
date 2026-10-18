@@ -7,6 +7,7 @@ import type { Pages } from "@/i18n/pages";
 import SiteNav from "@/components/chrome/SiteNav";
 import { BookButton } from "@/components/chrome/Icons";
 import Pricing from "@/components/home/Pricing";
+import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import Signature from "./Signature";
 import HeroScene from "./HeroScene";
 import BrandFilm from "./BrandFilm";
@@ -38,12 +39,12 @@ const POINT_TITLES: string[][] = [
 const LONG = 140;
 const isLong = (text: string) => text.length > LONG;
 
-function Point({ title, text, span }: { title: string; text: string; span?: number }) {
+function Point({ title, text }: { title: string; text: string }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const parts = isLong(text) ? text.match(/^(.+?[.!?])\s+(.+)$/) : null;
   return (
-    <li className={s.point} data-point data-wide={span && span > 1 ? "true" : undefined} style={span && span > 1 ? { gridColumn: `span ${span}` } : undefined}>
+    <li className={s.point} data-point>
       <span className={s.ptRule} data-pt-rule aria-hidden="true" />
       <strong className={s.ptTitle}>{title}</strong>
       <span className={s.pointText}>
@@ -61,24 +62,6 @@ function Point({ title, text, span }: { title: string; text: string; span?: numb
   );
 }
 
-// What a point shows before any tap: its first sentence when it folds.
-const shownLength = (text: string) => (isLong(text) ? (text.match(/^(.+?[.!?])\s+(.+)$/)?.[1] ?? text) : text).length;
-
-// Grid a: three columns; a point that still shows more than 140 characters
-// spans two. Rows fill in reading order; where the next point will not fit,
-// the last one in the row widens to meet the edge, so no row is left with a
-// hole (the last row may stay short).
-function spans(texts: string[]) {
-  const out = texts.map((t) => (shownLength(t) > LONG ? 2 : 1));
-  let used = 0, lastIdx = -1;
-  out.forEach((w, i) => {
-    if (used + w > 3) { if (lastIdx >= 0) out[lastIdx] += 3 - used; used = 0; }
-    used += w; lastIdx = i;
-    if (used === 3) used = 0;
-  });
-  return out;
-}
-
 function ObjectPicture({ i }: { i: number }) {
   const set = (ext: "avif" | "webp") => [480, 800].map((w) => `${objectSrc(i, w as 480, ext)} ${w}w`).join(", ");
   return (
@@ -89,13 +72,8 @@ function ObjectPicture({ i }: { i: number }) {
   );
 }
 
-// Round 4: three choices of taste, each switchable by URL
-// (?crystal=a|b&spread=a|b&footer=a|b), each finished.
-export type Variants = { crystal: "a" | "b"; spread: "a" | "b"; footer: "a" | "b" };
-
-export default function ProofPage({ t, p, ctaLabel, place, v }: { t: Dictionary; p: P; ctaLabel: string; place: string; v: Variants }) {
+export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p: P; ctaLabel: string; place: string }) {
   const root = useRef<HTMLDivElement>(null);
-  const spreadV = v.spread;
   const names = t.automationNames;
 
   useEffect(() => {
@@ -183,21 +161,15 @@ export default function ProofPage({ t, p, ctaLabel, place, v }: { t: Dictionary;
             enter = () => { gsap.to(numeral, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.4, ease: "expo.out", clearProps: "filter" }); headIn(0.15); gsap.to(obj, { opacity: 1, duration: 1.2, delay: 0.2 }); };
           }
           once(node, "top 72%", enter);
-          // The points, the same in every spread, by variant: a, a quiet rise
-          // in reading order; b, a slow stagger, each row's hairline drawing
-          // first, then its words.
+          // The points, the same in every spread: a slow stagger, each row's
+          // hairline drawing first, then its words.
           const list = node.querySelector<HTMLElement>("[data-points]")!;
-          if (spreadV === "a") {
-            gsap.set(pts, { opacity: 0, y: 14 });
-            once(list, "top 84%", () => gsap.to(pts, { opacity: 1, y: 0, duration: 1.2, stagger: 0.06, ease: "expo.out" }));
-          } else {
-            gsap.set(pts, { opacity: 0, y: 22 });
-            gsap.set(rules, { scaleX: 0 });
-            once(list, "top 84%", () => {
-              gsap.to(rules, { scaleX: 1, duration: 1.6, stagger: 0.2, ease: "expo.inOut" });
-              gsap.to(pts, { opacity: 1, y: 0, duration: 1.5, stagger: 0.2, ease: "expo.out", delay: 0.25 });
-            });
-          }
+          gsap.set(pts, { opacity: 0, y: 22 });
+          gsap.set(rules, { scaleX: 0 });
+          once(list, "top 84%", () => {
+            gsap.to(rules, { scaleX: 1, duration: 1.6, stagger: 0.2, ease: "expo.inOut" });
+            gsap.to(pts, { opacity: 1, y: 0, duration: 1.5, stagger: 0.2, ease: "expo.out", delay: 0.25 });
+          });
 
           const bob = gsap.to(float, { y: -8, duration: 3.4, ease: "sine.inOut", yoyo: true, repeat: -1, paused: true });
           ScrollTrigger.create({ trigger: node, start: "top bottom", end: "bottom top", onToggle: (st) => (st.isActive ? bob.play() : bob.pause()) });
@@ -284,7 +256,7 @@ export default function ProofPage({ t, p, ctaLabel, place, v }: { t: Dictionary;
       cancelled = true;
       revert?.();
     };
-  }, [spreadV]);
+  }, []);
 
   const words = p.checks.split(" ");
 
@@ -307,7 +279,7 @@ export default function ProofPage({ t, p, ctaLabel, place, v }: { t: Dictionary;
             </h1>
           </div>
           <div className={s.heroStage} data-hero-stage>
-            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} form={v.crystal} />
+            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} />
           </div>
           <div className={s.heroActions} data-hero-copy>
             <span className={s.actions} data-hero-rise>
@@ -319,7 +291,8 @@ export default function ProofPage({ t, p, ctaLabel, place, v }: { t: Dictionary;
 
         {/* ── The sub, then the brand film, then the index ───────────────── */}
         <section className={s.intro} data-section="intro" aria-label="About these automations">
-          <p className={s.introText} data-reveal>{p.sub}</p>
+          {/* The homepage's scroll word reveal: same component, same timing. */}
+          <WordReveal as="p" className={s.introText}><Words text={p.sub} /></WordReveal>
         </section>
 
         <BrandFilm label="What Ryvo builds" />
@@ -353,8 +326,8 @@ export default function ProofPage({ t, p, ctaLabel, place, v }: { t: Dictionary;
                 <div className={s.objGlow} />
                 <div className={s.objTilt} data-tilt><div data-float><ObjectPicture i={i} /></div></div>
               </div>
-              <ul className={s.pointGrid} data-v={spreadV} data-points>
-                {pts.map((pt, k) => <Point key={pt} title={POINT_TITLES[i][k]} text={pt} span={spreadV === "a" ? spans(pts)[k] : undefined} />)}
+              <ul className={s.pointGrid} data-points>
+                {pts.map((pt, k) => <Point key={pt} title={POINT_TITLES[i][k]} text={pt} />)}
               </ul>
             </section>
           );
@@ -393,7 +366,7 @@ export default function ProofPage({ t, p, ctaLabel, place, v }: { t: Dictionary;
         </section>
       </main>
 
-      <div data-after-faq><ProofFooter t={t} place={place} bookHref={BOOK} variant={v.footer} /></div>
+      <div data-after-faq><ProofFooter t={t} place={place} bookHref={BOOK} /></div>
       <Dock names={names} bookHref={BOOK} book={t.nav.book} />
     </div>
   );
