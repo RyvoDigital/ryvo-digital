@@ -91,3 +91,13 @@ Budget about 360. **Price checked first** (round 4's measured rate: 480p costs 2
 | 18 | 05-deed | 89c545791db00a5a0aab308038fd7160 | 112 | 480p (640 × 640), 4 s | **Kept.** The pen rolls slowly, light gliding along the barrel; loops (0.8/255) |
 
 Input and prompt as in round 4 (each object's still as first and last frame, `aspect_ratio: adaptive`, no audio, `prompts/turn.txt`). They replace the 3D key and pen in the film, and all five clips now also turn the resting object in the hero's vitrine.
+
+## Round 6 (18 Oct 2026): 03 regenerated (Seedance 2.5)
+
+Round 5's key "melted" as it turned. Regenerated once, as the brief allows, with a prompt that insists on a rigid, solid object ("keeps its exact shape at all times… never melting, bending or morphing"; `prompts/turn-key.txt`). **Balance before: 870. Used: 112. Balance after: 758.**
+
+| # | Name | Task id | Credits | Settings | Verdict |
+|---|---|---|---|---|---|
+| 19 | 03-follow-up (v2) | 13bb0761995b7893b4dc81fbfd0fb751 | 112 | 480p (640 × 640), 4 s | **Kept.** The key stays rigid through a gentle turn; loops (2.6/255) |
+
+No plate for the vitrine was generated (see round6/README.md: real time was kept). All five clips are now alpha-matted frame by frame for the film and the hero (BiRefNet at 768 px, half precision, in batches of 20 frames; no credits).

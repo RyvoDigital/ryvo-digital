@@ -1,10 +1,10 @@
 import type React from "react";
 import { interpolate, random, useCurrentFrame, useVideoConfig } from "remotion";
-import { C, EXPO, EXPO_IN, clamp } from "./theme";
+import { C, EXPO, EXPO_IN, clamp, useT } from "./theme";
 
 // A line of type that rises out of its own mask and, later, leaves upwards.
 export const Line: React.FC<{ at: number; out?: number; children: React.ReactNode; style?: React.CSSProperties }> = ({ at, out, children, style }) => {
-  const frame = useCurrentFrame();
+  const frame = useT();
   const inY = interpolate(frame, [at, at + 22], [112, 0], { ...clamp, easing: EXPO });
   const outY = out === undefined ? 0 : interpolate(frame, [out, out + 14], [0, -112], { ...clamp, easing: EXPO_IN });
   return (
@@ -18,7 +18,7 @@ export const Line: React.FC<{ at: number; out?: number; children: React.ReactNod
 // blur clears and it settles; `out` sends them away the other way (they grow
 // a little and soften). `step` is the per-word delay in frames.
 export const Words: React.FC<{ text: string; at: number; out?: number; step?: number; style?: React.CSSProperties }> = ({ text, at, out, step = 3, style }) => {
-  const frame = useCurrentFrame();
+  const frame = useT();
   const words = text.split(" ");
   return (
     <span style={{ display: "inline", ...style }}>
@@ -38,7 +38,7 @@ export const Words: React.FC<{ text: string; at: number; out?: number; step?: nu
 
 // Letters that rise out of a shared mask, one after another.
 export const Letters: React.FC<{ text: string; at: number; out?: number; step?: number; style?: React.CSSProperties }> = ({ text, at, out, step = 1.6, style }) => {
-  const frame = useCurrentFrame();
+  const frame = useT();
   return (
     <span style={{ display: "inline-flex", overflow: "hidden", paddingBottom: "0.14em", marginBottom: "-0.14em", ...style }}>
       {text.split("").map((ch, i) => {
@@ -65,24 +65,11 @@ export const Backdrop: React.FC = () => {
   );
 };
 
-// Over everything: a soft vignette and a very fine grain that changes every
-// four frames (kept faint so the film still compresses small).
-export const Finish: React.FC = () => {
-  const frame = useCurrentFrame();
-  const seed = Math.floor(frame / 4) % 24;
-  return (
-    <>
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(120% 100% at 50% 45%, transparent 55%, rgba(0,0,0,0.45))", pointerEvents: "none" }} />
-      <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, opacity: 0.035, mixBlendMode: "overlay", pointerEvents: "none" }}>
-        <filter id={`grain${seed}`}>
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed={seed} stitchTiles="stitch" />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-        <rect width="100%" height="100%" filter={`url(#grain${seed})`} />
-      </svg>
-    </>
-  );
-};
+// Over everything: a soft vignette. (Round 6: no grain; it cost bits and read
+// as low quality.)
+export const Finish: React.FC = () => (
+  <div style={{ position: "absolute", inset: 0, background: "radial-gradient(120% 100% at 50% 45%, transparent 55%, rgba(0,0,0,0.45))", pointerEvents: "none" }} />
+);
 
 // A silver light leak: a soft, warm-neutral bloom that drifts in from one
 // edge and away again over `dur` frames, starting at `at`.
@@ -101,8 +88,55 @@ export const LightLeak: React.FC<{ at: number; dur: number; from?: "left" | "rig
 
 // A hairline that draws itself from the left (scaleX).
 export const Hairline: React.FC<{ at: number; width: number; style?: React.CSSProperties }> = ({ at, width, style }) => {
-  const frame = useCurrentFrame();
+  const frame = useT();
   return (
     <div style={{ width, height: 1, background: C.silver, opacity: 0.5, transformOrigin: "0 50%", scale: `${interpolate(frame, [at, at + 24], [0, 1], { ...clamp, easing: EXPO })} 1`, ...style }} />
+  );
+};
+
+// The mercury line (round 6): the one signature line of light that threads
+// the film. A chrome stroke with a soft glow, drawn along a path. mode "draw":
+// it grows from its start (and, with `out`, recedes from its start); mode
+// "comet": a bright segment travels along it, round and round. Paths are in
+// composition pixels (1920 × 1200).
+export const Mercury: React.FC<{ id: string; d: string; at: number; dur?: number; out?: number; mode?: "draw" | "comet"; seg?: number; speed?: number; width?: number; opacity?: number; style?: React.CSSProperties }> = ({ id, d, at, dur = 40, out, mode = "draw", seg = 0.22, speed = 0.012, width = 3, opacity = 1, style }) => {
+  const frame = useT();
+  const grow = interpolate(frame, [at, at + dur], [0, 1], { ...clamp, easing: EXPO });
+  const gone = out === undefined ? 0 : interpolate(frame, [out, out + 24], [0, 1], { ...clamp, easing: EXPO_IN });
+  if (grow <= 0 || gone >= 1) return null;
+  const dash = mode === "draw" ? `${grow} 1` : `${seg} ${1 - seg}`;
+  const offset = mode === "draw" ? -gone : -((frame - at) * speed) % 1;
+  const fade = mode === "comet" ? grow * (1 - gone) : 1;
+  const stroke = { pathLength: 1, strokeDasharray: dash, strokeDashoffset: offset, fill: "none", strokeLinecap: "round" as const };
+  return (
+    <svg viewBox="0 0 1920 1200" width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "visible", opacity: opacity * fade, ...style }}>
+      <defs>
+        <linearGradient id={`${id}-g`} x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stopColor="#9aa0a8" />
+          <stop offset="0.5" stopColor="#ffffff" />
+          <stop offset="1" stopColor="#b9bec6" />
+        </linearGradient>
+        <filter id={`${id}-f`} x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation={width * 3.2} /></filter>
+      </defs>
+      <path d={d} {...stroke} stroke="rgba(226,230,236,0.55)" strokeWidth={width * 5} filter={`url(#${id}-f)`} />
+      <path d={d} {...stroke} stroke={`url(#${id}-g)`} strokeWidth={width} />
+    </svg>
+  );
+};
+
+// Depth of field: a few soft discs of light far behind the subject, out of
+// focus, drifting slowly the other way (parallax).
+export const Bokeh: React.FC<{ seed: string; count?: number; drift?: number }> = ({ seed, count = 9, drift = 1 }) => {
+  const frame = useT();
+  return (
+    <>
+      {Array.from({ length: count }, (_, i) => {
+        const r = (k: string) => random(`${seed}${i}${k}`);
+        const size = 50 + r("s") * 150;
+        const x = r("x") * 1920 - (frame / 30) * (6 + r("v") * 10) * drift;
+        const y = 120 + r("y") * 960 + Math.sin(frame / 30 * 0.3 + i) * 10;
+        return <div key={i} style={{ position: "absolute", left: x - size / 2, top: y - size / 2, width: size, height: size, borderRadius: "50%", background: "rgba(214,218,226,1)", opacity: 0.035 + r("o") * 0.07, filter: `blur(${14 + r("b") * 16}px)` }} />;
+      })}
+    </>
   );
 };

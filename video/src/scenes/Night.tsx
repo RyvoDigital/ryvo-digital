@@ -1,6 +1,6 @@
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { Words } from "../parts";
-import { BEAT, C, EXPO, MONO, SANS, clamp } from "../theme";
+import { interpolate } from "remotion";
+import { Mercury, Words } from "../parts";
+import { BEAT, C, EXPO, MONO, SANS, SINE, clamp, useT } from "../theme";
 
 // 1 · The night. A clock rolls on like an odometer while messages arrive on
 // three planes of depth (the far ones soft), the camera pushes in slowly,
@@ -42,17 +42,17 @@ const PILLS = [
 ];
 
 export const Night = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const frame = useT();
+  const fps = 30; // timing in 30-fps units (useT)
   const mins = interpolate(frame, [0, 6 * BEAT], [21 * 60 + 52, 23 * 60 + 47], { ...clamp, easing: EXPO });
-  const push = interpolate(frame, [0, 9 * BEAT], [1, 1.07]);
+  const push = interpolate(frame, [0, 6 * 30], [1, 1.07], { ...clamp, easing: SINE });
   return (
     <div style={{ position: "absolute", inset: 0, scale: `${push}` }}>
       <div style={{ position: "absolute", top: 200, width: "100%", textAlign: "center", fontFamily: MONO, fontSize: 40, letterSpacing: "0.12em", color: C.silver, fontVariantNumeric: "tabular-nums", opacity: interpolate(frame, [0, BEAT], [0, 1], clamp) }}>
         <Clock mins={mins} />
       </div>
       {PILLS.map((p, i) => {
-        const s = spring({ frame: frame - p.at * BEAT, fps, config: { damping: 200, mass: 0.6 } });
+        const s = interpolate(frame - p.at * BEAT, [0, 30], [0, 1], { ...clamp, easing: EXPO });
         const depth = [0.62, 0.82, 1.06][p.z];
         const drift = (frame / fps) * [8, 18, 34][p.z] * (p.x < 0 ? -1 : 1);
         const blur = [3.2, 1.2, 0][p.z];
@@ -69,6 +69,8 @@ export const Night = () => {
       <div style={{ position: "absolute", top: 700, width: "100%", textAlign: "center", fontFamily: SANS, fontSize: 104, fontWeight: 500, fontStretch: "112%", letterSpacing: "-0.045em", lineHeight: 1, color: C.text }}>
         <Words text="Enquiries arrive at any hour." at={Math.round(3.5 * BEAT)} step={4} />
       </div>
+      {/* the mercury line enters: it draws in beneath the words */}
+      <Mercury id="night" d="M 600 842 C 800 858, 1120 858, 1320 838" at={Math.round(3.5 * BEAT) + 22} dur={46} />
       <div style={{ position: "absolute", inset: 0, background: C.page, opacity: interpolate(frame, [0, BEAT], [1, 0], { ...clamp, easing: EXPO }), pointerEvents: "none" }} />
     </div>
   );

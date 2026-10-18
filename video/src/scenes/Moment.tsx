@@ -1,14 +1,15 @@
-import { Video } from "@remotion/media";
-import { interpolate, useCurrentFrame } from "remotion";
-import { Letters, Line, Words } from "../parts";
-import { BEAT, C, CLIPS, EXPO, MONO, SANS, clamp } from "../theme";
+import { interpolate, OffthreadVideo } from "remotion";
+import { Bokeh, Letters, Line, Mercury, Words } from "../parts";
+import { C, CLIPS, EXPO, MONO, SANS, SINE, clamp, useT } from "../theme";
 
-// 3 · One moment per automation, 6 beats: the object in motion (its own
-// footage) arrives out of focus and sharpens in front of
-// its own giant numeral; light sweeps over it; the name rises letter by
-// letter and the tagline arrives word by word. A slow push throughout.
+// 3 · One moment per automation: the object in motion (its own footage, as a
+// clean alpha cut-out, slowed to 0.6×) arrives out of focus and sharpens in
+// front of its own giant numeral; the mercury line circles it as a ring of
+// light, then passes beneath its name; the name rises letter
+// by letter and the tagline arrives word by word. A slow push throughout.
+// Each moment is long enough to read its tagline calmly (BrandFilm.tsx).
 
-const OBJ = 700; // the object's box on screen
+const OBJ = 640; // the object's box on screen (composition px; 853 px at 2560)
 
 // A name on at most two lines, split at its middle word.
 const lines = (t: string) => {
@@ -17,25 +18,34 @@ const lines = (t: string) => {
   return w.length < 2 ? w : [w.slice(0, k).join(" "), w.slice(k).join(" ")];
 };
 
-export const Moment = ({ index, title, tagline }: { index: number; title: string; tagline: string }) => {
-  const frame = useCurrentFrame();
+export const Moment = ({ index, title, tagline, seconds }: { index: number; title: string; tagline: string; seconds: number }) => {
+  const frame = useT();
+  const len = seconds * 30; // the moment's length, in 30-fps units
   const focus = interpolate(frame, [0, 16], [14, 0], { ...clamp, easing: EXPO });
-  const push = interpolate(frame, [0, 6 * BEAT], [0.94, 1.04]);
-  const drift = interpolate(frame, [0, 6 * BEAT], [24, -24]);
-  const sweep = interpolate(frame, [BEAT + 6, 3 * BEAT + 6], [-40, 140], clamp);
+  // The camera never rests: a slow push and drift, eased with weight.
+  const push = interpolate(frame, [0, len], [0.95, 1.035], { ...clamp, easing: SINE });
+  const drift = interpolate(frame, [0, len], [22, -22], { ...clamp, easing: SINE });
   const num = `0${index + 1}`;
   const clip = CLIPS[index];
   return (
     <div style={{ position: "absolute", inset: 0 }}>
+      <Bokeh seed={`m${index}`} count={7} />
       {/* the numeral, far behind: it drifts the other way (parallax) */}
       <div style={{ position: "absolute", left: 120, top: 150, fontFamily: SANS, fontSize: 820, fontWeight: 600, fontStretch: "125%", letterSpacing: "-0.06em", lineHeight: 0.8, color: "transparent", WebkitTextStroke: "2px rgba(205,209,217,0.16)", translate: `${-drift * 1.6}px 0`, opacity: interpolate(frame, [0, 14], [0, 1], clamp) }}>
         <Letters text={num} at={0} step={3} />
       </div>
-      <div style={{ position: "absolute", left: 210, top: 250, width: OBJ, height: OBJ, scale: `${push}`, translate: `${drift}px 0`, filter: focus > 0.05 ? `blur(${focus}px)` : undefined, opacity: interpolate(frame, [0, 8], [0, 1], clamp) }}>
-        <div style={{ position: "absolute", inset: -40, borderRadius: "50%", background: "radial-gradient(closest-side, rgba(205,209,217,0.13), transparent 72%)" }} />
-        <Video src={clip} loop muted objectFit="contain" style={{ position: "absolute", inset: 0, width: OBJ, height: OBJ, mixBlendMode: "lighten", maskImage: "radial-gradient(closest-side, #000 78%, transparent)", WebkitMaskImage: "radial-gradient(closest-side, #000 78%, transparent)" }} />
-        {/* a band of light passing over the object */}
-        <div style={{ position: "absolute", inset: 0, mixBlendMode: "screen", pointerEvents: "none", maskImage: "radial-gradient(closest-side, #000 55%, transparent)", WebkitMaskImage: "radial-gradient(closest-side, #000 55%, transparent)", background: `linear-gradient(115deg, transparent ${sweep - 14}%, rgba(240,242,246,0.16) ${sweep}%, transparent ${sweep + 14}%)` }} />
+      <div style={{ position: "absolute", left: 240, top: 280, width: OBJ, height: OBJ, scale: `${push}`, translate: `${drift}px 0`, filter: focus > 0.05 ? `blur(${focus}px)` : undefined, opacity: interpolate(frame, [0, 8], [0, 1], clamp) }}>
+        {/* The cut-out, with a rim of light on its edges and a soft glow
+            behind it, both following its own silhouette. (Not a CSS radial
+            gradient: under a transparent video, headless Chrome composites one
+            as a bright banded disc.) */}
+        <OffthreadVideo src={clip} transparent muted playbackRate={0.6} style={{ position: "absolute", inset: 0, width: OBJ, height: OBJ, objectFit: "contain", filter: "drop-shadow(0 0 1.2px rgba(240,242,246,0.42)) drop-shadow(0 0 34px rgba(205,209,217,0.2))" }} />
+        {/* the mercury line, circling the object as a ring of light */}
+        <Mercury id={`ring${index}`} mode="comet" d={`M ${-40} ${OBJ * 0.62} A ${OBJ * 0.56} ${OBJ * 0.15} -10 1 0 ${OBJ + 40} ${OBJ * 0.5} A ${OBJ * 0.56} ${OBJ * 0.15} -10 1 0 ${-40} ${OBJ * 0.62}`} at={14} dur={30} seg={0.32} speed={0.006} width={2.6} style={{ inset: "auto", left: 0, top: 0, width: 1920, height: 1200 }} />
+      </div>
+      {/* the mercury line passes beneath the name (two lines tall in every moment) */}
+      <div style={{ position: "absolute", inset: 0, translate: `${drift * 0.5}px 0` }}>
+        <Mercury id={`under${index}`} d="M 1012 688 C 1180 694, 1420 694, 1600 684" at={30} dur={44} width={2.2} />
       </div>
       <div style={{ position: "absolute", left: 1010, top: 390, width: 800, translate: `${drift * 0.5}px 0` }}>
         <Line at={6} style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "0.16em", color: C.silver }}>{num} / 05</Line>
@@ -43,7 +53,7 @@ export const Moment = ({ index, title, tagline }: { index: number; title: string
           {lines(title).map((w, i) => <div key={i}><Letters text={w} at={10 + i * 7} step={1.3} /></div>)}
         </div>
         <div style={{ marginTop: 34, fontFamily: SANS, fontSize: 40, lineHeight: 1.3, letterSpacing: "-0.012em", color: C.body }}>
-          <Words text={tagline} at={2 * BEAT} step={1.6} />
+          <Words text={tagline} at={27} step={1.8} />
         </div>
       </div>
     </div>

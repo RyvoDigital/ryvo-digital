@@ -1,7 +1,7 @@
 import { CameraMotionBlur } from "@remotion/motion-blur";
-import { Img, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { Letters, Words } from "../parts";
-import { BEAT, C, EXPO, OBJECTS, SANS, clamp } from "../theme";
+import { Img, interpolate } from "remotion";
+import { Bokeh, Letters, Mercury, Words } from "../parts";
+import { BEAT, C, EXPO, OBJECTS, SANS, SINE, clamp, useT } from "../theme";
 
 // 2 · Ryvo. "Five automations / from the first contact until after the deed."
 // The five objects swoop in and orbit the words: behind them when far (small,
@@ -10,8 +10,8 @@ import { BEAT, C, EXPO, OBJECTS, SANS, clamp } from "../theme";
 const CX = 960, CY = 590, RX = 800, RY = 300;
 
 const Orbiter = ({ i }: { i: number }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const frame = useT();
+  const fps = 30; // timing in 30-fps units (useT)
   const swoop = interpolate(frame, [0, 30], [1, 0], { ...clamp, easing: EXPO });
   const th = -Math.PI / 2 + (i / 5) * Math.PI * 2 + (frame / fps) * 0.38 + swoop * 2.6;
   const z = Math.sin(th); // -1 back … 1 front
@@ -25,11 +25,16 @@ const Orbiter = ({ i }: { i: number }) => {
 };
 
 export const Intro = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const frame = useT();
+  const fps = 30; // timing in 30-fps units (useT)
   const order = [0, 1, 2, 3, 4].map((i) => ({ i, z: Math.sin(-Math.PI / 2 + (i / 5) * Math.PI * 2 + (frame / fps) * 0.38 + interpolate(frame, [0, 30], [1, 0], { ...clamp, easing: EXPO }) * 2.6) }));
   return (
-    <div style={{ position: "absolute", inset: 0, scale: `${interpolate(frame, [0, 8 * BEAT], [1.04, 1])}` }}>
+    <div style={{ position: "absolute", inset: 0, scale: `${interpolate(frame, [0, 6.2 * 30], [1.05, 1], { ...clamp, easing: SINE })}` }}>
+      <Bokeh seed="intro" />
+      {/* the mercury line, now the orbit itself: a bright comet running round it */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 2 }}>
+        <Mercury id="orbit" mode="comet" d={`M ${CX - RX} ${CY} A ${RX} ${RY} 0 1 0 ${CX + RX} ${CY} A ${RX} ${RY} 0 1 0 ${CX - RX} ${CY}`} at={6} dur={30} seg={0.18} speed={0.0042} width={2.4} opacity={0.85} />
+      </div>
       {order.map(({ i, z }) => (
         <div key={i} style={{ position: "absolute", inset: 0, zIndex: z < 0 ? 1 : 10 }}>
           <CameraMotionBlur shutterAngle={200} samples={6}><Orbiter i={i} /></CameraMotionBlur>

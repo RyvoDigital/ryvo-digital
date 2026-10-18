@@ -49,11 +49,12 @@ export default function BrandFilm({ label }: { label: string }) {
             loop
             playsInline
             preload="metadata"
-            poster={`${M}/brand-film-poster-v3-1920.webp`}
+            poster={`${M}/brand-film-poster-v4-1920.webp`}
             aria-label="A short silent film about what Ryvo builds: five automations, from the first contact until after the deed"
           >
-            <source src={`${M}/brand-film-v3.webm`} type="video/webm" />
-            <source src={`${M}/brand-film-v3.mp4`} type="video/mp4" />
+            {/* One file: H.264 at 2560 × 1600, 60 fps (11.3 MB), which every
+                browser plays; a WebM would only add weight. */}
+            <source src={`${M}/brand-film-v4.mp4`} type="video/mp4" />
           </video>
           <span className={f.glass} aria-hidden="true" />
         </div>

@@ -67,6 +67,15 @@ const Whip: React.FC<TransitionPresentationComponentProps<NoProps>> = ({ childre
         <filter id={id} x="-20%" y="0" width="140%" height="100%"><feGaussianBlur stdDeviation={`${(speed * 46).toFixed(1)} 0`} /></filter>
       </svg>
       {children}
+      {presentationDirection === "entering" && (
+        // The mercury line carries the move: one streak of light runs across
+        // the frame with the whip, brightest at its fastest.
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "visible", translate: `${-x}% 0`, opacity: speed }}>
+          <defs><filter id="whipLine" x="-10%" y="-200%" width="120%" height="500%"><feGaussianBlur stdDeviation="8" /></filter></defs>
+          <path d={`M ${W * (1.2 - e * 1.4)} 640 L ${W * (1.6 - e * 1.4)} 640`} stroke="rgba(230,233,238,0.55)" strokeWidth={14} strokeLinecap="round" filter="url(#whipLine)" />
+          <path d={`M ${W * (1.2 - e * 1.4)} 640 L ${W * (1.6 - e * 1.4)} 640`} stroke="#ffffff" strokeWidth={2.4} strokeLinecap="round" />
+        </svg>
+      )}
     </div>
   );
 };
