@@ -24,19 +24,10 @@
 }
 
 @media (min-width: 768px) { .card { border-radius: 32px; min-height: 640px; } }
-@media (min-width: 1024px) { .card { border-radius: 34px; min-height: 700px; justify-content: flex-end; } }
+@media (min-width: 1024px) { .card { border-radius: 34px; min-height: 700px; justify-content: flex-end; background: #050506; } }
 
 .compact { min-height: 480px; }
 @media (min-width: 1024px) { .compact { min-height: 520px; } }
-
-/* The light from the upper left, as in the hero photo: mercury on black. */
-.glow {
-  position: absolute; inset: 0; pointer-events: none;
-  background:
-    radial-gradient(60% 75% at 16% -12%, rgba(205, 209, 217, 0.26) 0%, rgba(205, 209, 217, 0.08) 45%, transparent 72%),
-    radial-gradient(48% 60% at 92% 112%, rgba(205, 209, 217, 0.1) 0%, transparent 70%),
-    linear-gradient(180deg, #0d0e11 0%, #060508 70%);
-}
 
 .heroBody {
   position: relative;
@@ -63,7 +54,7 @@
 @media (min-width: 1024px) { .h1 { font-size: clamp(48px, 4.6vw, 72px); line-height: 0.94; font-stretch: 114%; } }
 .h1 > span { text-wrap: balance; }
 
-/* The grey words, a touch lighter so they keep AA on the glow (as in the hero). */
+/* The grey words, a touch lighter so they keep AA on the card (as in the hero). */
 .dim { color: #969ba3; }
 
 .heroSub { max-width: 560px; font-size: 16px; line-height: 1.6; color: var(--color-body); }
@@ -80,12 +71,6 @@
 
 /* Light tone (websites): silver card, dark type. */
 .card[data-tone="light"] { background: #e9ebee; border-color: #cdd1d7; box-shadow: 0 50px 120px rgba(40, 44, 52, 0.18); }
-.card[data-tone="light"] .glow {
-  background:
-    radial-gradient(60% 75% at 16% -12%, #ffffff 0%, rgba(255, 255, 255, 0.5) 45%, transparent 72%),
-    radial-gradient(50% 60% at 92% 112%, rgba(160, 166, 175, 0.35) 0%, transparent 70%),
-    linear-gradient(180deg, #f2f3f5 0%, #d9dce1 100%);
-}
 .card[data-tone="light"] .dim { color: #62666e; }
 .card[data-tone="light"] .heroLabel { color: #4f545c; }
 

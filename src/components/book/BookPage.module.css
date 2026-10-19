@@ -93,6 +93,9 @@
 
 /* ── The card: smoked crystal over the bloom ──────────────────────────── */
 .stageCol { grid-area: stage; position: relative; min-width: 0; }
+/* Phones: the booking card sits 10 px inside the page's hero card, nested
+   evenly, so its two call types keep their names whole. */
+@media (max-width: 767px) { .stageCol { margin-inline: calc(10px - var(--pad)); } }
 
 .card {
   position: relative;
@@ -163,6 +166,11 @@
   .kindName { font-size: 17px; }
   .kindWith { font-size: 13px; }
 }
+
+/* Inside the hero card the column is a little narrower: the call types keep
+   their names whole on small phones and on small laptops (no word split). */
+@media (max-width: 399px) { .kind { padding-inline: 11px; column-gap: 10px; } }
+@media (min-width: 1024px) and (max-width: 1279px) { .kind { padding-inline: 14px; column-gap: 12px; } }
 
 @media (hover: hover) {
   .kind:hover { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2); }

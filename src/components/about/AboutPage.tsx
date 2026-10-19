@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import NavFrame from "@/components/chrome/NavFrame";
+import HeroCard from "@/components/chrome/HeroCard";
 import PageFrame from "@/components/pages/PageFrame";
 import { BookButton } from "@/components/chrome/Icons";
 import Expander, { PlusMark } from "@/components/ui/Expander";
@@ -119,30 +120,32 @@ export default function AboutPage({ c }: { c: AboutContent }) {
 
       <main>
         {/* ── Hero: where we work, drawn as you scroll ─────────────────────── */}
-        <section ref={hero} className={s.hero} data-hero aria-labelledby="about-title">
-          <div className={s.sticky}>
-            <RouteGlobe
-              track={hero} range={["top top", "bottom bottom"]} framing="hero" names={cities} km={p.km} eager
-              className={s.globe}
-            />
-            <div className={s.heroHead} data-hero-head>
-              <span className="mono-label" data-rise>{p.label}</span>
-              <h1 id="about-title" className={`display ${s.h1}`} data-split>
-                <span className="block">{p.title[0]}</span>
-                <span className={`block ${s.dim}`}>{p.title[1]}</span>
-              </h1>
+        <HeroCard>
+          <section ref={hero} className={s.hero} data-hero aria-labelledby="about-title">
+            <div className={s.sticky}>
+              <RouteGlobe
+                track={hero} range={["top top", "bottom bottom"]} framing="hero" names={cities} km={p.km} eager
+                className={s.globe}
+              />
+              <div className={s.heroHead} data-hero-head>
+                <span className="mono-label" data-rise>{p.label}</span>
+                <h1 id="about-title" className={`display ${s.h1}`} data-split>
+                  <span className="block">{p.title[0]}</span>
+                  <span className={`block ${s.dim}`}>{p.title[1]}</span>
+                </h1>
+              </div>
+              <dl className={s.heroFoot} data-hero-foot>
+                <dt className="mono-label" data-rise>{p.citiesLabel}</dt>
+                {[lisbon, madrid].map((cty, i) => (
+                  <dd key={cty.key} className={s.coord} data-rise>
+                    <span className={s.coordName}>{cities[i]}</span>
+                    <span className="mono-label">{cty.coords}</span>
+                  </dd>
+                ))}
+              </dl>
             </div>
-            <dl className={s.heroFoot} data-hero-foot>
-              <dt className="mono-label" data-rise>{p.citiesLabel}</dt>
-              {[lisbon, madrid].map((cty, i) => (
-                <dd key={cty.key} className={s.coord} data-rise>
-                  <span className={s.coordName}>{cities[i]}</span>
-                  <span className="mono-label">{cty.coords}</span>
-                </dd>
-              ))}
-            </dl>
-          </div>
-        </section>
+          </section>
+        </HeroCard>
 
         {/* ── The reading layout: the rail, then the chapters ──────────────── */}
         <div className={s.body} data-body>

@@ -34,9 +34,9 @@
 
 @media (min-width: 1024px) {
   .hero { height: 260vh; }
-  .heroHead { top: 120px; left: max(var(--pad), calc((100vw - var(--max)) / 2)); right: auto; max-width: 980px; }
+  .heroHead { top: 120px; left: var(--pad); right: auto; max-width: 980px; }
   .h1 { font-size: clamp(64px, 7.4vw, 124px); }
-  .heroFoot { left: max(var(--pad), calc((100vw - var(--max)) / 2)); right: auto; bottom: 36px; width: 400px; gap: 12px 32px; }
+  .heroFoot { left: var(--pad); right: auto; bottom: 36px; width: 400px; gap: 12px 32px; }
   .coordName { font-size: 17px; }
 }
 

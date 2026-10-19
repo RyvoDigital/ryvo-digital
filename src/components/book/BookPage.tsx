@@ -7,6 +7,7 @@ import type { Locale } from "@/i18n/config";
 import type { Pages } from "@/i18n/pages";
 import { ArrowUpRight } from "@/components/chrome/Icons";
 import NavFrame from "@/components/chrome/NavFrame";
+import HeroCard from "@/components/chrome/HeroCard";
 import SiteFooter from "@/components/chrome/SiteFooter";
 import FloatingNav from "@/components/chrome/FloatingNav";
 import { FALLBACK_LINKS } from "@/lib/booking/config";
@@ -63,189 +64,191 @@ export default function BookPage({ lang, t, p, initial, force }: { lang: Locale;
       <div className={s.page}>
         <NavFrame lang={lang} t={t} bookHref={bookHref} />
 
-        <main id="book" className={s.main} data-hero>
-          <div className={s.glow} aria-hidden="true" />
-          <div className={s.grid}>
-            {/* ── The intro ───────────────────────────────────────────────── */}
-            <div className={s.head}>
-              <span className={`mono-label ${s.rise}`} style={{ ["--d" as string]: 0 }}>{p.label}</span>
-              <h1 className={`display ${s.h1}`}><span className={s.mask}><span className={s.lineUp}>{p.title[0]}</span></span></h1>
-              <p className={`${s.sub} ${s.rise}`} style={{ ["--d" as string]: 3 }}>
-                {p.sub} <a href="mailto:hello@ryvodigital.com">hello@ryvodigital.com</a>.
-              </p>
-              <p className={`${s.meta} ${s.rise}`} style={{ ["--d" as string]: 4 }}>
-                <span>{p.duration} · {p.where}</span>
-                <span className={s.metaSep} aria-hidden="true" />
-                <span>{lisbon} <b className="tnum">{clock.lisbon}</b></span>
-                <span>{madrid} <b className="tnum">{clock.madrid}</b></span>
-              </p>
-            </div>
+        <HeroCard>
+          <main id="book" className={s.main} data-hero>
+            <div className={s.glow} aria-hidden="true" />
+            <div className={s.grid}>
+              {/* ── The intro ───────────────────────────────────────────────── */}
+              <div className={s.head}>
+                <span className={`mono-label ${s.rise}`} style={{ ["--d" as string]: 0 }}>{p.label}</span>
+                <h1 className={`display ${s.h1}`}><span className={s.mask}><span className={s.lineUp}>{p.title[0]}</span></span></h1>
+                <p className={`${s.sub} ${s.rise}`} style={{ ["--d" as string]: 3 }}>
+                  {p.sub} <a href="mailto:hello@ryvodigital.com">hello@ryvodigital.com</a>.
+                </p>
+                <p className={`${s.meta} ${s.rise}`} style={{ ["--d" as string]: 4 }}>
+                  <span>{p.duration} · {p.where}</span>
+                  <span className={s.metaSep} aria-hidden="true" />
+                  <span>{lisbon} <b className="tnum">{clock.lisbon}</b></span>
+                  <span>{madrid} <b className="tnum">{clock.madrid}</b></span>
+                </p>
+              </div>
 
-            {/* ── The card ────────────────────────────────────────────────── */}
-            <div className={s.stageCol}>
-              <section ref={panel} className={s.card} aria-label={p.label} data-step={step}>
-                <span className={s.rim} aria-hidden="true" />
-                <div className={s.cardTop}>
-                  <MercuryLine progress={progress} settled={stage.s === "done"} className={s.mercury} />
-                  <ol className={s.steps}>
-                    {p.steps.map((name, i) => (
-                      <li key={name} data-state={i + 1 < step || step === 3 ? "done" : i + 1 === step ? "on" : "off"}>
-                        <span className="tnum">0{i + 1}</span> {name}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
+              {/* ── The card ────────────────────────────────────────────────── */}
+              <div className={s.stageCol}>
+                <section ref={panel} className={s.card} aria-label={p.label} data-step={step}>
+                  <span className={s.rim} aria-hidden="true" />
+                  <div className={s.cardTop}>
+                    <MercuryLine progress={progress} settled={stage.s === "done"} className={s.mercury} />
+                    <ol className={s.steps}>
+                      {p.steps.map((name, i) => (
+                        <li key={name} data-state={i + 1 < step || step === 3 ? "done" : i + 1 === step ? "on" : "off"}>
+                          <span className="tnum">0{i + 1}</span> {name}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
 
-                <AutoHeight className={s.auto}>
-                  {stage.s === "done" ? (
-                    // ── Booked: the card becomes the ticket ──────────────────
-                    <div className={s.ticket} aria-live="polite">
-                      <div className={s.ticketHead}>
-                        <DoneMark size={56} />
-                        <span className="mono-label">{bk.kinds[b.kindIdx]} · {bk.panelTag}</span>
+                  <AutoHeight className={s.auto}>
+                    {stage.s === "done" ? (
+                      // ── Booked: the card becomes the ticket ──────────────────
+                      <div className={s.ticket} aria-live="polite">
+                        <div className={s.ticketHead}>
+                          <DoneMark size={56} />
+                          <span className="mono-label">{bk.kinds[b.kindIdx]} · {bk.panelTag}</span>
+                        </div>
+                        <h2 className={`display ${s.ticketTitle}`}>{bk.doneTitle}</h2>
+                        <p className={`display ${s.ticketWhen}`}>{b.fmtFull(stage.slot)}</p>
+                        <p className={s.cities}>{cities(stage.slot)}</p>
+                        <p className={s.ticketBody}>{bk.doneBody.replace("{email}", stage.email)}</p>
+                        {stage.test && <p className={s.test}>{bk.testMode}</p>}
+                        <button type="button" className="btn-ghost" onClick={() => b.load(b.kind)}>{bk.another}</button>
                       </div>
-                      <h2 className={`display ${s.ticketTitle}`}>{bk.doneTitle}</h2>
-                      <p className={`display ${s.ticketWhen}`}>{b.fmtFull(stage.slot)}</p>
-                      <p className={s.cities}>{cities(stage.slot)}</p>
-                      <p className={s.ticketBody}>{bk.doneBody.replace("{email}", stage.email)}</p>
-                      {stage.test && <p className={s.test}>{bk.testMode}</p>}
-                      <button type="button" className="btn-ghost" onClick={() => b.load(b.kind)}>{bk.another}</button>
-                    </div>
-                  ) : (
-                    <div className={s.body}>
-                      {/* The call: two tiles, a pearl marks the chosen one. */}
-                      <div role="radiogroup" aria-label={p.steps[0]} className={s.kinds}>
-                        {bk.kinds.map((k, i) => (
-                          <button
-                            key={k} type="button" role="radio" aria-checked={b.kindIdx === i}
-                            onClick={() => { if (b.kindIdx !== i) b.setKindIdx(i as 0 | 1); else if (stage.s === "form") b.setStage({ s: "pick" }); }}
-                            className={s.kind}
-                          >
-                            <span className={s.pearl} aria-hidden="true" />
-                            <span className={s.kindName}>{k}</span>
-                            <span className={s.kindWith}>{p.with[i]}</span>
-                          </button>
-                        ))}
-                      </div>
+                    ) : (
+                      <div className={s.body}>
+                        {/* The call: two tiles, a pearl marks the chosen one. */}
+                        <div role="radiogroup" aria-label={p.steps[0]} className={s.kinds}>
+                          {bk.kinds.map((k, i) => (
+                            <button
+                              key={k} type="button" role="radio" aria-checked={b.kindIdx === i}
+                              onClick={() => { if (b.kindIdx !== i) b.setKindIdx(i as 0 | 1); else if (stage.s === "form") b.setStage({ s: "pick" }); }}
+                              className={s.kind}
+                            >
+                              <span className={s.pearl} aria-hidden="true" />
+                              <span className={s.kindName}>{k}</span>
+                              <span className={s.kindWith}>{p.with[i]}</span>
+                            </button>
+                          ))}
+                        </div>
 
-                      <div className={s.stage} aria-live="polite">
-                        {stage.s === "loading" && (
-                          <div className={s.skeleton} aria-busy="true">
-                            <span className="sr-only">{bk.loading}</span>
-                            <div className={s.skDays}>{Array.from({ length: 6 }, (_, i) => <span key={i} style={{ ["--i" as string]: i }} />)}</div>
-                            <div className={s.skPills}>{Array.from({ length: 7 }, (_, i) => <span key={i} style={{ ["--i" as string]: i + 3 }} />)}</div>
-                            <div className={s.skPills}>{Array.from({ length: 5 }, (_, i) => <span key={i} style={{ ["--i" as string]: i + 6 }} />)}</div>
-                          </div>
-                        )}
-
-                        {stage.s === "error" && (
-                          <div className={`${s.center} ${s.enter}`}>
-                            <span className={s.stateIcon} aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M12 7.5v5.5M12 16.5v.01" /><circle cx="12" cy="12" r="9.2" /></svg></span>
-                            <p className={s.stateText}>{bk.errors.unavailable}</p>
-                            {fallback}
-                          </div>
-                        )}
-
-                        {stage.s === "pick" && (b.days.length === 0 ? (
-                          <div className={`${s.center} ${s.enter}`}>
-                            <span className={s.stateIcon} aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3" /><path d="M3.5 10h17M8 3v4M16 3v4" /></svg></span>
-                            <p className={s.stateText}>{bk.empty}</p>
-                            {fallback}
-                          </div>
-                        ) : (
-                          <div className={s.enter}>
-                            <div className={s.weekHead}>
-                              <span className={s.weekTitle}>
-                                <span>{bk.pickTime}</span>
-                                <span className={s.tz}>{p.zone.replace("{city}", zoneCity)}</span>
-                              </span>
-                              <span className={s.weekNav}>
-                                <button type="button" className={s.arrow} aria-label={bk.prevWeek} disabled={b.pageIdx === 0} onClick={() => b.goWeek(b.pageIdx - 1)}><Chevron dir="left" /></button>
-                                <span className={s.weekLabel} aria-live="polite">{b.pages[b.pageIdx] && b.fmtRange(b.pages[b.pageIdx])}</span>
-                                <button type="button" className={s.arrow} aria-label={bk.nextWeek} disabled={b.pageIdx >= b.pages.length - 1} onClick={() => b.goWeek(b.pageIdx + 1)}><Chevron dir="right" /></button>
-                              </span>
+                        <div className={s.stage} aria-live="polite">
+                          {stage.s === "loading" && (
+                            <div className={s.skeleton} aria-busy="true">
+                              <span className="sr-only">{bk.loading}</span>
+                              <div className={s.skDays}>{Array.from({ length: 6 }, (_, i) => <span key={i} style={{ ["--i" as string]: i }} />)}</div>
+                              <div className={s.skPills}>{Array.from({ length: 7 }, (_, i) => <span key={i} style={{ ["--i" as string]: i + 3 }} />)}</div>
+                              <div className={s.skPills}>{Array.from({ length: 5 }, (_, i) => <span key={i} style={{ ["--i" as string]: i + 6 }} />)}</div>
                             </div>
-                            {/* The days as a ruler: light numerals, the chosen one in chrome over a mercury tick. */}
-                            <div className={s.ruler} role="group" aria-label={bk.pickTime}>
-                              <div key={b.pages[b.pageIdx]?.[0]} className={s.rulerPage} data-dir={b.weekDir} style={{ gridTemplateColumns: `repeat(${b.cols}, minmax(0, 1fr))` }}>
-                                {(b.pages[b.pageIdx] ?? []).map((k) => {
-                                  const f = b.fmtDay(k);
-                                  const any = b.byDay.get(k)?.some((x) => x.free);
-                                  return (
-                                    <button key={k} type="button" aria-pressed={k === b.openDay} data-full={!any} onClick={() => b.toggleDay(k)} className={s.day}>
-                                      <span className={s.dayWd} aria-hidden="true">{f.wd}</span>
-                                      <span className={`${s.dayN} tnum`} aria-hidden="true">{f.n}</span>
-                                      {k === b.todayKey && <span className={s.today} aria-hidden="true" />}
-                                      <span className={s.tick} aria-hidden="true" />
-                                      <span className="sr-only">{any ? f.full : `${f.full}, ${bk.unavailable}`}</span>
-                                    </button>
-                                  );
-                                })}
+                          )}
+
+                          {stage.s === "error" && (
+                            <div className={`${s.center} ${s.enter}`}>
+                              <span className={s.stateIcon} aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M12 7.5v5.5M12 16.5v.01" /><circle cx="12" cy="12" r="9.2" /></svg></span>
+                              <p className={s.stateText}>{bk.errors.unavailable}</p>
+                              {fallback}
+                            </div>
+                          )}
+
+                          {stage.s === "pick" && (b.days.length === 0 ? (
+                            <div className={`${s.center} ${s.enter}`}>
+                              <span className={s.stateIcon} aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3" /><path d="M3.5 10h17M8 3v4M16 3v4" /></svg></span>
+                              <p className={s.stateText}>{bk.empty}</p>
+                              {fallback}
+                            </div>
+                          ) : (
+                            <div className={s.enter}>
+                              <div className={s.weekHead}>
+                                <span className={s.weekTitle}>
+                                  <span>{bk.pickTime}</span>
+                                  <span className={s.tz}>{p.zone.replace("{city}", zoneCity)}</span>
+                                </span>
+                                <span className={s.weekNav}>
+                                  <button type="button" className={s.arrow} aria-label={bk.prevWeek} disabled={b.pageIdx === 0} onClick={() => b.goWeek(b.pageIdx - 1)}><Chevron dir="left" /></button>
+                                  <span className={s.weekLabel} aria-live="polite">{b.pages[b.pageIdx] && b.fmtRange(b.pages[b.pageIdx])}</span>
+                                  <button type="button" className={s.arrow} aria-label={bk.nextWeek} disabled={b.pageIdx >= b.pages.length - 1} onClick={() => b.goWeek(b.pageIdx + 1)}><Chevron dir="right" /></button>
+                                </span>
+                              </div>
+                              {/* The days as a ruler: light numerals, the chosen one in chrome over a mercury tick. */}
+                              <div className={s.ruler} role="group" aria-label={bk.pickTime}>
+                                <div key={b.pages[b.pageIdx]?.[0]} className={s.rulerPage} data-dir={b.weekDir} style={{ gridTemplateColumns: `repeat(${b.cols}, minmax(0, 1fr))` }}>
+                                  {(b.pages[b.pageIdx] ?? []).map((k) => {
+                                    const f = b.fmtDay(k);
+                                    const any = b.byDay.get(k)?.some((x) => x.free);
+                                    return (
+                                      <button key={k} type="button" aria-pressed={k === b.openDay} data-full={!any} onClick={() => b.toggleDay(k)} className={s.day}>
+                                        <span className={s.dayWd} aria-hidden="true">{f.wd}</span>
+                                        <span className={`${s.dayN} tnum`} aria-hidden="true">{f.n}</span>
+                                        {k === b.todayKey && <span className={s.today} aria-hidden="true" />}
+                                        <span className={s.tick} aria-hidden="true" />
+                                        <span className="sr-only">{any ? f.full : `${f.full}, ${bk.unavailable}`}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                              <div className={s.expand} data-open={Boolean(b.openDay)}>
+                                <div className={s.expandInner}>
+                                  {b.shownDay && (
+                                    <div className={s.runs} key={b.shownDay} inert={!b.openDay}>
+                                      {runs(b.byDay.get(b.shownDay) ?? []).map((run) => (
+                                        <div key={run[0].iso} className={s.times}>
+                                          {run.map(({ iso, free }, k) => (
+                                            free ? (
+                                              <button key={iso} type="button" onClick={() => b.setStage({ s: "form", slot: iso })} className={s.time} style={{ ["--i" as string]: k, ["--c4" as string]: quarterCol(iso, run[0].iso, b.tz, 4), ["--c8" as string]: quarterCol(iso, run[0].iso, b.tz, 8) }}>
+                                                {b.fmtTime(iso)}
+                                              </button>
+                                            ) : (
+                                              <button key={iso} type="button" disabled aria-label={`${b.fmtTime(iso)}, ${bk.unavailable}`} className={`${s.time} ${s.taken}`} style={{ ["--i" as string]: k, ["--c4" as string]: quarterCol(iso, run[0].iso, b.tz, 4), ["--c8" as string]: quarterCol(iso, run[0].iso, b.tz, 8) }}>
+                                                {b.fmtTime(iso)}
+                                              </button>
+                                            )
+                                          ))}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                            <div className={s.expand} data-open={Boolean(b.openDay)}>
-                              <div className={s.expandInner}>
-                                {b.shownDay && (
-                                  <div className={s.runs} key={b.shownDay} inert={!b.openDay}>
-                                    {runs(b.byDay.get(b.shownDay) ?? []).map((run) => (
-                                      <div key={run[0].iso} className={s.times}>
-                                        {run.map(({ iso, free }, k) => (
-                                          free ? (
-                                            <button key={iso} type="button" onClick={() => b.setStage({ s: "form", slot: iso })} className={s.time} style={{ ["--i" as string]: k, ["--c4" as string]: quarterCol(iso, run[0].iso, b.tz, 4), ["--c8" as string]: quarterCol(iso, run[0].iso, b.tz, 8) }}>
-                                              {b.fmtTime(iso)}
-                                            </button>
-                                          ) : (
-                                            <button key={iso} type="button" disabled aria-label={`${b.fmtTime(iso)}, ${bk.unavailable}`} className={`${s.time} ${s.taken}`} style={{ ["--i" as string]: k, ["--c4" as string]: quarterCol(iso, run[0].iso, b.tz, 4), ["--c8" as string]: quarterCol(iso, run[0].iso, b.tz, 8) }}>
-                                              {b.fmtTime(iso)}
-                                            </button>
-                                          )
-                                        ))}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
+                          ))}
+
+                          {stage.s === "form" && (
+                            <div className={s.enter}>
+                              <BookingForm
+                                t={bk} lang={lang} kind={b.kind} tz={b.tz} slot={stage.slot}
+                                label={b.fmtFull(stage.slot)} cities={cities(stage.slot)}
+                                onBack={() => b.setStage({ s: "pick" })}
+                                onDone={(email, test) => b.setStage({ s: "done", slot: stage.slot, email, test })}
+                                onTaken={() => b.load(b.kind)}
+                                onUnavailable={() => b.setStage({ s: "error" })}
+                              />
                             </div>
-                          </div>
-                        ))}
-
-                        {stage.s === "form" && (
-                          <div className={s.enter}>
-                            <BookingForm
-                              t={bk} lang={lang} kind={b.kind} tz={b.tz} slot={stage.slot}
-                              label={b.fmtFull(stage.slot)} cities={cities(stage.slot)}
-                              onBack={() => b.setStage({ s: "pick" })}
-                              onDone={(email, test) => b.setStage({ s: "done", slot: stage.slot, email, test })}
-                              onTaken={() => b.load(b.kind)}
-                              onUnavailable={() => b.setStage({ s: "error" })}
-                            />
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </AutoHeight>
+                    )}
+                  </AutoHeight>
 
-                <WriteLine lead={p.write} copy={p.copy} copied={p.copied} className={s.write} btnClassName={s.copy} />
-              </section>
+                  <WriteLine lead={p.write} copy={p.copy} copied={p.copied} className={s.write} btnClassName={s.copy} />
+                </section>
+              </div>
+
+              {/* ── What happens next ───────────────────────────────────────── */}
+              <aside className={s.next} aria-labelledby="next-title" data-done={stage.s === "done"}>
+                <span id="next-title" className="mono-label">{p.next}</span>
+                <ol className={s.rail}>
+                  <span className={s.railTrack} aria-hidden="true"><span className={s.railFill} /></span>
+                  {p.nextSteps.map((line, i) => (
+                    <li key={i} className={s.railItem} data-state={stage.s === "done" ? (i === 0 ? "done" : i === 1 ? "on" : "off") : i === 0 ? "on" : "off"}>
+                      <span className={s.railDot} aria-hidden="true" />
+                      <span className={`${s.railNum} tnum`}>0{i + 1}</span>
+                      <span className={s.railText}>{line}</span>
+                    </li>
+                  ))}
+                </ol>
+              </aside>
             </div>
-
-            {/* ── What happens next ───────────────────────────────────────── */}
-            <aside className={s.next} aria-labelledby="next-title" data-done={stage.s === "done"}>
-              <span id="next-title" className="mono-label">{p.next}</span>
-              <ol className={s.rail}>
-                <span className={s.railTrack} aria-hidden="true"><span className={s.railFill} /></span>
-                {p.nextSteps.map((line, i) => (
-                  <li key={i} className={s.railItem} data-state={stage.s === "done" ? (i === 0 ? "done" : i === 1 ? "on" : "off") : i === 0 ? "on" : "off"}>
-                    <span className={s.railDot} aria-hidden="true" />
-                    <span className={`${s.railNum} tnum`}>0{i + 1}</span>
-                    <span className={s.railText}>{line}</span>
-                  </li>
-                ))}
-              </ol>
-            </aside>
-          </div>
-        </main>
+          </main>
+        </HeroCard>
 
         <SiteFooter lang={lang} t={t} bookHref={bookHref} />
       </div>

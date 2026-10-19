@@ -1,24 +1,6 @@
-/* The strip of the homepage card that is shown (CardTop): its top down to just
-   under the bar (y 88 on wide screens, 84 on phones, as on the homepage card),
-   whole under the bar and the notch, gone before the page's own first line. */
-.strip {
-  position: relative; z-index: 2; max-width: 1392px; margin: 0 auto; height: 76px;
-  overflow: hidden; pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 16px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 calc(100% - 16px), transparent 100%);
-}
+/* The strip of the homepage card's box the bar sits in (CardTop): its top down
+   to just under the bar (y 88 on wide screens, 76 on phones). Transparent: the
+   page's card under it is the surface. */
+.strip { position: relative; z-index: 2; max-width: 1392px; margin: 0 auto; height: 76px; overflow: hidden; pointer-events: none; }
 @media (min-width: 1024px) { .strip { height: 88px; } }
-.strip .card { pointer-events: auto; }
-
-/* Inside a card of the same box (PageHero): over its border, above its glow,
-   under its bar and text. */
-.inCard { position: absolute; inset: -1px -1px auto; z-index: 1; max-width: none; margin: 0; }
-.inCard .card { pointer-events: none; }
-
-/* The photo and its scrim, under the bar (the homepage card's layers 0 and 3). */
-.surface { position: absolute; inset: 0; z-index: 0; }
-
-/* Websites side: the same card and light, lightened. Only the surface is
-   filtered (dark → about #e0, the lit parts to white); the bar keeps its tone. */
-.strip[data-tone="light"] .card { background: #e9ebee; border-color: #cdd1d7; }
-.strip[data-tone="light"] .surface { filter: contrast(0.107) brightness(1.958); }
+.strip .card { pointer-events: auto; background: transparent; border-color: transparent; }

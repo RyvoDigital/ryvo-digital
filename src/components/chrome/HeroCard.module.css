@@ -1,0 +1,17 @@
+/* An inner page's hero card (HeroCard): the homepage card's box. The wrap's
+   inset comes from Hero.module.css (.wrap), the radius and edges are the
+   homepage card's. overflow: clip rounds the corners without becoming a
+   scroll container, so sticky heroes inside still stick. */
+.wrap { padding-bottom: 0; }
+.card {
+  position: relative; max-width: 1392px; margin: 0 auto;
+  border-radius: 28px; border: 1px solid #1f2125; overflow: clip;
+  background: #060508;
+  --pad: 18px;
+}
+@media (min-width: 768px) { .card { border-radius: 32px; --pad: 32px; } }
+@media (min-width: 1024px) { .card { border-radius: 34px; background: #050506; --pad: 44px; } }
+.card[data-tone="light"] { background: #e9ebee; border-color: #cdd1d7; }
+
+/* The hero, in its own stacking context. */
+.body { position: relative; z-index: 2; }

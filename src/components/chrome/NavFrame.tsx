@@ -10,13 +10,12 @@ import CardTop from "./CardTop";
 import hs from "@/components/home/Hero.module.css";
 import s from "./NavFrame.module.css";
 
-// The homepage's navbar on the inner pages: the hero card's top edge (CardTop,
-// built from the homepage card itself) with its notch and the four links in it,
-// RYVO, the languages and Book where the card's bar puts them, folding the
-// same way when the notch opens. The edge fades into the page under the bar,
-// so each page's own hero carries on below it. Light tone for the websites
-// side. Laid over the page, so nothing below it moves.
-export default function NavFrame({ lang, t, bookHref, tone = "dark" }: { lang: Locale; t: Dictionary; bookHref: string; tone?: "dark" | "light" }) {
+// The homepage's navbar on the inner pages: the notch with the four links, and
+// RYVO, the languages and Book where the homepage card's bar puts them (in
+// CardTop, that card's box), folding the same way when the notch opens. Laid
+// over the top of the page's hero card (HeroCard, PageHero), which is the
+// surface, so nothing below it moves.
+export default function NavFrame({ lang, t, bookHref }: { lang: Locale; t: Dictionary; bookHref: string }) {
   const notch = {
     "--nr": `${NOTCH.r}px`, "--nh": `${NOTCH.h}px`,
     "--W-closed": `${NOTCH_W_CLOSED}px`, "--W-open": `${NOTCH_W_OPEN[lang]}px`,
@@ -27,7 +26,7 @@ export default function NavFrame({ lang, t, bookHref, tone = "dark" }: { lang: L
         R<span className="fold"><span>YVO</span></span>
       </Link>
       <NotchNav links={navLinks(lang, t)} label={t.nav.main} />
-      <CardTop tone={tone}>
+      <CardTop>
         <div className={hs.nav}>
           <SiteNav lang={lang} t={t} bookHref={bookHref} linksClassName={hs.inlineLinks} fold logoClassName={hs.cardLogo} />
         </div>

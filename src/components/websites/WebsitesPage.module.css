@@ -33,15 +33,15 @@
    Phones: the copy, then the stage below it. Wide: the copy holds the left
    half; the stage fills the right and runs off the edge. */
 .hero { position: relative; padding: 108px var(--pad) 0; display: flex; flex-direction: column; }
-@media (min-width: 1024px) { .hero { display: block; height: max(100svh, 760px); max-height: 1100px; padding: 0; } }
+@media (min-width: 1024px) { .hero { display: block; height: calc(max(100svh, 760px) - 18px); max-height: 1100px; padding: 0; } }
 
 .bg { position: absolute; inset: -10% 0 0; overflow: clip; pointer-events: none; -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%); mask-image: linear-gradient(180deg, #000 55%, transparent 100%); }
-.discA { position: absolute; left: -18%; top: -30%; width: 90vw; height: 90vw; border-radius: 50%; background: radial-gradient(closest-side, #ffffff 0%, rgba(255, 255, 255, 0.6) 45%, rgba(255, 255, 255, 0) 100%); }
-.ring { position: absolute; right: -22vw; top: 6%; width: 78vw; height: 78vw; border-radius: 50%; border: 1px solid rgba(11, 12, 14, 0.08); box-shadow: inset 0 0 120px rgba(255, 255, 255, 0.6); }
-@media (min-width: 1024px) { .discA { width: 70vw; height: 70vw; } .ring { right: -8vw; top: -4%; width: 60vw; height: 60vw; } }
+.ring { position: absolute; right: -22vw; top: 6%; width: 78vw; height: 78vw; border-radius: 50%; border: 1px solid rgba(11, 12, 14, 0.08); }
+/* The card is one even tone (no light around the bar): only the ring's line. */
+@media (min-width: 1024px) { .ring { right: -8vw; top: -4%; width: 60vw; height: 60vw; } }
 
 .heroCopy { position: relative; z-index: 3; }
-@media (min-width: 1024px) { .heroCopy { position: absolute; left: max(var(--pad), calc((100vw - var(--max)) / 2)); top: 0; bottom: 0; width: min(44vw, 660px); display: flex; align-items: center; padding-top: 40px; } }
+@media (min-width: 1024px) { .heroCopy { position: absolute; left: var(--pad); top: 0; bottom: 0; width: min(44vw, 660px); display: flex; align-items: center; padding-top: 40px; } }
 .heroCopyIn { display: flex; flex-direction: column; gap: 22px; }
 @media (min-width: 1024px) { .heroCopyIn { gap: 28px; } }
 .h1 { margin: 0; font-size: clamp(40px, 11vw, 52px); line-height: 0.95; }
@@ -56,7 +56,9 @@
    never over the text */
 .stage { position: relative; z-index: 2; width: 66%; margin: 56px 0 96px; }
 @media (min-width: 768px) { .stage { width: 62%; margin: 72px 0 120px 8%; } }
-@media (min-width: 1024px) { .stage { position: absolute; left: 50vw; top: 50%; width: min(39vw, 640px); margin: 0; translate: 0 -44%; } }
+/* In the card, the layers' tags (about 100 px plus 6 % of the stage, to its
+   right) end at the card's inner padding, as they ended at the page margin. */
+@media (min-width: 1024px) { .stage { position: absolute; left: 50%; top: 50%; width: min(39vw, 640px, calc((50% - var(--pad) - 100px) / 1.07)); margin: 0; translate: 0 -44%; } }
 
 /* ── What we do ───────────────────────────────────────────────────────────── */
 .what { display: grid; margin-top: 28px; }

@@ -4,16 +4,15 @@ import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import SiteNav from "@/components/chrome/SiteNav";
 import NotchNav from "@/components/chrome/NotchNav";
-import CardTop from "@/components/chrome/CardTop";
 import { navLinks } from "@/components/chrome/nav-links";
 import { NOTCH, NOTCH_AT, NOTCH_W_CLOSED, NOTCH_W_OPEN } from "@/components/chrome/notch";
 import hs from "@/components/home/Hero.module.css";
 import s from "./Pages.module.css";
 
-// The inner pages' opening card: the homepage hero's system (the card and its
-// lit top edge, its notch with the four links, the folding top row, the
-// intro's entrances) around a headline, a subline, actions and an optional
-// object on the right. Light tone for the websites side.
+// The inner pages' opening card: the homepage hero's system (the card, one even
+// tone with its hairline edge, its notch with the four links, the folding top
+// row, the intro's entrances) around a headline, a subline, actions and an
+// optional object on the right. Light tone for the websites side.
 export default function PageHero({
   lang, t, path, label, title, dim = [], sub, actions, side, tone = "dark", compact = false,
 }: {
@@ -32,9 +31,7 @@ export default function PageHero({
       </Link>
       <NotchNav links={navLinks(lang, t)} label={t.nav.main} />
 
-      <section className={`${s.card} ${compact ? s.compact : ""}`} data-tone={tone} aria-labelledby="page-title">
-        <div aria-hidden="true" className={s.glow} />
-        <CardTop tone={tone} inCard />
+      <section className={`${s.card} ${compact ? s.compact : ""}`} data-tone={tone} data-hero-card aria-labelledby="page-title">
         <div className={hs.nav}>
           <SiteNav lang={lang} t={t} bookHref={bookHref} linksClassName={hs.inlineLinks} fold logoClassName={hs.cardLogo} />
         </div>

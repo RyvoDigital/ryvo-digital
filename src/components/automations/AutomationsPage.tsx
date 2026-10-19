@@ -6,6 +6,7 @@ import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import type { Pages } from "@/i18n/pages";
 import NavFrame from "@/components/chrome/NavFrame";
+import HeroCard from "@/components/chrome/HeroCard";
 import { BookButton } from "@/components/chrome/Icons";
 import Pricing from "@/components/home/Pricing";
 import SiteFooter from "@/components/chrome/SiteFooter";
@@ -247,26 +248,28 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
 
       <main>
         {/* ── Hero: one screen; the headline reads across the top band ────── */}
-        <section id="top" className={s.hero} data-hero aria-labelledby="automations-title">
-          <div className={s.heroA}>
-            {/* The scroll fade moves these wrappers; the rise and the line split
-                move what is inside them, so no element has two owners. */}
-            <span className={s.heroLabel} data-hero-copy><span className="mono-label" data-hero-rise>{p.label}</span></span>
-            <h1 id="automations-title" className={`display ${s.h1}`}>
-              <span className={s.h1Part} data-hero-copy><span data-split="a">{p.title[0]} {p.title[1]}</span></span>{" "}
-              <span className={`${s.h1Part} ${s.h1B}`} data-hero-copy><span data-split="b">{p.title[2]} {p.title[3]}</span></span>
-            </h1>
-          </div>
-          <div className={s.heroStage} data-hero-stage>
-            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} label={ui.scene} marks={ui.index} />
-          </div>
-          <div className={s.heroActions} data-hero-copy>
-            <span className={s.actions} data-hero-rise>
-              <BookButton href={book} label={t.nav.book} />
-              <Link href={`/${lang}#demo`} className={s.textLink}>{p.see}</Link>
-            </span>
-          </div>
-        </section>
+        <HeroCard>
+          <section id="top" className={s.hero} data-hero aria-labelledby="automations-title">
+            <div className={s.heroA}>
+              {/* The scroll fade moves these wrappers; the rise and the line split
+                  move what is inside them, so no element has two owners. */}
+              <span className={s.heroLabel} data-hero-copy><span className="mono-label" data-hero-rise>{p.label}</span></span>
+              <h1 id="automations-title" className={`display ${s.h1}`}>
+                <span className={s.h1Part} data-hero-copy><span data-split="a">{p.title[0]} {p.title[1]}</span></span>{" "}
+                <span className={`${s.h1Part} ${s.h1B}`} data-hero-copy><span data-split="b">{p.title[2]} {p.title[3]}</span></span>
+              </h1>
+            </div>
+            <div className={s.heroStage} data-hero-stage>
+              <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} label={ui.scene} marks={ui.index} />
+            </div>
+            <div className={s.heroActions} data-hero-copy>
+              <span className={s.actions} data-hero-rise>
+                <BookButton href={book} label={t.nav.book} />
+                <Link href={`/${lang}#demo`} className={s.textLink}>{p.see}</Link>
+              </span>
+            </div>
+          </section>
+        </HeroCard>
 
         {/* ── The sub, then the brand film, then the index ───────────────── */}
         <section className={s.intro} data-section="intro" aria-label={ui.intro}>

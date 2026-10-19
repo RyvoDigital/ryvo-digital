@@ -1,30 +1,16 @@
 import type { ReactNode } from "react";
-import ArtPicture from "@/components/home/ArtPicture";
-import HeroPreload from "@/components/home/HeroPreload";
 import hs from "@/components/home/Hero.module.css";
 import s from "./CardTop.module.css";
 
-// The homepage hero card's top edge, for the inner pages' navbar: the same card
-// box (size, radius, hairline), the same photo and scrim that light it, shown
-// down to just under the bar and fading out there. Built from the hero's own
-// classes, so it is the homepage's at every size. On its own (NavFrame) it
-// carries the bar as children; inside a card of the same box (PageHero) it is
-// laid over that card's top. Light tone for the websites side: the same
-// surface, lightened.
-export default function CardTop({ tone = "dark", inCard = false, children }: { tone?: "dark" | "light"; inCard?: boolean; children?: ReactNode }) {
+// The homepage hero card's box, for the inner pages' navbar (NavFrame): the bar
+// sits in it at the homepage card's coordinates (Hero.module.css .card: size,
+// insets, container units), so it is placed and folds exactly as there. It
+// draws nothing: the page's own card under it (HeroCard, PageHero) is the
+// surface, one even tone with its hairline edge.
+export default function CardTop({ children }: { children: ReactNode }) {
   return (
-    <div className={`${s.strip} ${inCard ? s.inCard : ""}`} data-tone={tone} aria-hidden={children ? undefined : true}>
-      {/* The photo with the first paint, as on the homepage (the same files). */}
-      <HeroPreload />
-      <div className={`${hs.card} ${s.card}`}>
-        <div className={s.surface} aria-hidden="true">
-          <div className={`${hs.art} ${hs.artBg}`}>
-            <ArtPicture which="bg" className={hs.artImg} priority />
-          </div>
-          <div className={hs.scrim} />
-        </div>
-        {children}
-      </div>
+    <div className={s.strip}>
+      <div className={`${hs.card} ${s.card}`}>{children}</div>
     </div>
   );
 }

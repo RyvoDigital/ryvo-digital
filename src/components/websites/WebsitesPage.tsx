@@ -6,6 +6,7 @@ import type { Locale } from "@/i18n/config";
 import type { Pages } from "@/i18n/pages";
 import { euros } from "@/lib/numbers";
 import NavFrame from "@/components/chrome/NavFrame";
+import HeroCard from "@/components/chrome/HeroCard";
 import { ArrowUpRight, BookButton } from "@/components/chrome/Icons";
 import PageFrame from "@/components/pages/PageFrame";
 import { CtaBand } from "@/components/pages/Blocks";
@@ -140,30 +141,31 @@ export default function WebsitesPage({ lang, t, p, ctaLabel }: { lang: Locale; t
   return (
     <PageFrame lang={lang} t={t} bookHref={book} light>
       <div ref={root} className={s.page}>
-        <NavFrame lang={lang} t={t} bookHref={book} tone="light" />
+        <NavFrame lang={lang} t={t} bookHref={book} />
 
         <main>
           {/* ── Hero: the copy, and the anatomy of a website beside it ──────── */}
-          <section className={s.hero} data-hero aria-labelledby="page-title">
-            <div className={s.bg} aria-hidden="true">
-              <span className={s.discA} />
-              <span className={s.ring} />
-            </div>
-            <div className={s.heroCopy}>
-              <div data-hero-copy className={s.heroCopyIn}>
-                <span className="mono-label" data-rise>{p.label}</span>
-                <h1 id="page-title" className={`display ${s.h1}`}>
-                  <span className={s.line}><span data-split="a">{p.title[0]}</span></span>
-                  <span className={`${s.line} ${s.dim}`}><span data-split="b">{p.title[1]}</span></span>
-                </h1>
-                <p className={s.sub} data-rise>{p.sub}</p>
-                <div className={s.actions} data-rise><BookButton href={book} label={p.cta.button} /></div>
+          <HeroCard tone="light">
+            <section className={s.hero} data-hero aria-labelledby="page-title">
+              <div className={s.bg} aria-hidden="true">
+                <span className={s.ring} />
               </div>
-            </div>
-            <div className={s.stage} data-stage>
-              <Anatomy label={p.anatomy.label} names={p.anatomy.layers} />
-            </div>
-          </section>
+              <div className={s.heroCopy}>
+                <div data-hero-copy className={s.heroCopyIn}>
+                  <span className="mono-label" data-rise>{p.label}</span>
+                  <h1 id="page-title" className={`display ${s.h1}`}>
+                    <span className={s.line}><span data-split="a">{p.title[0]}</span></span>
+                    <span className={`${s.line} ${s.dim}`}><span data-split="b">{p.title[1]}</span></span>
+                  </h1>
+                  <p className={s.sub} data-rise>{p.sub}</p>
+                  <div className={s.actions} data-rise><BookButton href={book} label={p.cta.button} /></div>
+                </div>
+              </div>
+              <div className={s.stage} data-stage>
+                <Anatomy label={p.anatomy.label} names={p.anatomy.layers} />
+              </div>
+            </section>
+          </HeroCard>
 
           {/* ── What we do: three ruled columns ─────────────────────────────── */}
           <section className={s.section} aria-labelledby="what-label">
