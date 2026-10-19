@@ -16,8 +16,13 @@ const isWebKit = () => {
   return /AppleWebKit/.test(ua) && !/(Chrome|Chromium|Edg|OPR|Android)\//.test(ua);
 };
 
+// Phones (a touch screen under ~820 px on its short side) draw at 1.5× too:
+// at 3× a full-width stage is four times the pixels for no visible gain, and
+// it is battery and heat.
+const isPhone = () => matchMedia("(pointer: coarse)").matches && Math.min(screen.width, screen.height) < 820;
+
 export function glPixelRatio() {
-  return Math.min(window.devicePixelRatio || 1, isWebKit() ? 1.5 : 2);
+  return Math.min(window.devicePixelRatio || 1, isWebKit() || isPhone() ? 1.5 : 2);
 }
 
 // A scene's first build (three.js parsing, the environment map, the shader
