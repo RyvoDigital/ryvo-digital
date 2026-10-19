@@ -16,7 +16,8 @@ import Signature from "./Signature";
 import HeroScene from "./HeroScene";
 import BrandFilm from "./BrandFilm";
 import Report from "./Report";
-import Faq from "./Faq";
+import Faq from "@/components/pages/Faq";
+import Expander from "@/components/ui/Expander";
 import Dock from "./Dock";
 import { objectSrc } from "./objects";
 import { refreshWhenSettled, startMotion } from "./motion";
@@ -27,7 +28,8 @@ type P = Pages["automations"];
 
 // A point: its title, then its description. A long point (over 140
 // characters) that has more than one sentence shows its first sentence, and
-// the rest on tap, inline, word for word: nothing is cut or reworded.
+// the rest on tap (the site's expander), word for word: nothing is cut or
+// reworded.
 const LONG = 140;
 const isLong = (text: string) => text.length > LONG;
 
@@ -39,17 +41,17 @@ function Point({ title, text, ui }: { title: string; text: string; ui: P["ui"] }
     <li className={s.point} data-point>
       <span className={s.ptRule} data-pt-rule aria-hidden="true" />
       <strong className={s.ptTitle}>{title}</strong>
-      <span className={s.pointText}>
+      <div className={s.pointText}>
         {parts ? (
           <>
             {parts[1]}{" "}
-            <span id={id} className={s.ptRest} hidden={!open}>{parts[2]}{" "}</span>
             <button type="button" className={s.ptMore} aria-expanded={open} aria-controls={id} aria-label={open ? ui.less : ui.more} onClick={() => setOpen((o) => !o)}>
               <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
             </button>
+            <Expander open={open} id={id} className={s.ptRest}><span className={s.ptRestText}>{parts[2]}</span></Expander>
           </>
         ) : text}
-      </span>
+      </div>
     </li>
   );
 }
@@ -344,7 +346,7 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
         <Faq label={p.faqLabel} items={p.faq} line={p.cta.body.split(". ").slice(-1)[0]} book={t.nav.book} bookHref={book} />
 
         {/* ── Closing: the mercury ───────────────────────────────────────── */}
-        <section className={s.cta} data-cta data-after-faq aria-labelledby="cta-title">
+        <section className={s.cta} data-cta aria-labelledby="cta-title">
           <div className={s.ctaStage}>
             <Signature sig="chrome" kind="cta" objects={[0]} poster={0} label={ui.ctaArt} />
           </div>

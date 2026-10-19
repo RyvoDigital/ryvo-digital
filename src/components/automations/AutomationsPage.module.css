@@ -194,14 +194,14 @@
 .ptRule { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--color-line); transform-origin: 0 50%; }
 .ptTitle { font-family: "Archivo", "Archivo Wide Fallback", var(--font-sans); font-size: 22px; font-weight: 500; font-stretch: 118%; letter-spacing: -0.03em; line-height: 1.15; color: var(--color-text); }
 .pointText { font-size: 14.5px; line-height: 1.62; color: #a3a8af; max-width: 56ch; }
-.ptRest { animation: pt-rest 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes pt-rest { from { opacity: 0; } }
+.ptRest { display: block; }
+.ptRestText { display: block; }
 .ptMore {
   position: relative; display: inline-grid; place-items: center; vertical-align: -2px;
   width: 20px; height: 20px; margin: -6px 0; padding: 0;
   border: 1px solid var(--color-line-2); border-radius: 50%; background: none;
   color: var(--color-silver); cursor: pointer;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, color 0.3s;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s, color 0.3s;
 }
 .ptMore::after { content: ""; position: absolute; inset: -12px; } /* a 44 px target */
 .ptMore:hover { border-color: var(--color-silver); color: var(--color-text); }

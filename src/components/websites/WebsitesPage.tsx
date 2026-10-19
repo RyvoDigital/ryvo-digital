@@ -8,7 +8,8 @@ import { euros } from "@/lib/numbers";
 import TopBar from "@/components/chrome/TopBar";
 import { ArrowUpRight, BookButton } from "@/components/chrome/Icons";
 import PageFrame from "@/components/pages/PageFrame";
-import { CtaBand, Faq } from "@/components/pages/Blocks";
+import { CtaBand } from "@/components/pages/Blocks";
+import Faq from "@/components/pages/Faq";
 import GlassFolder from "@/components/ui/glass-folder-cards";
 import Anatomy from "./Anatomy";
 import { CASES } from "./work";
@@ -74,6 +75,12 @@ export default function WebsitesPage({ lang, t, p, ctaLabel }: { lang: Locale; t
     }
 
     settle(kit, el);
+    // The questions settle in as on /automations.
+    for (const sec of q("[data-section='faq']")) {
+      const items = q("[data-reveal]", sec);
+      gsap.set(items, { opacity: 0, y: 24 });
+      kit.once(sec, "top 78%", () => gsap.to(items, { opacity: 1, y: 0, duration: 1.15, stagger: 0.06, ease: "expo.out" }));
+    }
     for (const h of q("[data-split-scroll]")) splitLines(kit, h, { trigger: h, start: "top 85%" });
 
     // ── How a project runs: the sticky counter follows the step in view ─────
@@ -262,7 +269,7 @@ export default function WebsitesPage({ lang, t, p, ctaLabel }: { lang: Locale; t
             </div>
           </section>
 
-          <Faq label={p.faqLabel} items={p.faq} />
+          <Faq label={p.faqLabel} items={p.faq} line={p.cta.body.split(". ")[0] + "."} book={p.cta.button} bookHref={book} />
           <CtaBand
             label={ctaLabel} title={p.cta.title} href={book} button={p.cta.button}
             body={<>{p.cta.body} <a href="mailto:hello@ryvodigital.com" className="text-text underline underline-offset-4">hello@ryvodigital.com</a>.</>}

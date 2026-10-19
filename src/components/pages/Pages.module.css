@@ -148,26 +148,6 @@
 .report { display: grid; gap: 22px; padding: 28px 20px; }
 @media (min-width: 1024px) { .report { grid-template-columns: 1fr 1fr; align-items: end; gap: 64px; padding: 64px; } }
 
-/* ── FAQ ──────────────────────────────────────────────────────────────────── */
-.faq { display: grid; gap: 28px; }
-@media (min-width: 1024px) { .faq { grid-template-columns: 340px minmax(0, 1fr); gap: 64px; } }
-.faqList { display: flex; flex-direction: column; }
-.faqItem { border-top: 1px solid var(--color-line-2); }
-.faqItem:last-child { border-bottom: 1px solid var(--color-line-2); }
-.faqItem summary {
-  list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 20px;
-  min-height: 64px; padding: 14px 2px; font-size: 17px; line-height: 1.35; color: var(--color-text);
-}
-@media (min-width: 1024px) { .faqItem summary { font-size: 19px; min-height: 76px; } }
-.faqItem summary::-webkit-details-marker { display: none; }
-.faqItem summary:focus-visible { outline: 2px solid var(--color-silver); outline-offset: 2px; border-radius: 10px; }
-.plus { position: relative; flex: 0 0 32px; height: 32px; border-radius: 50%; border: 1px solid var(--color-line-2); transition: transform 0.5s var(--ease-out-expo), background 0.3s ease; }
-.plus::before, .plus::after { content: ""; position: absolute; left: 50%; top: 50%; width: 11px; height: 1.5px; margin: -0.75px 0 0 -5.5px; background: currentColor; border-radius: 1px; }
-.plus::after { transform: rotate(90deg); transition: transform 0.5s var(--ease-out-expo); }
-.faqItem[open] .plus { background: rgba(255, 255, 255, 0.06); }
-.faqItem[open] .plus::after { transform: rotate(0deg); }
-.faqItem p { margin: 0; padding: 0 2px 22px; max-width: 720px; font-size: 16px; line-height: 1.65; color: var(--color-body); }
-
 /* ── The closing call to action ───────────────────────────────────────────── */
 .cta { display: flex; flex-direction: column; gap: 22px; padding: 36px 22px; overflow: hidden; position: relative; }
 @media (min-width: 1024px) { .cta { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 56px; padding: 72px 64px; } }

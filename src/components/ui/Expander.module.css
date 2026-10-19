@@ -1,0 +1,31 @@
+/* The site's one expand/collapse (Expander.tsx). */
+.root {
+  --x-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --x-dur: 0.4s;
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows var(--x-dur) var(--x-ease), visibility 0s linear var(--x-dur);
+}
+.root[data-open="true"] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows var(--x-dur) var(--x-ease), visibility 0s;
+}
+/* Room for focus rings inside, taken back so nothing moves. */
+.clip { min-height: 0; overflow: hidden; margin: -6px; padding: 6px; }
+.content {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--x-dur) var(--x-ease), transform var(--x-dur) var(--x-ease);
+}
+.root[data-open="true"] .content { opacity: 1; transform: none; }
+
+.plus { position: relative; display: inline-block; flex: none; width: var(--plus-size, 14px); height: var(--plus-size, 14px); transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.plus::before, .plus::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px; margin-top: -0.75px; border-radius: 1px; background: currentColor; }
+.plus::after { transform: rotate(90deg); }
+.plus[data-open="true"] { transform: rotate(45deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .root, .root[data-open="true"], .content, .plus { transition: none; }
+}

@@ -1,4 +1,5 @@
-/* Questions: a sticky side column beside numbered questions in larger type. */
+/* Questions (/automations, /websites): a sticky side column beside numbered
+   questions in larger type. */
 .faq {
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   display: grid;
@@ -34,10 +35,8 @@
 .num { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; color: var(--color-silver); }
 .qText { font-size: clamp(19px, 1.9vw, 26px); font-weight: 500; font-stretch: 106%; letter-spacing: -0.02em; line-height: 1.25; transition: transform 0.5s var(--ease); }
 @media (hover: hover) { .q:hover .qText { transform: translateX(4px); } }
-.plus { position: relative; align-self: center; width: 16px; height: 16px; transition: transform 0.6s var(--ease); }
-.plus::before, .plus::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px; margin-top: -0.75px; border-radius: 1px; background: var(--color-silver); }
-.plus::after { transform: rotate(90deg); }
-.row[data-open="true"] .plus { transform: rotate(45deg); }
+/* the + that turns into × (PlusMark), silver */
+.plus { align-self: center; --plus-size: 16px; color: var(--color-silver); }
 
 /* The answer: a soft panel under its question, aligned to the question text. */
 .answer { margin: 0 0 26px 64px; padding: 22px 26px; border-radius: 20px; background: var(--color-surface); }
