@@ -12,6 +12,18 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Every response: no MIME sniffing, the origin alone as referrer to
+        // other sites, no camera, microphone or location, and no framing by
+        // other sites. No full CSP: inline styles and scripts are by design.
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+        ],
+      },
+      {
         source: "/media/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },

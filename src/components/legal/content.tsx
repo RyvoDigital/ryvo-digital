@@ -5,7 +5,7 @@ import { COMPANY } from "./LegalPage";
 
 // The Privacy Policy and the Terms of Service, in the three languages of the
 // site (.review/step2/launch-legal.md, 19 Oct 2026). The English is the
-// approved text with the launch changes (Calendly gone; the site's own call
+// approved text with the launch changes (the old third-party booking link gone; the site's own call
 // booking and cookie-free analytics added); PT (Portugal, new spelling) and ES
 // (Spain) follow its structure section by section.
 
