@@ -25,7 +25,7 @@ export function glPixelRatio() {
 // compile. Run it while the page is still: after the scroll has rested for a
 // moment, or at the latest after `maxWait` ms. The stage shows its poster
 // until then, so a later build is never seen. Returns a cancel.
-export function whenScrollRests(fn: () => void, { rest = 180, maxWait = 8000 } = {}) {
+export function whenScrollRests(fn: () => void, { rest = 180, maxWait = 30000 } = {}) {
   let done = false;
   let quiet: ReturnType<typeof setTimeout> | undefined;
   const fire = () => {
