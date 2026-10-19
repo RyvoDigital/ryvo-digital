@@ -458,7 +458,11 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
     camera.aspect = aspect;
     const narrow = aspect < 1.1;
     camera.fov = narrow ? 34 : 28;
-    dist = narrow ? 15 : 21.4 * Math.min(1.2, Math.max(1, 880 / h));
+    // Wide screens: the headline frames the case from two corners, so a short
+    // stage pulls the camera back. Phones and tablets stack the headline above
+    // the stage instead: the case can fill it.
+    const stacked = window.innerWidth < 1024;
+    dist = narrow ? 15 : stacked ? 17 : 21.4 * Math.min(1.2, Math.max(1, 880 / h));
     target.y = narrow ? -0.25 : -0.4;
     camera.updateProjectionMatrix();
     const dpr = renderer.getPixelRatio();

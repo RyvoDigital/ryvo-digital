@@ -56,6 +56,12 @@
   .card { height: 860px; border-radius: 32px; }
 }
 
+/* Tablets in portrait (768–1023): the headline runs larger than on a phone,
+   so the phone sits lower, clear of its last line. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .card { --sy: 168px; }
+}
+
 @media (min-width: 1024px) {
   .card {
     height: 940px;

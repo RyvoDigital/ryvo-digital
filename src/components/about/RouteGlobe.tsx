@@ -57,11 +57,18 @@ export default function RouteGlobe({
     let cleanup: (() => void) | undefined;
     let cancelBuild: (() => void) | undefined;
 
+    // Each tag stays inside the stage: on a phone Lisbon's sits close to the
+    // left edge (its tag hangs left of the point, Madrid's right of it).
+    const EDGE = 8, OFF = 16;
+    const keepIn = (i: number, x: number, t: HTMLElement) => {
+      const w = t.offsetWidth, W = el.clientWidth;
+      return i === 0 ? Math.max(x, w + OFF + EDGE) : Math.min(x, W - w - OFF - EDGE);
+    };
     const place = (labels: { x: number; y: number; on: boolean }[], arc: number) => {
       labels.forEach((l, i) => {
         const t = tags.current[i];
         if (!t) return;
-        t.style.transform = `translate3d(${l.x.toFixed(1)}px, ${l.y.toFixed(1)}px, 0)`;
+        t.style.transform = `translate3d(${keepIn(i, l.x, t).toFixed(1)}px, ${l.y.toFixed(1)}px, 0)`;
         t.dataset.on = String(l.on);
       });
       if (kmTag.current) {

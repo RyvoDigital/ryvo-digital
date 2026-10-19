@@ -25,7 +25,7 @@
 .sticky { position: sticky; top: 0; height: 100svh; min-height: 560px; overflow: hidden; }
 .globe { position: absolute; inset: 0; --hx: 50%; --hy: 92%; }
 .heroHead { position: absolute; top: 100px; left: var(--pad); right: var(--pad); display: grid; gap: 14px; will-change: transform, opacity; }
-.h1 { margin: 0; font-size: clamp(40px, 11vw, 112px); line-height: 0.95; }
+.h1 { margin: 0; font-size: clamp(40px, min(11vw, 14svh), 112px); line-height: 0.95; }
 .heroFoot { position: absolute; left: var(--pad); right: var(--pad); bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 0; }
 .heroFoot dt { grid-column: 1 / -1; }
 .coord { margin: 0; display: grid; gap: 2px; }
