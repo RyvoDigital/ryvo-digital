@@ -5,7 +5,7 @@ import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import type { Pages } from "@/i18n/pages";
 import { euros } from "@/lib/numbers";
-import TopBar from "@/components/chrome/TopBar";
+import NavFrame from "@/components/chrome/NavFrame";
 import { ArrowUpRight, BookButton } from "@/components/chrome/Icons";
 import PageFrame from "@/components/pages/PageFrame";
 import { CtaBand } from "@/components/pages/Blocks";
@@ -104,7 +104,7 @@ export default function WebsitesPage({ lang, t, p, ctaLabel }: { lang: Locale; t
   return (
     <PageFrame lang={lang} t={t} bookHref={book} light>
       <div ref={root} className={s.page}>
-        <TopBar lang={lang} t={t} bookHref={book} />
+        <NavFrame lang={lang} t={t} bookHref={book} tone="light" />
 
         <main>
           {/* ── Hero: the copy, and the anatomy of a website beside it ──────── */}

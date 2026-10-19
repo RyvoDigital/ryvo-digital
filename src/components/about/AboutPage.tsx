@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import TopBar from "@/components/chrome/TopBar";
+import NavFrame from "@/components/chrome/NavFrame";
 import PageFrame from "@/components/pages/PageFrame";
 import { BookButton } from "@/components/chrome/Icons";
 import Expander, { PlusMark } from "@/components/ui/Expander";
@@ -115,7 +115,7 @@ export default function AboutPage({ c }: { c: AboutContent }) {
   return (
     <PageFrame lang={lang} t={t} bookHref={book}>
     <div ref={root} className={s.page}>
-      <TopBar lang={lang} t={t} bookHref={book} />
+      <NavFrame lang={lang} t={t} bookHref={book} />
 
       <main>
         {/* ── Hero: where we work, drawn as you scroll ─────────────────────── */}

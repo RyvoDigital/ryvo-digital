@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import type { Pages } from "@/i18n/pages";
-import TopBar from "@/components/chrome/TopBar";
+import NavFrame from "@/components/chrome/NavFrame";
 import { BookButton } from "@/components/chrome/Icons";
 import Pricing from "@/components/home/Pricing";
 import SiteFooter from "@/components/chrome/SiteFooter";
@@ -238,7 +238,7 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
 
   return (
     <div ref={root} className={s.page}>
-      <TopBar lang={lang} t={t} bookHref={book} />
+      <NavFrame lang={lang} t={t} bookHref={book} />
 
       <main>
         {/* ── Hero: one screen; the headline reads across the top band ────── */}

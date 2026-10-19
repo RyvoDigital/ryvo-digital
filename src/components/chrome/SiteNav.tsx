@@ -6,18 +6,19 @@ import { BookButton } from "./Icons";
 import MobileMenu from "./MobileMenu";
 import { navLinks } from "./nav-links";
 
-// Top bar. On the homepage the four links live in the hero card's notch
-// where it fits, and inline below that (linksClassName says where they show);
-// elsewhere they sit inline.
+// The navbar's bar, in the hero card (and in NavFrame on the inner pages). The
+// four links live in the card's notch where it fits, and inline below that
+// (linksClassName says where they show), centred on the bar whatever the
+// widths either side: three columns, 1fr · auto · 1fr.
 export default function SiteNav({ lang, t, bookHref, inlineLinks = true, linksClassName = "lg:flex", fold = false, logoClassName = "" }: { lang: Locale; t: Dictionary; bookHref: string; inlineLinks?: boolean; linksClassName?: string; fold?: boolean; logoClassName?: string }) {
   const links = navLinks(lang, t);
   return (
-    <nav aria-label={t.nav.main} className="relative z-10 flex items-center justify-between">
-      <Link href={`/${lang}`} className={`inline-flex min-h-[44px] items-center text-[17px] font-bold tracking-[0.06em] lg:text-[20px] ${logoClassName}`} style={{ fontStretch: "125%" }}>
+    <nav aria-label={t.nav.main} className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center">
+      <Link href={`/${lang}`} className={`col-start-1 inline-flex min-h-[44px] items-center justify-self-start text-[17px] font-bold tracking-[0.06em] lg:text-[20px] ${logoClassName}`} style={{ fontStretch: "125%" }}>
         {fold ? <>R<span className="fold"><span>YVO</span></span></> : "RYVO"}
       </Link>
       {inlineLinks && (
-        <ul className={`hidden items-center gap-[24px] text-[14px] xl:gap-[34px] ${linksClassName}`}>
+        <ul className={`col-start-2 hidden items-center gap-[24px] text-[14px] xl:gap-[34px] ${linksClassName}`}>
           {links.map((l) => (
             <li key={l.href}>
               <Link href={l.href} className="text-body transition-colors duration-300 hover:text-text">{l.label}</Link>
@@ -25,11 +26,11 @@ export default function SiteNav({ lang, t, bookHref, inlineLinks = true, linksCl
           ))}
         </ul>
       )}
-      <div className="hidden items-center gap-[18px] lg:flex">
+      <div className="col-start-3 hidden items-center gap-[18px] justify-self-end lg:flex">
         <LangSwitch lang={lang} label={t.nav.language} fold={fold} />
         <BookButton href={bookHref} label={t.nav.book} fold={fold} className="!min-h-[34px] !py-1 !pl-[14px] !pr-1 !text-[13px] [&_.btn-arrow]:!h-[26px] [&_.btn-arrow]:!w-[26px]" />
       </div>
-      <MobileMenu lang={lang} t={t} bookHref={bookHref} className="lg:hidden" />
+      <MobileMenu lang={lang} t={t} bookHref={bookHref} className="col-start-3 justify-self-end lg:hidden" />
     </nav>
   );
 }
