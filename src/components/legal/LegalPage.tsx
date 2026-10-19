@@ -11,12 +11,6 @@ export const COMPANY = {
   email: "hello@ryvodigital.com",
 };
 
-const IN_ENGLISH: Record<Locale, string | null> = {
-  en: null,
-  pt: "Esta página está disponível apenas em inglês.",
-  es: "Esta página solo está disponible en inglés.",
-};
-
 export function LegalSection({
   title,
   children,
@@ -36,8 +30,8 @@ export function LegalSection({
   );
 }
 
-// Restyled in the new system (the inner pages' opening card); the legal text
-// itself is unchanged and English in every language (marked as such on /pt and /es).
+// Restyled in the new system (the inner pages' opening card); the text is in
+// the page's own language (components/legal/content.tsx).
 export default function LegalPage({
   lang,
   title,
@@ -53,7 +47,6 @@ export default function LegalPage({
 }) {
   const t = getDictionary(lang);
   const p = getPages(lang);
-  const note = IN_ENGLISH[lang];
   return (
     <PageFrame lang={lang} t={t} bookHref={`/${lang}/book`}>
       <PageHero
@@ -61,12 +54,11 @@ export default function LegalPage({
         sub={
           <>
             <p className="m-0 font-mono text-[12px] uppercase tracking-[0.12em] text-steel">{p.legal.updated} · {lastUpdated}</p>
-            {note && <p lang={lang} className="mb-0 mt-4 inline-block rounded-2xl border border-line-2 bg-[rgba(255,255,255,0.04)] px-4 py-3 text-[14px] text-body">{note}</p>}
           </>
         }
       />
       <main>
-        <article lang="en" className="mx-auto max-w-[760px] px-5 pb-24 pt-6 leading-[1.7] md:pt-10">
+        <article className="mx-auto max-w-[760px] px-5 pb-24 pt-6 leading-[1.7] md:pt-10">
           {children}
         </article>
       </main>
