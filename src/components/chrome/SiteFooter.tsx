@@ -152,7 +152,10 @@ export default function SiteFooter({ lang, t, bookHref }: { lang: Locale; t: Dic
         draw(0);
         if (reduced) return;
         const tick = (time: number) => draw(time);
-        ScrollTrigger.create({ trigger: el, start: "top bottom", end: "bottom top", onToggle: (st) => (st.isActive ? gsap.ticker.add(tick) : gsap.ticker.remove(tick)) });
+        // A block body, returning nothing: inside a gsap.context, a function a
+        // callback returns is kept as a cleanup and called on revert, and
+        // ticker.add returns the tick itself (it then drew a NaN path).
+        ScrollTrigger.create({ trigger: el, start: "top bottom", end: "bottom top", onToggle: (st) => { if (st.isActive) gsap.ticker.add(tick); else gsap.ticker.remove(tick); } });
         gsap.set("[data-mail-rise]", { yPercent: 105 });
         gsap.set("[data-horizon-wrap]", { clipPath: "inset(0 50% 0 50%)" });
         ScrollTrigger.create({

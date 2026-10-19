@@ -52,7 +52,9 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
       const reduced = isReduced();
       try {
         const probe = document.createElement("canvas");
-        if (!(probe.getContext("webgl2") || probe.getContext("webgl"))) throw new Error("no webgl");
+        const gl = probe.getContext("webgl2") || probe.getContext("webgl");
+        if (!gl) throw new Error("no webgl");
+        gl.getExtension("WEBGL_lose_context")?.loseContext(); // the probe gives its context back at once
         const m = await startMotion();
         // The build is one long task: run it while the page rests.
         await new Promise<void>((resolve) => { cleanups.push(whenScrollRests(resolve)); });

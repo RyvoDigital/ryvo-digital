@@ -72,6 +72,7 @@ export default function WebsitesPage({ lang, t, p, ctaLabel }: { lang: Locale; t
       const leave = () => { rx(0); ry(0); };
       hero.addEventListener("pointermove", move);
       hero.addEventListener("pointerleave", leave);
+      kit.onCleanup(() => { hero.removeEventListener("pointermove", move); hero.removeEventListener("pointerleave", leave); });
     }
 
     settle(kit, el);

@@ -9,7 +9,7 @@ import { startMotion, refreshWhenSettled, type PageMotion } from "@/components/a
 // every piece is simply in place (data-motion="reduced").
 
 type Q = <T extends Element = HTMLElement>(sel: string, scope?: ParentNode) => T[];
-export type Kit = PageMotion & { q: Q; desk: boolean; fine: boolean; once: (trigger: Element, start: string, fn: () => void) => void };
+export type Kit = PageMotion & { q: Q; desk: boolean; fine: boolean; once: (trigger: Element, start: string, fn: () => void) => void; onCleanup: (fn: () => void) => void };
 
 export function usePageMotion(root: RefObject<HTMLElement | null>, setup: (kit: Kit) => void) {
   useEffect(() => {
@@ -17,6 +17,7 @@ export function usePageMotion(root: RefObject<HTMLElement | null>, setup: (kit: 
     if (!el) return;
     let revert: (() => void) | undefined;
     let cancelled = false;
+    const off: (() => void)[] = []; // DOM listeners: gsap's revert does not remove them
     startMotion().then((m) => {
       if (cancelled) return;
       el.dataset.motion = m.reduced ? "reduced" : "on";
@@ -26,10 +27,10 @@ export function usePageMotion(root: RefObject<HTMLElement | null>, setup: (kit: 
         const once = (trigger: Element, start: string, fn: () => void) => m.ScrollTrigger.create({ trigger, start, once: true, onEnter: fn });
         const desk = matchMedia("(min-width: 1024px)").matches;
         const fine = matchMedia("(pointer: fine)").matches;
-        setup({ ...m, q, once, desk, fine });
+        setup({ ...m, q, once, desk, fine, onCleanup: (fn) => off.push(fn) });
       }, el);
       refreshWhenSettled(m);
-      revert = () => ctx.revert();
+      revert = () => { ctx.revert(); off.forEach((fn) => fn()); };
     });
     return () => {
       cancelled = true;
