@@ -25,7 +25,7 @@ export default function PageHero({
   } as CSSProperties;
   const bookHref = `/${lang}/book${path === "/websites" ? "?kind=websites" : ""}`;
   return (
-    <header className={`${hs.wrap} ${s.heroWrap}`} data-hero data-notch-at={NOTCH_AT[lang]} data-nav-open="false" style={notch}>
+    <header className={`${hs.wrap} ${s.heroWrap}`} data-hero data-notch-root data-notch-at={NOTCH_AT[lang]} data-nav-open="false" style={notch}>
       <Link href={`/${lang}`} className={hs.wrapLogo} style={{ fontStretch: "125%" }}>
         R<span className="fold"><span>YVO</span></span>
       </Link>

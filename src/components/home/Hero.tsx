@@ -20,7 +20,7 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
   } as CSSProperties;
 
   return (
-    <header className={styles.wrap} data-hero data-notch-at={NOTCH_AT[lang]} data-nav-open="false" style={notch}>
+    <header className={styles.wrap} data-hero data-notch-root data-notch-at={NOTCH_AT[lang]} data-nav-open="false" style={notch}>
       <HeroPreload />
       <div aria-hidden="true" className={styles.spill} />
 

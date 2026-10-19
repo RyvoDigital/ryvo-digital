@@ -80,7 +80,7 @@ export default async function LangLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "var d=document.documentElement;d.classList.add('js');try{var q=new URLSearchParams(location.search).get('intro');if(q==='1'||(q!=='0'&&!matchMedia('(prefers-reduced-motion: reduce)').matches))d.classList.add('intro')}catch(e){}",
+              "var d=document.documentElement;d.classList.add('js');var u=navigator.userAgent;if(/AppleWebKit/.test(u)&&!/(Chrome|Chromium|Edg|OPR|Android)\\//.test(u))d.classList.add('webkit');try{var q=new URLSearchParams(location.search).get('intro');if(q==='1'||(q!=='0'&&!matchMedia('(prefers-reduced-motion: reduce)').matches))d.classList.add('intro')}catch(e){}",
           }}
         />
       </head>

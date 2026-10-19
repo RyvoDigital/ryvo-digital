@@ -211,12 +211,15 @@ html.intro [data-hero] [data-hero-shade] { animation: hero-light 1s cubic-bezier
 html.intro [data-hero] [data-reveal-line] { animation: hero-from-left 0.85s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(0.45s + var(--i, 0) * 0.11s); }
 html.intro [data-hero] [data-reveal] { animation: hero-from-right 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(0.85s + var(--i, 0) * 0.1s); }
 html.intro [data-hero] [data-wordmark] { animation: hero-rise-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) 1.25s both; }
+/* the baked letters (Safari) rise by the same distance: 38% of the card, not of themselves */
+html.intro [data-hero] [data-baked-wordmark] { animation: hero-rise-baked 0.9s cubic-bezier(0.22, 1, 0.36, 1) 1.25s both; }
 
 @keyframes hero-light { from { opacity: 0.72; } }
 @keyframes hero-rise { from { translate: 0 28px; scale: 1.025; } }
 @keyframes hero-from-left { from { opacity: 0; translate: -80px 0; filter: blur(8px); } }
 @keyframes hero-from-right { from { opacity: 0; translate: 64px 0; filter: blur(6px); } }
 @keyframes hero-rise-up { from { translate: 0 38%; } }
+@keyframes hero-rise-baked { from { translate: 0 38cqh; } }
 @keyframes hero-fade { from { opacity: 0; translate: 0 16px; } }
 
 /* Scroll word reveal (WordReveal): each word blends from very dark (#2A2D32)
@@ -255,9 +258,9 @@ html.intro [data-hero] [data-wordmark] { animation: hero-rise-up 0.9s cubic-bezi
 
 /* The hero notch's width (NotchNav): registered, so it transitions smoothly. */
 @property --W { syntax: "<length>"; inherits: true; initial-value: 286px; }
-[data-hero] { --W: var(--W-closed); transition: --W 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
-[data-hero][data-nav-open="true"] { --W: var(--W-open); }
-[data-hero][data-nav-measure] { transition: none; }
+[data-notch-root] { --W: var(--W-closed); transition: --W 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+[data-notch-root][data-nav-open="true"] { --W: var(--W-open); }
+[data-notch-root][data-nav-measure] { transition: none; }
 
 /* The card's top row folds while the notch is open: RYVO → R, the language
    switch → the current one, Book → a round arrow. */
@@ -268,7 +271,7 @@ html.intro [data-hero] [data-wordmark] { animation: hero-rise-up 0.9s cubic-bezi
 [data-nav-open="true"] .btn-fold { padding-left: 4px !important; gap: 0; }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-hero] { transition: none; }
+  [data-notch-root] { transition: none; }
   .fold, .btn-fold { transition: none; }
 }
 

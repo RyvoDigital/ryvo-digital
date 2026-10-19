@@ -381,6 +381,33 @@
    RYVO in liquid glass (HeroVisual's GlassWordmark): one SVG over the card,
    the letters on its bottom edge, slightly cut, full width. */
 .glassWord { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: hidden; pointer-events: none; user-select: none; }
+/* The notch's width (--W) animates on the hero and inherits down to every
+   descendant. The wordmark never uses it, but Safari re-renders an SVG whose
+   style changed, filters and all: the notch opening ran at ~5 fps there.
+   Pinned here, the wordmark's style never changes while the notch moves.
+   The same for the two widths NotchNav measures and writes on the hero at
+   mount and once the fonts are in: each write re-rendered it (~350 ms). */
+.glassWord { --W: 0px; --W-closed: 0px; --W-open: 0px; }
+
+/* Safari: the baked letters (HeroVisual), full card width on the card's
+   bottom edge, so they scale with the card exactly as the live text does
+   (it is sized in cqw). Baked at a 1390 px card (wide screens) and a 718 px
+   card (tablets). On phones the letters rest wholly below the card's edge,
+   live too, so there is nothing to draw or fetch. */
+.glassBaked { display: none; }
+:global(html.webkit) .glassWord { display: none; }
+.bakedBase, .bakedSpec { position: absolute; inset: 0; background-size: 100% 100%; background-repeat: no-repeat; }
+@media (min-width: 768px) {
+  :global(html.webkit) .glassBaked { display: block; position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; aspect-ratio: 1436 / 65; pointer-events: none; }
+  :global(html.webkit) .bakedBase { background-image: url(/media/hero/glass/wordmark-tab-base.webp); }
+  /* normal compositing, as WebKit draws the live highlight (it does not blend an SVG use) */
+  :global(html.webkit) .bakedSpec { background-image: url(/media/hero/glass/wordmark-tab-spec.webp); opacity: 0.85; }
+}
+@media (min-width: 1024px) {
+  :global(html.webkit) .glassBaked { aspect-ratio: 2780 / 413; }
+  :global(html.webkit) .bakedBase { background-image: url(/media/hero/glass/wordmark-desk-base.webp); }
+  :global(html.webkit) .bakedSpec { background-image: url(/media/hero/glass/wordmark-desk-spec.webp); }
+}
 
 /* The letters stretched a little taller, from the card's bottom edge. */
 .glassText {

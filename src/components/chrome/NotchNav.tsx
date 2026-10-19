@@ -16,7 +16,7 @@ export default function NotchNav({ links, label }: { links: { href: string; labe
 
   useEffect(() => {
     const el = nav.current;
-    const hero = el?.closest<HTMLElement>("[data-hero]");
+    const hero = el?.closest<HTMLElement>("[data-notch-root]");
     if (!el || !hero) return;
     let leave = 0;
     const set = (open: boolean) => { window.clearTimeout(leave); hero.dataset.navOpen = String(open); };

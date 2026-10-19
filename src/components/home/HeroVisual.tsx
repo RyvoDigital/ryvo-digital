@@ -57,6 +57,17 @@ function GlassWordmark() {
     return () => cancelAnimationFrame(id);
   }, []);
   return (
+    <>
+    {/* Safari (WebKit): the same letters, baked. Live, its filters re-ran on
+        every render of the card (~350 ms each in Safari, three times as the
+        page loaded, right through the intro). This is WebKit's own render
+        of the SVG below (glass body, and the highlight that screens over the
+        photo), so it looks as it did; html.webkit swaps it in before the
+        first paint, and other browsers never fetch it. */}
+    <div aria-hidden="true" className={styles.glassBaked} data-baked-wordmark>
+      <span className={styles.bakedBase} />
+      <span className={styles.bakedSpec} />
+    </div>
     <svg ref={svg} aria-hidden="true" className={styles.glassWord} data-wordmark>
       <defs>
         <text id="ryvo-t" x="50%" y="100%" dy="0.06em" textAnchor="middle" className={styles.glassText}>RYVO</text>
@@ -135,6 +146,7 @@ function GlassWordmark() {
       <use href="#ryvo-t" fill="#fff" filter="url(#ryvo-spec)" className={styles.glassSpec} />
       <use href="#ryvo-t" fill="none" stroke="url(#ryvo-edge)" strokeWidth="1.25" />
     </svg>
+    </>
   );
 }
 
