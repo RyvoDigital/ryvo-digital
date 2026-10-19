@@ -6,7 +6,7 @@ import {
   Color, DoubleSide, Mesh, MeshBasicMaterial, NoToneMapping, PerspectiveCamera, PlaneGeometry, PMREMGenerator,
   Scene, ShaderMaterial, SRGBColorSpace, Texture, TextureLoader, Vector2, Vector3, Vector4, WebGLRenderer,
 } from "three";
-import { compileScene, glPixelRatio } from "@/lib/gl";
+import { compileScene, glPixelRatio, releaseContext } from "@/lib/gl";
 
 export type Sig = "crystal" | "chrome";
 export type StageKind = "hero" | "cta";
@@ -269,7 +269,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
       pool?.geometry.dispose(); poolMat?.dispose();
       envTex.dispose();
       renderer.dispose();
-      renderer.forceContextLoss(); // free the context now, not at GC (Safari caps live contexts)
+      releaseContext(renderer);
     },
   };
 }

@@ -7,7 +7,7 @@ import {
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { gsap as GSAP } from "gsap";
-import { glPixelRatio } from "@/lib/gl";
+import { glPixelRatio, releaseContext } from "@/lib/gl";
 
 export type Rings = { start: () => void; stop: () => void; resize: () => void; dispose: () => void; renderAt: (turn: number) => void };
 
@@ -88,7 +88,7 @@ export function createRings(canvas: HTMLCanvasElement, { opaque = false, ticker 
     dispose: () => {
       stop();
       geo.dispose(); chrome.dispose(); env.dispose(); pmrem.dispose(); renderer.dispose();
-      renderer.forceContextLoss();
+      releaseContext(renderer);
     },
   };
 }

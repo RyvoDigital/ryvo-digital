@@ -51,3 +51,12 @@ export async function compileScene(renderer: WebGLRenderer, scene: Object3D, cam
   if (renderer.extensions.has("KHR_parallel_shader_compile")) await renderer.compileAsync(scene, camera);
   else renderer.compile(scene, camera);
 }
+
+// Give a disposed renderer's context back at once instead of at GC: Safari
+// caps live contexts, and a page change must not leave one behind. Firefox
+// frees them promptly itself and logs every deliberate loss as a warning, so
+// there the context goes with the canvas.
+export function releaseContext(renderer: WebGLRenderer) {
+  if (/Firefox\//.test(navigator.userAgent)) return;
+  renderer.forceContextLoss();
+}

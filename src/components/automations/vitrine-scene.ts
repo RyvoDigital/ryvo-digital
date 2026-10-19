@@ -37,7 +37,7 @@ import {
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { TransmissionMaterial } from "./transmission-material";
 import type { Stage } from "./stage-scene";
-import { compileScene, glPixelRatio } from "@/lib/gl";
+import { compileScene, glPixelRatio, releaseContext } from "@/lib/gl";
 
 export type VitrineOptions = {
   objects: string[]; // the stills, with alpha, square, all framed the same
@@ -559,7 +559,7 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
       });
       rt.dispose(); envTex.dispose();
       renderer.dispose();
-      renderer.forceContextLoss(); // free the context now, not at GC (Safari caps live contexts)
+      releaseContext(renderer);
     },
   };
 }
