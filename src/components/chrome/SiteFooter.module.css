@@ -66,3 +66,12 @@
   .bTop > .colLabel { flex-basis: 100%; }
   .bRow { grid-template-columns: minmax(0, 1fr) auto auto; gap: 72px; align-items: start; }
 }
+
+/* Phones and tablets: the links and the email are 44 px tall to the finger,
+   with the same look (the extra is an invisible margin around each). */
+@media (max-width: 1023px) {
+  .link { position: relative; }
+  .link::after { content: ""; position: absolute; inset: -4px -10px; }
+  .mail { position: relative; }
+  .mail::after { content: ""; position: absolute; inset: -6px 0; }
+}

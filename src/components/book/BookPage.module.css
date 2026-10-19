@@ -286,10 +286,15 @@
 .write { margin: 0; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; color: var(--steel-up); }
 .write a { color: var(--color-text); text-decoration: none; }
 .write a:hover { text-decoration: underline; text-underline-offset: 4px; }
-.copy { min-height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.05); color: var(--color-body); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+.copy { position: relative; min-height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.05); color: var(--color-body); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
 @media (hover: hover) { .copy:hover { background: rgba(255, 255, 255, 0.1); } }
 
 @media (prefers-reduced-motion: reduce) {
   .lineUp, .rise, .glow::before, .card, .enter, .rulerPage, .time, .ticket, .skDays span, .skPills span { animation: none; }
   .auto, .expand, .railFill, .tick, .dayN { transition: none; }
+}
+
+/* Phones and tablets: every tap target at least 44 px, the look unchanged. */
+@media (max-width: 1023px) {
+  .copy::after { content: ""; position: absolute; inset: -6px -2px; }
 }

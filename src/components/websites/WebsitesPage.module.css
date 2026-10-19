@@ -219,6 +219,8 @@
 .workCap { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 14px; border-top: 1px solid var(--color-line-2); }
 .workLine { margin: 0; font-size: 14px; line-height: 1.5; color: var(--color-body); }
 .workDid { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #5e636b; }
-.workVisit { display: inline-flex; align-items: center; gap: 6px; align-self: center; min-height: 40px; font-size: 13px; color: var(--color-body); text-decoration: underline; text-decoration-color: rgba(11, 12, 14, 0.25); text-underline-offset: 4px; }
+.workVisit { position: relative; display: inline-flex; align-items: center; gap: 6px; align-self: center; min-height: 40px; font-size: 13px; color: var(--color-body); text-decoration: underline; text-decoration-color: rgba(11, 12, 14, 0.25); text-underline-offset: 4px; }
 .workVisit:hover { color: var(--color-text); }
 .workHint { display: block; margin-top: 32px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #5e636b; }
+
+@media (max-width: 1023px) { .workVisit::after { content: ""; position: absolute; inset: -2px -4px; } }
