@@ -1,5 +1,5 @@
-// What the globe scene and its 2D poster share: the two cities, the timing,
-// the framing and the dot decoding. No three.js here, so the poster stays light.
+// What the globe scene and its 2D poster share: the two cities, the framing
+// and the dot decoding. No three.js here, so the poster stays light.
 
 export const CITIES = [
   { key: "lisbon", name: "Lisbon", lat: 38.72, lon: -9.14, coords: "38.72°N · 9.14°W" },
@@ -8,10 +8,6 @@ export const CITIES = [
 
 /** The point that faces the camera once settled: Iberia, a little east of the route's middle. */
 export const FOCUS = { lat: 39.9, lon: -5.4 };
-
-export const SETTLE_S = 5.2; // the turn in from the east, easing onto Iberia
-export const ARC_S = 1.4; // the arc drawing from Lisbon to Madrid
-export const LIGHT_S = 3.4; // one pass of the light along the arc
 
 export const view = {
   fov: 30,
