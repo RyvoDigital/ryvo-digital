@@ -1,5 +1,7 @@
 "use client";
 
+import type { Camera, Object3D, WebGLRenderer } from "three";
+
 // Shared rules for the site's WebGL stages (the rings, the vitrine, the mercury
 // close, the globe).
 
@@ -39,4 +41,13 @@ export function whenScrollRests(fn: () => void, { rest = 180, maxWait = 8000 } =
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
   return () => { done = true; clearTimeout(quiet); clearTimeout(cap); window.removeEventListener("scroll", onScroll); };
+}
+
+// Compile a scene's programs before its first frame: off the main thread where
+// the browser can (KHR_parallel_shader_compile), at once where it cannot
+// (Safari). compileAsync without the extension gains nothing and warns in the
+// console, so it is used only where the extension is there.
+export async function compileScene(renderer: WebGLRenderer, scene: Object3D, camera: Camera) {
+  if (renderer.extensions.has("KHR_parallel_shader_compile")) await renderer.compileAsync(scene, camera);
+  else renderer.compile(scene, camera);
 }

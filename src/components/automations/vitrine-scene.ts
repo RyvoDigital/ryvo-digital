@@ -37,7 +37,7 @@ import {
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { TransmissionMaterial } from "./transmission-material";
 import type { Stage } from "./stage-scene";
-import { glPixelRatio } from "@/lib/gl";
+import { compileScene, glPixelRatio } from "@/lib/gl";
 
 export type VitrineOptions = {
   objects: string[]; // the stills, with alpha, square, all framed the same
@@ -528,10 +528,10 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   layout(0);
   glass.visible = false;
   renderer.setRenderTarget(rt);
-  await renderer.compileAsync(scene, camera);
+  await compileScene(renderer, scene, camera);
   renderer.setRenderTarget(null);
   glass.visible = true;
-  await renderer.compileAsync(scene, camera);
+  await compileScene(renderer, scene, camera);
   stills.forEach((t) => renderer.initTexture(t));
 
   return {

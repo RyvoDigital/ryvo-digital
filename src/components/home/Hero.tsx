@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { preload } from "react-dom";
 import type { CSSProperties } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
@@ -9,19 +8,11 @@ import { navLinks } from "@/components/chrome/nav-links";
 import { NOTCH, NOTCH_AT, NOTCH_W_CLOSED, NOTCH_W_OPEN } from "@/components/chrome/notch";
 import NotchNav from "@/components/chrome/NotchNav";
 import HeroVisual from "./HeroVisual";
-import { ART, DESK_MEDIA, MOB_MEDIA, srcSet } from "./hero-media";
+import HeroPreload from "./HeroPreload";
 import styles from "./Hero.module.css";
 
 export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
   const h = t.hero;
-  // The hero photo is the LCP element: fetch the one for this layout first, at
-  // high priority. (The silhouette layer is small and follows at normal priority.)
-  for (const [a, media] of [[ART.desk, DESK_MEDIA], [ART.mob, MOB_MEDIA]] as const) {
-    preload(`${a.bg}-${a.widths[1]}.avif`, {
-      as: "image", type: "image/avif", fetchPriority: "high", media,
-      imageSrcSet: srcSet(a, "bg", "avif"), imageSizes: a.sizes,
-    });
-  }
 
   const notch = {
     "--nr": `${NOTCH.r}px`, "--nh": `${NOTCH.h}px`,
@@ -30,6 +21,7 @@ export default function Hero({ lang, t }: { lang: Locale; t: Dictionary }) {
 
   return (
     <header className={styles.wrap} data-hero data-notch-at={NOTCH_AT[lang]} data-nav-open="false" style={notch}>
+      <HeroPreload />
       <div aria-hidden="true" className={styles.spill} />
 
       {/* Wide desktops: the four links sit in the card's notch as icons that open

@@ -6,7 +6,7 @@ import {
   Color, DoubleSide, Mesh, MeshBasicMaterial, NoToneMapping, PerspectiveCamera, PlaneGeometry, PMREMGenerator,
   Scene, ShaderMaterial, SRGBColorSpace, Texture, TextureLoader, Vector2, Vector3, Vector4, WebGLRenderer,
 } from "three";
-import { glPixelRatio } from "@/lib/gl";
+import { compileScene, glPixelRatio } from "@/lib/gl";
 
 export type Sig = "crystal" | "chrome";
 export type StageKind = "hero" | "cta";
@@ -252,7 +252,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
   // Compile every program before the first frame, off the main thread where
   // the browser can (KHR_parallel_shader_compile), and upload the textures.
   layout(0);
-  await renderer.compileAsync(scene, camera);
+  await compileScene(renderer, scene, camera);
   textures.forEach((t) => renderer.initTexture(t));
 
   return {
