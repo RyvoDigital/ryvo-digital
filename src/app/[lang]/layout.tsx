@@ -6,6 +6,7 @@ import { LOCALES, HREFLANG, SITE_URL, isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n";
 import SmoothScroll from "@/components/motion/SmoothScroll";
 import Grain from "@/components/chrome/Grain";
+import { Analytics } from "@vercel/analytics/next";
 
 // Latin covers every PT and ES character (ã ç é ñ ¿ º); latin-ext would add
 // ~100 KB on the critical path for nothing.
@@ -91,6 +92,10 @@ export default async function LangLayout({
         <SmoothScroll />
         {children}
         <Grain />
+        {/* Vercel Web Analytics: cookie-free and anonymous, loaded after
+            hydration. Only on Vercel (it reports nowhere else, and elsewhere
+            its script would 404); switched on in the Vercel dashboard. */}
+        {process.env.VERCEL === "1" && <Analytics />}
       </body>
     </html>
   );
