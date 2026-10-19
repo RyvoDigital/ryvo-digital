@@ -8,8 +8,10 @@ import f from "./BrandFilm.module.css";
 // The brand film (video/, Remotion): what Ryvo builds, 35 s, silent, looping,
 // playing on a MacBook. The device is a Kie render whose screen is a
 // transparent hole, so the film plays behind it and the notch and bezels sit on
-// top exactly. Muted and inline; it plays only while in view and pauses
-// off-screen. Under reduced motion it shows the poster with a small play button.
+// top exactly. Muted and inline. Its poster shows first; the file (11-12 MB)
+// is fetched only once the film is within ~1.5 screens, and it plays only
+// while in view and pauses off-screen. Under reduced motion it shows the
+// poster with a small play button (the file loads on the first tap).
 const M = "/media/automations/film";
 // The film's captions are burned in, so each language plays its own render
 // (the same frames; only the words change: video/src/copy.ts).
@@ -32,12 +34,20 @@ export default function BrandFilm({ lang, label, alt, play, pause }: { lang: Loc
     // Known only on the client; set once after mount.
     queueMicrotask(() => setReduced(r));
     if (r) return;
+    // Near: start buffering, so it is ready by the time it is in view.
+    const near = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      near.disconnect();
+      v.preload = "auto";
+      v.load();
+    }, { rootMargin: "150% 0px" });
+    near.observe(el);
     let inView = false;
     const sync = () => { if (inView && !document.hidden) v.play().catch(() => {}); else v.pause(); };
     const io = new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync(); }, { threshold: 0.25 });
     io.observe(el);
     document.addEventListener("visibilitychange", sync);
-    return () => { io.disconnect(); document.removeEventListener("visibilitychange", sync); };
+    return () => { near.disconnect(); io.disconnect(); document.removeEventListener("visibilitychange", sync); v.pause(); };
   }, []);
 
   const playOnce = () => { const v = video.current; if (!v) return; if (v.paused) { v.play().catch(() => {}); setPlaying(true); } else { v.pause(); setPlaying(false); } };
@@ -53,7 +63,7 @@ export default function BrandFilm({ lang, label, alt, play, pause }: { lang: Loc
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="none"
             poster={`${M}/brand-film-poster-${film}-1920.webp`}
             aria-label={alt}
           >
