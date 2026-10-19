@@ -409,6 +409,7 @@ const GF_CSS = `
   position: relative;
   display: block;
   flex: none;
+  text-align: left; /* never inherits the page's alignment */
   font-family: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;

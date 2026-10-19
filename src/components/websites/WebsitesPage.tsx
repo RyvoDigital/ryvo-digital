@@ -170,19 +170,28 @@ export default function WebsitesPage({ lang, t, p, ctaLabel }: { lang: Locale; t
                 <h2 id="team-title" className={`display ${s.h2}`} data-split-scroll>{p.team.title[0]} <span className={s.dim}>{p.team.title[1]}</span></h2>
               </div>
               <div className={s.people}>
-                {p.team.people.map((m, i) => (
-                  <article key={m.name} className={s.person} data-flip={i % 2 === 1 || undefined} aria-labelledby={`person-${m.mono}`}>
-                    {/* the portrait slot: a monogram until the photographs arrive */}
+                {p.team.people.map((m) => (
+                  <article key={m.name} className={s.person} aria-labelledby={`person-${m.mono}`}>
+                    {/* the portrait frame: a monogram until the photographs arrive
+                        (an <img> drops into the same frame, object-fit: cover) */}
                     <figure className={s.portrait} aria-hidden="true">
                       <span className={s.monogram}>{m.mono}</span>
                     </figure>
-                    <div className={s.personText} data-settle-group>
-                      <span className={s.personRole} data-settle>{m.role}</span>
+                    <header className={s.personHead} data-settle-group>
                       <h3 id={`person-${m.mono}`} className={`display ${s.personName}`} data-settle>{m.name}</h3>
-                      <p className={s.personLead} data-settle>{m.lead}</p>
-                      <ul className={s.facts} data-settle>
-                        {m.facts.map((f) => <li key={f}>{f}</li>)}
-                      </ul>
+                      <span className={s.personRole} data-settle>{m.role}</span>
+                    </header>
+                    <div className={s.personBody} data-settle-group>
+                      <blockquote className={s.quote} data-settle><p>{m.lead}</p></blockquote>
+                      <p className={s.bio} data-settle>{m.bio}</p>
+                      <dl className={s.facts} data-settle>
+                        {m.facts.map(([value, label]) => (
+                          <div key={label} className={s.fact}>
+                            <dt className={s.factLabel}>{label}</dt>
+                            <dd className={s.factValue}>{value}</dd>
+                          </div>
+                        ))}
+                      </dl>
                       <a href={m.href} target="_blank" rel="noopener" className={s.linkedin} data-settle>
                         {p.team.linkedin} <ArrowUpRight size={12} />
                         <span className="sr-only"> ({m.name}, {p.team.newTab})</span>
@@ -197,7 +206,7 @@ export default function WebsitesPage({ lang, t, p, ctaLabel }: { lang: Locale; t
 
           {/* ── Selected work: small and quiet ─────────────────────────────── */}
           <section className={s.section} aria-labelledby="work-title">
-            <div className={s.inner}>
+            <div className={`${s.inner} ${s.workSection}`}>
               <h2 id="work-title" className={s.workTitle}>{w.title}</h2>
               <div className={s.work}>
                 {CASES.map((c, i) => (
