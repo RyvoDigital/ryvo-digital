@@ -1,16 +1,17 @@
 import "server-only";
 import type { Busy } from "./slots";
+import { mockAllowed } from "./mock";
 
 // Google Calendar for hello@, over plain REST. Credentials come only from the
 // environment (.env.local / Vercel), placed by Manuel; nothing here logs them.
 //   GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN
 //   BOOKING_CALENDAR_ID (defaults to "primary": the calendar of the account that consented)
-// BOOKING_MOCK=1 swaps in a mock calendar for local testing.
+// BOOKING_MOCK=1 swaps in a mock calendar, never in production (./mock.ts).
 
 export type Mode = "google" | "mock" | "off";
 
 export function mode(): Mode {
-  if (process.env.BOOKING_MOCK === "1") return "mock";
+  if (mockAllowed(process.env)) return "mock";
   const { GOOGLE_OAUTH_CLIENT_ID: id, GOOGLE_OAUTH_CLIENT_SECRET: secret, GOOGLE_OAUTH_REFRESH_TOKEN: token } = process.env;
   return id && secret && token ? "google" : "off";
 }
