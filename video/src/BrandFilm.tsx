@@ -2,6 +2,7 @@ import { linearTiming, TransitionSeries } from "@remotion/transitions";
 import { AbsoluteFill } from "remotion";
 import { Backdrop, Finish, LightLeak } from "./parts";
 import { SEC } from "./theme";
+import { LangProvider, useCopy, type Lang } from "./copy";
 import { lightSweep, mercuryWipe, whip } from "./transitions";
 import { Night } from "./scenes/Night";
 import { Intro } from "./scenes/Intro";
@@ -15,36 +16,37 @@ import { EndCard } from "./scenes/EndCard";
 // Ideas are joined, never cut: liquid mercury wipes into and out of the five,
 // whip pans between them, a sweep of light into the end card.
 
-const MOMENTS = [
-  { title: "Inbound concierge", tagline: "Every enquiry answered in a few seconds, in the buyer’s language, and the viewing booked.", seconds: 8.6 },
-  { title: "Contact reactivation", tagline: "Get back in touch with the people who already know you.", seconds: 7.0 },
-  { title: "Buyer follow-up", tagline: "Keep close the buyers who are not ready yet.", seconds: 6.4 },
-  { title: "Listing launch", tagline: "One listing, four languages, the legal lines in place.", seconds: 6.4 },
-  { title: "After the deed", tagline: "A thank-you and a review request, to every client.", seconds: 6.4 },
-];
+// Each moment's length (its captions are in copy.ts, the same in every language).
+const MOMENTS = [8.6, 7.0, 6.4, 6.4, 6.4];
 
 // Scene lengths and the transitions between them, in seconds.
 export const FPS = 60;
 const S = { night: 5.8, intro: 6.2, how: HOW_SECONDS, end: 4.6 };
 const T = { mercury: 1.2, whip: 0.7, sweep: 0.8 };
 const f = (s: number) => SEC(s, FPS);
-const MOMENT_FRAMES = MOMENTS.reduce((a, m) => a + f(m.seconds), 0);
+const MOMENT_FRAMES = MOMENTS.reduce((a, s) => a + f(s), 0);
 export const FILM_FRAMES = f(S.night) + f(S.intro) + MOMENT_FRAMES + f(S.how) + f(S.end) - (2 * f(T.mercury) + 5 * f(T.whip) + f(T.sweep));
 
 // Where the two mercury wipes start (for the light leaks that ride them).
 const WIPE1 = f(S.night) - f(T.mercury);
 const WIPE2 = WIPE1 + f(S.intro) - f(T.whip) + MOMENT_FRAMES - 4 * f(T.whip) - f(T.mercury);
 
-export const BrandFilm = () => (
+export const BrandFilm = ({ lang = "en" }: { lang?: Lang }) => (
+  <LangProvider value={lang}><Film /></LangProvider>
+);
+
+const Film = () => {
+  const c = useCopy();
+  return (
   <AbsoluteFill>
     <Backdrop />
     <TransitionSeries>
       <TransitionSeries.Sequence durationInFrames={f(S.night)}><Night /></TransitionSeries.Sequence>
       <TransitionSeries.Transition presentation={mercuryWipe()} timing={linearTiming({ durationInFrames: f(T.mercury) })} />
       <TransitionSeries.Sequence durationInFrames={f(S.intro)}><Intro /></TransitionSeries.Sequence>
-      {MOMENTS.flatMap((m, i) => [
+      {MOMENTS.flatMap((seconds, i) => [
         <TransitionSeries.Transition key={`t${i}`} presentation={whip()} timing={linearTiming({ durationInFrames: f(T.whip) })} />,
-        <TransitionSeries.Sequence key={`m${i}`} durationInFrames={f(m.seconds)}><Moment index={i} {...m} /></TransitionSeries.Sequence>,
+        <TransitionSeries.Sequence key={`m${i}`} durationInFrames={f(seconds)}><Moment index={i} title={c.moments[i][0]} tagline={c.moments[i][1]} seconds={seconds} /></TransitionSeries.Sequence>,
       ])}
       <TransitionSeries.Transition presentation={mercuryWipe()} timing={linearTiming({ durationInFrames: f(T.mercury) })} />
       <TransitionSeries.Sequence durationInFrames={f(S.how)}><HowWeWork /></TransitionSeries.Sequence>
@@ -56,4 +58,5 @@ export const BrandFilm = () => (
     <LightLeak at={FILM_FRAMES - f(S.end)} dur={f(2)} from="left" seed="c" />
     <Finish />
   </AbsoluteFill>
-);
+  );
+};

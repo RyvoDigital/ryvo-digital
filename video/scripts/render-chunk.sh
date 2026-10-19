@@ -9,7 +9,7 @@ export REMOTION_CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Ch
 attempt() {
   local c=$1 log="$out.log"
   : > "$log"
-  npx remotion render src/index.ts BrandFilm "$out" --frames=$first-$last --codec=h264 --crf=16 --x264-preset=slow \
+  npx remotion render src/index.ts BrandFilm "$out" --props="{\"lang\":\"${FILM_LANG:-en}\"}" --frames=$first-$last --codec=h264 --crf=16 --x264-preset=slow \
     --pixel-format=yuv420p --scale=1.3333333333333333 --concurrency=$c --log=info > "$log" 2>&1 &
   local pid=$! last_n="" last_t=$(date +%s)
   while kill -0 $pid 2>/dev/null; do

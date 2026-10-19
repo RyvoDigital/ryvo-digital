@@ -2,6 +2,7 @@ import { CameraMotionBlur } from "@remotion/motion-blur";
 import { Img, interpolate } from "remotion";
 import { Bokeh, Letters, Mercury, Words } from "../parts";
 import { BEAT, C, EXPO, OBJECTS, SANS, SINE, clamp, useT } from "../theme";
+import { useCopy } from "../copy";
 
 // 2 · Ryvo. "Five automations / from the first contact until after the deed."
 // The five objects swoop in and orbit the words: behind them when far (small,
@@ -26,6 +27,7 @@ const Orbiter = ({ i }: { i: number }) => {
 
 export const Intro = () => {
   const frame = useT();
+  const c = useCopy();
   const fps = 30; // timing in 30-fps units (useT)
   const order = [0, 1, 2, 3, 4].map((i) => ({ i, z: Math.sin(-Math.PI / 2 + (i / 5) * Math.PI * 2 + (frame / fps) * 0.38 + interpolate(frame, [0, 30], [1, 0], { ...clamp, easing: EXPO }) * 2.6) }));
   return (
@@ -41,8 +43,8 @@ export const Intro = () => {
         </div>
       ))}
       <div style={{ position: "absolute", inset: 0, zIndex: 5, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", fontFamily: SANS, fontWeight: 500, fontStretch: "112%", letterSpacing: "-0.045em", lineHeight: 0.98 }}>
-        <Letters text="Five automations" at={8} style={{ fontSize: 168, color: C.text }} />
-        <div style={{ fontSize: 60, color: C.steel, marginTop: 26 }}><Words text="from the first contact until after the deed." at={BEAT + 12} step={2.5} /></div>
+        <Letters text={c.intro[0]} at={8} style={{ fontSize: 168, color: C.text }} />
+        <div style={{ fontSize: 60, color: C.steel, marginTop: 26 }}><Words text={c.intro[1]} at={BEAT + 12} step={2.5} /></div>
       </div>
     </div>
   );

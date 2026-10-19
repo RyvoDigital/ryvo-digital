@@ -84,3 +84,18 @@ The approved proof (ac046ad) is now the real `/[lang]/automations`. It was moved
 ## Screens
 - `automations-{en,pt,es}-hero-1440`, `automations-{en,pt,es}-footer-1440`, `automations-en-{hero,footer}-390`, `automations-pt-hero-390`.
 - `home-{before,after}-footer-{1440,390}`, `home-{before,after}-pricing-{1440,390}`, `websites-after-footer-{1440,390}`.
+
+## The PT and ES films
+**Rendered and live on `/pt` and `/es`**: `film/brand-film-{pt,es}.mp4`, with posters from the English poster's frame (480).
+- **The same film in every respect:** the same 3,930 frames at 60 fps (65.5 s), 2560 × 1600, timing, animation and layout. It went through the same 10-chunk render (CRF 16 master) and the same final encode (`-preset slow -crf 26 -profile:v high`).
+- **Render time:** 13.4 minutes for both, plus about 1 minute to encode.
+- **Size:** 12.2 MB (PT) and 12.3 MB (ES), against 11.3 MB for English. The longer words carry more detail at the same quality setting.
+- **Only the captions change** (`video/src/copy.ts`; `scripts/render-film.sh pt|es`).
+  - The names and taglines are the site's own.
+  - Each line was measured at the film's sizes against the English layout. Where a line did not fit, the wording was shortened; the design was never changed:
+    - **PT 03:** "Acompanhamento" alone is wider than the name's box (991 px against 800), so the film says "Seguimento de compradores".
+    - **ES intro:** "Cinco automatizaciones" fills the frame at 168 px (1,901 of 1,920), so it says "5 automatizaciones".
+    - **The night line:** "Os pedidos chegam a toda a hora." and "Las consultas llegan a todas horas.", to keep clear of the frame's edges.
+    - **PT statement 3:** drops "sempre", to keep 0.4 s a word plus 1 s within its fixed 4.6 s.
+    - **Line breaks:** "Reactivação / de contactos", "Lançamento / de angariações", "Reactivación / de contactos" and "Lanzamiento / de captaciones" break before "de", so each line stays within the name's box. The words are unchanged.
+- **Stills of every caption:** `film-pt-captions.jpg`, `film-es-captions.jpg`.

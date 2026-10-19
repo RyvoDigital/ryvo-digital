@@ -1,12 +1,14 @@
 import { interpolate } from "remotion";
 import { BEAT, C, EXPO, MONO, SANS, SINE, clamp, useT } from "../theme";
 import { Mercury } from "../parts";
+import { useCopy } from "../copy";
 
 // 5 · RYVO. The four letters assemble out of focus, a single sweep of light
 // crosses the chrome, the line beneath tightens its tracking into place, and
 // the frame goes to black, so the loop returns to the opening without a seam.
 export const EndCard = () => {
   const frame = useT();
+  const c = useCopy();
   const sweep = interpolate(frame, [Math.round(1.5 * BEAT), Math.round(3.5 * BEAT)], [-30, 130], { ...clamp, easing: EXPO });
   const track = interpolate(frame, [BEAT, 3 * BEAT], [0.62, 0.2], { ...clamp, easing: EXPO });
   return (
@@ -24,7 +26,7 @@ export const EndCard = () => {
             );
           })}
         </div>
-        <div style={{ fontFamily: MONO, fontSize: 26, letterSpacing: `${track}em`, color: C.silver, opacity: interpolate(frame, [BEAT, 2 * BEAT], [0, 1], clamp), marginRight: `-${track}em` }}>REAL ESTATE AUTOMATIONS</div>
+        <div style={{ fontFamily: MONO, fontSize: 26, letterSpacing: `${track}em`, color: C.silver, opacity: interpolate(frame, [BEAT, 2 * BEAT], [0, 1], clamp), marginRight: `-${track}em` }}>{c.end}</div>
       </div>
       </div>
       <div style={{ position: "absolute", inset: 0, background: C.page, opacity: interpolate(frame, [3.2 * 30, 4.5 * 30], [0, 1], { ...clamp, easing: EXPO }) }} />

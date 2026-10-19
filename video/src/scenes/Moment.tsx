@@ -11,8 +11,10 @@ import { C, CLIPS, EXPO, MONO, SANS, SINE, clamp, useT } from "../theme";
 
 const OBJ = 640; // the object's box on screen (composition px; 853 px at 2560)
 
-// A name on at most two lines, split at its middle word.
+// A name on at most two lines, split at its middle word (or where its copy
+// sets a "\n").
 const lines = (t: string) => {
+  if (t.includes("\n")) return t.split("\n");
   const w = t.split(" ");
   const k = Math.ceil(w.length / 2);
   return w.length < 2 ? w : [w.slice(0, k).join(" "), w.slice(k).join(" ")];

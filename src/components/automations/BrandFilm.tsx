@@ -11,9 +11,9 @@ import f from "./BrandFilm.module.css";
 // top exactly. Muted and inline; it plays only while in view and pauses
 // off-screen. Under reduced motion it shows the poster with a small play button.
 const M = "/media/automations/film";
-// The film's captions are burned in: each language that has its own render
-// plays it; any other plays the English film.
-const FILMS: readonly Locale[] = ["en"];
+// The film's captions are burned in, so each language plays its own render
+// (the same frames; only the words change: video/src/copy.ts).
+const FILMS: readonly Locale[] = ["en", "pt", "es"];
 // The screen hole, in % of the 3,804 × 2,564 render (KIE-LOG.md).
 const SCREEN = { left: 12.329, top: 7.137, width: 75.342, height: 70.437 };
 const IMG = { w: 3804, h: 2564 };

@@ -1,6 +1,7 @@
 import { interpolate } from "remotion";
 import { Mercury, Words } from "../parts";
 import { BEAT, C, EXPO, MONO, SANS, SINE, clamp, useT } from "../theme";
+import { useCopy } from "../copy";
 
 // 1 · The night. A clock rolls on like an odometer while messages arrive on
 // three planes of depth (the far ones soft), the camera pushes in slowly,
@@ -43,6 +44,7 @@ const PILLS = [
 
 export const Night = () => {
   const frame = useT();
+  const c = useCopy();
   const fps = 30; // timing in 30-fps units (useT)
   const mins = interpolate(frame, [0, 6 * BEAT], [21 * 60 + 52, 23 * 60 + 47], { ...clamp, easing: EXPO });
   const push = interpolate(frame, [0, 6 * 30], [1, 1.07], { ...clamp, easing: SINE });
@@ -67,7 +69,7 @@ export const Night = () => {
         );
       })}
       <div style={{ position: "absolute", top: 700, width: "100%", textAlign: "center", fontFamily: SANS, fontSize: 104, fontWeight: 500, fontStretch: "112%", letterSpacing: "-0.045em", lineHeight: 1, color: C.text }}>
-        <Words text="Enquiries arrive at any hour." at={Math.round(3.5 * BEAT)} step={4} />
+        <Words text={c.night} at={Math.round(3.5 * BEAT)} step={4} />
       </div>
       {/* the mercury line enters: it draws in beneath the words */}
       <Mercury id="night" d="M 600 842 C 800 858, 1120 858, 1320 838" at={Math.round(3.5 * BEAT) + 22} dur={46} />
