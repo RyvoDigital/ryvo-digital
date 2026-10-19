@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { startMotion } from "@/components/automations/motion";
-import { CITIES } from "../globe-shared";
+import { CITIES } from "@/components/lab/globe-shared";
 import type { Framing, RouteGlobe as Scene } from "./route-scene";
 import s from "./RouteGlobe.module.css";
 
@@ -15,21 +15,16 @@ import s from "./RouteGlobe.module.css";
 // one still frame, route drawn. No WebGL: the stage keeps its CSS halo and
 // the city names, so nothing is missing from the page.
 
-const FRAMES: Record<"right" | "hero", Framing> = {
-  // A: the whole globe on the right of a wide stage, then close on Iberia; on
-  // a phone, centred above the text.
-  right: (a) => a >= 1.1
-    ? { far: { dist: 4.6, ox: -0.9, oy: 0 }, near: { dist: 2.55, ox: -0.62, oy: 0.02 } }
-    : { far: { dist: 3.7, ox: 0, oy: 0.04 }, near: { dist: 2.05, ox: 0, oy: 0 } },
-  // B: large and low under the headline, the limb across the bottom of the
-  // screen; then it rises and closes on Iberia.
+// Large and low under the headline, the limb across the bottom of the screen;
+// as the route draws it rises and the camera closes on Iberia.
+const FRAMES: Record<"hero", Framing> = {
   hero: (a) => a >= 1.1
     ? { far: { dist: 3.3, ox: -0.25, oy: 0.78 }, near: { dist: 2.1, ox: -0.3, oy: 0.06 } }
     : { far: { dist: 3.5, ox: 0, oy: 0.62 }, near: { dist: 2.2, ox: 0, oy: 0.02 } },
 };
 
 export default function RouteGlobe({
-  track, range = ["top 70%", "bottom 80%"], framing = "right", names, km = "503 KM", label, className = "", eager = false, tags: showTags = true, onArc,
+  track, range = ["top 70%", "bottom 80%"], framing = "hero", names, km, label, className = "", eager = false, tags: showTags = true, onArc,
 }: {
   /** Show the city names and the distance on the globe itself. */
   tags?: boolean;
@@ -40,7 +35,7 @@ export default function RouteGlobe({
   framing?: keyof typeof FRAMES;
   /** The two city names as the page writes them (Lisbon, Madrid; Lisboa, Madrid). */
   names: [string, string];
-  km?: string;
+  km: string;
   label: string;
   className?: string;
   /** Load as soon as the page is idle (the globe is above the fold), not when near. */

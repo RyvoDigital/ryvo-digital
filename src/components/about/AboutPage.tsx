@@ -2,22 +2,22 @@
 
 import { useEffect, useRef } from "react";
 import SiteNav from "@/components/chrome/SiteNav";
-import SiteFooter from "@/components/chrome/SiteFooter";
+import PageFrame from "@/components/pages/PageFrame";
 import { BookButton } from "@/components/chrome/Icons";
 import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import { startMotion, refreshWhenSettled } from "@/components/automations/motion";
-import { CITIES } from "../globe-shared";
+import { CITIES } from "@/components/lab/globe-shared";
 import RouteGlobe from "./RouteGlobe";
 import type { AboutContent } from "./content";
-import s from "./AboutB.module.css";
+import s from "./AboutPage.module.css";
 
-// Direction B: the route opens. The page starts on the globe: the headline
+// /about (direction B, approved 19 Oct 2026): the route opens. The page starts on the globe: the headline
 // over it, the globe turning in under it, and the first screen of scroll draws
 // Lisbon → Madrid as the camera closes on Iberia. Then a two-column reading
 // layout: a sticky rail on the left (a giant chapter numeral that rolls, the
 // index, the company line), the chapters on the right: the figure wiped in,
 // the statement, the team as a ledger of people by side, the two cities.
-export default function AboutB({ c }: { c: AboutContent }) {
+export default function AboutPage({ c }: { c: AboutContent }) {
   const { lang, t, p, people, cities, book, cta } = c;
   const root = useRef<HTMLDivElement>(null);
   const hero = useRef<HTMLElement>(null);
@@ -108,6 +108,7 @@ export default function AboutB({ c }: { c: AboutContent }) {
   const [lisbon, madrid] = CITIES;
 
   return (
+    <PageFrame lang={lang} t={t} bookHref={book}>
     <div ref={root} className={s.page}>
       <header className={s.top}>
         <SiteNav lang={lang} t={t} bookHref={book} path="/about" />
@@ -115,10 +116,10 @@ export default function AboutB({ c }: { c: AboutContent }) {
 
       <main>
         {/* ── Hero: where we work, drawn as you scroll ─────────────────────── */}
-        <section ref={hero} className={s.hero} aria-labelledby="about-title">
+        <section ref={hero} className={s.hero} data-hero aria-labelledby="about-title">
           <div className={s.sticky}>
             <RouteGlobe
-              track={hero} range={["top top", "bottom bottom"]} framing="hero" names={cities} eager
+              track={hero} range={["top top", "bottom bottom"]} framing="hero" names={cities} km={p.km} eager
               className={s.globe} label={`${cities[0]} – ${cities[1]}: ${lisbon.coords}, ${madrid.coords}`}
             />
             <div className={s.heroHead} data-hero-head>
@@ -235,7 +236,7 @@ export default function AboutB({ c }: { c: AboutContent }) {
                   <span className="mono-label">{madrid.coords}</span>
                 </div>
               </div>
-              <span className={`mono-label ${s.km}`} data-in>503 KM</span>
+              <span className={`mono-label ${s.km}`} data-in>{p.km}</span>
               <p className={s.companyInline}>{p.company}</p>
             </section>
           </div>
@@ -257,8 +258,7 @@ export default function AboutB({ c }: { c: AboutContent }) {
           </div>
         </section>
       </main>
-
-      <SiteFooter lang={lang} t={t} bookHref={book} />
     </div>
+    </PageFrame>
   );
 }

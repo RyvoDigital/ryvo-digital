@@ -153,12 +153,14 @@ const en = {
     intro: "Ryvo Digital works from Lisbon and Madrid on two lines of work, with its own people behind each. We design, build and run everything ourselves, so whichever you hire us for, you speak to the people who do the work.",
     teamLabel: "THE TEAM",
     sides: ["REAL ESTATE AUTOMATIONS", "WEBSITES & DIGITAL PRESENCE"],
-    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Marketing & Communications" },
+    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Business & Communications" },
     lines: {
       manuel: "Adapts the system to each agency and runs its setup, from the first call to go-live.",
       martim: "Outreach, social media and lead management. Often the first person an agency hears from.",
+      phil: "Marketing, contracts, negotiations and invoicing on the websites side. From the first message to the signed deal.",
     },
     citiesLabel: "WHERE WE WORK",
+    km: "503 KM", // Lisbon to Madrid, great circle
     company: "Ryvo Digital is a brand of PEDRO SEIXAS VALE - CONSULTORIA, LDA.",
   },
   book: {
@@ -331,12 +333,14 @@ const pt: typeof en = {
     intro: "A Ryvo Digital trabalha a partir de Lisboa e Madrid em duas áreas, cada uma com as suas pessoas. Desenhamos, desenvolvemos e gerimos tudo nós mesmos, por isso, seja qual for o motivo por que nos contrata, fala com quem faz o trabalho.",
     teamLabel: "A EQUIPA",
     sides: ["AUTOMAÇÕES IMOBILIÁRIAS", "WEBSITES E PRESENÇA DIGITAL"],
-    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Marketing & Communications" },
+    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Business & Communications" },
     lines: {
       manuel: "Adapta o sistema a cada agência e conduz a configuração, da primeira chamada à entrada em funcionamento.",
       martim: "Prospeção, redes sociais e gestão de contactos. Muitas vezes, a primeira pessoa de quem uma agência ouve falar.",
+      phil: "Marketing, contratos, negociações e faturação na área dos websites. Da primeira mensagem ao negócio fechado.",
     },
     citiesLabel: "ONDE TRABALHAMOS",
+    km: "503 KM", // Lisbon to Madrid, great circle
     company: "A Ryvo Digital é uma marca da PEDRO SEIXAS VALE - CONSULTORIA, LDA.",
   },
   book: {
@@ -509,12 +513,14 @@ const es: typeof en = {
     intro: "Ryvo Digital trabaja desde Lisboa y Madrid en dos líneas de trabajo, cada una con sus propias personas. Diseñamos, desarrollamos y gestionamos todo nosotros mismos, así que, nos contrate para lo que nos contrate, habla con quienes hacen el trabajo.",
     teamLabel: "EL EQUIPO",
     sides: ["AUTOMATIZACIONES INMOBILIARIAS", "SITIOS WEB Y PRESENCIA DIGITAL"],
-    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Marketing & Communications" },
+    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Business & Communications" },
     lines: {
       manuel: "Adapta el sistema a cada agencia y dirige su configuración, de la primera llamada a la puesta en marcha.",
       martim: "Prospección, redes sociales y gestión de contactos. A menudo, la primera persona de la que una agencia tiene noticia.",
+      phil: "Marketing, contratos, negociaciones y facturación en el área de sitios web. Del primer mensaje al acuerdo firmado.",
     },
     citiesLabel: "DÓNDE TRABAJAMOS",
+    km: "503 KM", // Lisbon to Madrid, great circle
     company: "Ryvo Digital es una marca de PEDRO SEIXAS VALE - CONSULTORIA, LDA.",
   },
   book: {

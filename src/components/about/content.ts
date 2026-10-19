@@ -1,8 +1,8 @@
 import { getDictionary, type Dictionary } from "@/i18n";
 import { getPages, type Pages } from "@/i18n/pages";
-import { isLocale, type Locale } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
 
-// Everything both directions say, taken as it is from src/i18n (pages.ts
+// Everything the page says, taken as it is from src/i18n (pages.ts
 // `about`, the dictionary's footer and nav). Nothing here is new copy: the
 // team rule is the live page's (Martim on the automations side only, Phil on
 // the websites side only, Manuel on both).
@@ -18,8 +18,7 @@ export type AboutContent = {
   book: string;
 };
 
-export function aboutContent(q?: string): AboutContent {
-  const lang: Locale = q && isLocale(q) ? q : "en";
+export function aboutContent(lang: Locale): AboutContent {
   const t = getDictionary(lang);
   const pg = getPages(lang);
   const p = pg.about;
@@ -30,7 +29,7 @@ export function aboutContent(q?: string): AboutContent {
     people: [
       { key: "manuel", name: "Manuel Vale", mono: "MV", role: p.roles.manuel, line: p.lines.manuel, sides: [true, true] },
       { key: "martim", name: "Martim Gabriel", mono: "MG", role: p.roles.martim, line: p.lines.martim, sides: [true, false] },
-      { key: "phil", name: "Phil Hajjar", mono: "PH", role: p.roles.phil, sides: [false, true] },
+      { key: "phil", name: "Phil Hajjar", mono: "PH", role: p.roles.phil, line: p.lines.phil, sides: [false, true] },
     ],
     cities: [t.footer.cities[0], t.footer.cities[1]],
     book: `/${lang}/book`,

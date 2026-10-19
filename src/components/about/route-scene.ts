@@ -11,8 +11,8 @@ import {
   PerspectiveCamera, Points, Scene, ShaderMaterial, SphereGeometry, SRGBColorSpace, TubeGeometry,
   Vector3, WebGLRenderer, MathUtils,
 } from "three";
-import { SPARSE, DENSE } from "../globe-dots";
-import { CITIES, FOCUS, toVec, unpack } from "../globe-shared";
+import { SPARSE, DENSE } from "@/components/lab/globe-dots";
+import { CITIES, FOCUS, toVec, unpack } from "@/components/lab/globe-shared";
 
 export const TURN = 0.42;
 export const ARC_END = 0.86;
