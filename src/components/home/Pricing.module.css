@@ -83,7 +83,8 @@
   .setupFigure { font-size: 32px; }
 }
 
-.fine { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.55; color: var(--color-steel); max-width: 520px; }
+.fine { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.55; color: #858a92; max-width: 520px; }
+/* #858a92, a shade above steel: 4.6:1 where the glow lights the card most (#1f2225), AA for 12 px text. */
 
 .cta { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 4px; }
 
@@ -106,7 +107,8 @@
   align-items: center;
   gap: 18px;
   padding: 14px 0;
-  opacity: 0.45;
+  /* 0.6 is the least that keeps an off row at AA (4.6:1 for the silver number) where the card is lightest, on a phone over the glow. */
+  opacity: 0.6;
   transition: opacity 0.5s var(--ease-out-expo);
 }
 
@@ -143,5 +145,5 @@
 
 /* Only with addOns (the /automations picker): the row's amount, right-aligned. */
 .itemPrice { margin-left: auto; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--color-body); }
-.item[data-on="false"] .itemPrice { color: var(--color-steel); }
+.item[data-on="false"] .itemPrice { color: var(--color-silver); }
 @media (min-width: 1024px) { .itemPrice { font-size: 16px; } }
