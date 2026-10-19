@@ -6,13 +6,14 @@ import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import type { Kind } from "@/lib/booking/config";
 
 // The booking logic of src/components/home/Book.tsx, unchanged, lifted into a
-// hook so the two lab directions can dress it differently: the same calls to
-// /api/booking/slots and /api/booking/book, the same grouping by day in the
-// visitor's own time zone, the same week pages, the same request body and the
-// same handling of 409/429/400. Only presentation lives in the directions.
+// hook for the /book page (the homepage keeps its own, approved copy): the
+// same calls to /api/booking/slots and /api/booking/book, the same grouping by
+// day in the visitor's own time zone, the same week pages, the same request
+// body and the same handling of 409/429/400. Only presentation lives in the page.
 //
-// Lab only: `force` pins a state (loading, error, empty, done) so each one can
-// be looked at without touching the API.
+// Development only: `force` pins a state (loading, error, empty, form, done)
+// so each one can be looked at without touching the API. The page passes it
+// only outside production.
 
 export type Slot = { iso: string; free: boolean };
 export type Stage =
