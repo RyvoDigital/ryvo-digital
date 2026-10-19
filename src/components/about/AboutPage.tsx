@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import TopBar from "@/components/chrome/TopBar";
 import PageFrame from "@/components/pages/PageFrame";
 import { BookButton } from "@/components/chrome/Icons";
+import Expander, { PlusMark } from "@/components/ui/Expander";
 import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import { startMotion, refreshWhenSettled } from "@/components/automations/motion";
 import { CITIES } from "./globe-shared";
@@ -22,6 +23,27 @@ export default function AboutPage({ c }: { c: AboutContent }) {
   const root = useRef<HTMLDivElement>(null);
   const hero = useRef<HTMLElement>(null);
   const chapters = [p.proof, p.teamLabel, p.citiesLabel];
+  const [openBio, setOpenBio] = useState<string | null>(null);
+  const ledgerRef = useRef<HTMLTableElement>(null);
+
+  // Each bio starts where its person's name does (the monograms differ in
+  // width), measured from the ledger itself and kept true on resize.
+  useEffect(() => {
+    const table = ledgerRef.current;
+    if (!table) return;
+    const align = () => {
+      const x0 = table.getBoundingClientRect().left;
+      table.querySelectorAll<HTMLElement>("[data-bio-for]").forEach((bio) => {
+        const name = table.querySelector<HTMLElement>(`[data-name-of="${bio.dataset.bioFor}"]`);
+        if (name) bio.style.setProperty("--bio-x", `${Math.round(name.getBoundingClientRect().left - x0)}px`);
+      });
+    };
+    align();
+    const ro = new ResizeObserver(align);
+    ro.observe(table);
+    document.fonts?.ready.then(align);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const el = root.current;
@@ -182,7 +204,7 @@ export default function AboutPage({ c }: { c: AboutContent }) {
               <h2 id="team-title" className="mono-label" data-in>{p.teamLabel}</h2>
               <WordReveal as="p" className={s.intro} start="top 85%" end="bottom 50%"><Words text={p.intro} /></WordReveal>
 
-              <table className={s.ledger} data-ledger>
+              <table ref={ledgerRef} className={s.ledger} data-ledger>
                 <thead>
                   <tr>
                     <th scope="col" className={s.lhPerson}><span className="sr-only">{p.teamLabel}</span></th>
@@ -192,16 +214,23 @@ export default function AboutPage({ c }: { c: AboutContent }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {people.map((m) => (
-                    <tr key={m.key} className={s.row}>
+                  {people.map((m) => {
+                    const open = openBio === m.key;
+                    return (
+                    <Fragment key={m.key}>
+                    <tr className={s.row}>
                       <th scope="row" className={s.who}>
                         <span className={s.rule} data-rule aria-hidden="true" />
                         <span data-row className={s.whoIn}>
                           <span className={`display ${s.mono}`} aria-hidden="true">{m.mono}</span>
                           <span className={s.whoText}>
-                            <span className={`display ${s.name}`}>{m.name}</span>
+                            <span className={`display ${s.name}`} data-name-of={m.key}>{m.name}</span>
                             <span className="mono-label">{m.role}</span>
                             {m.line && <span className={s.line}>{m.line}</span>}
+                            <button type="button" className={s.more} aria-expanded={open} aria-controls={`bio-${m.key}`} onClick={() => setOpenBio(open ? null : m.key)}>
+                              {p.readMore[open ? 1 : 0]}<span className="sr-only"> {p.readAbout} {m.name}</span>
+                              <PlusMark open={open} className={s.morePlus} />
+                            </button>
                           </span>
                         </span>
                       </th>
@@ -212,7 +241,28 @@ export default function AboutPage({ c }: { c: AboutContent }) {
                         </td>
                       ))}
                     </tr>
-                  ))}
+                    {/* The full bio, under the row, on the site's expander. */}
+                    <tr className={s.bioRow}>
+                      <td colSpan={3} className={s.bioCell}>
+                        <Expander open={open} id={`bio-${m.key}`} className={s.bioX}>
+                          <div className={s.bio} data-bio-for={m.key}>
+                            <blockquote className={s.quote}><p>{m.bio.lead}</p></blockquote>
+                            <p className={s.bioText}>{m.bio.bio}</p>
+                            <dl className={s.facts}>
+                              {m.bio.facts.map(([value, label]) => (
+                                <div key={label} className={s.fact}>
+                                  <dt className={s.factLabel}>{label}</dt>
+                                  <dd className={s.factValue}>{value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                          </div>
+                        </Expander>
+                      </td>
+                    </tr>
+                    </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </section>

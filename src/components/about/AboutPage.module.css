@@ -96,6 +96,36 @@
 .cellLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--color-silver); }
 @media (max-width: 1023px) { .cell[data-on="true"] + .cell[data-on="true"] { padding-top: 6px; } }
 
+/* Read more: a quiet mono control under each person's line; the full bio opens
+   in a row of its own under theirs (Expander), set like the /websites bios. */
+.more { justify-self: start; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; margin: 2px 0 -10px; padding: 0; border: 0; background: none; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-steel); cursor: pointer; transition: color 0.3s var(--ease-out-expo); }
+.more:hover, .more[aria-expanded="true"] { color: var(--color-text); }
+.morePlus { --plus-size: 10px; }
+.bioRow { display: block; }
+.bioCell { display: block; padding: 0; }
+/* The bio never widens the ledger's columns: its width does not count in the table's layout. */
+.bioX { contain: inline-size; }
+.bio { display: flex; flex-direction: column; gap: 22px; padding: 18px 0 34px; }
+.quote { position: relative; margin: 0; padding-left: 28px; max-width: 720px; }
+.quote::before { content: "“"; position: absolute; left: -2px; top: -0.18em; font-size: 52px; line-height: 1; font-weight: 500; color: var(--color-edge); }
+.quote p { margin: 0; font-size: 21px; line-height: 1.32; letter-spacing: -0.02em; color: var(--color-text); text-wrap: balance; }
+.bioText { margin: 0; max-width: 64ch; font-size: 16px; line-height: 1.7; color: var(--color-body); text-wrap: pretty; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; margin: 0; }
+.fact { display: flex; flex-direction: column; gap: 8px; padding: 16px 0 18px; border-top: 1px solid var(--color-line-2); }
+.factLabel { order: 2; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-steel); }
+.factValue { order: 1; margin: 0; font-size: 21px; font-weight: 500; font-stretch: 112%; line-height: 1.12; letter-spacing: -0.03em; color: var(--color-text); }
+@media (min-width: 1024px) {
+  .bioRow { display: table-row; }
+  .bioCell { display: table-cell; }
+  .bio { gap: 28px; padding: 0 0 46px var(--bio-x, calc(1.6 * clamp(56px, 5vw, 80px) + 28px)); }
+  .quote { padding-left: 40px; }
+  .quote::before { font-size: 76px; left: -4px; }
+  .quote p { font-size: clamp(24px, 2vw, 30px); line-height: 1.26; }
+  .bioText { font-size: 17px; }
+  .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 28px; }
+  .factValue { font-size: clamp(22px, 1.8vw, 28px); }
+}
+
 @media (min-width: 1024px) {
   .intro { font-size: clamp(28px, 2.6vw, 38px); }
   .ledger { margin-top: 64px; }

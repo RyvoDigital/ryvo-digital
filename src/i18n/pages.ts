@@ -184,6 +184,15 @@ const en = {
       martim: "Outreach, social media and lead management. Often the first person an agency hears from.",
       phil: "Marketing, contracts, negotiations and invoicing on the websites side. From the first message to the signed deal.",
     },
+    readMore: ["Read more", "Read less"] as [string, string],
+    readAbout: "about",
+    // Martim's bio (the facts as Manuel gave them, 19 Oct 2026); Manuel's and
+    // Phil's are the /websites team bios, as they are.
+    martim: {
+      lead: "The first person most agencies hear from.",
+      bio: "Runs Ryvo’s agency outreach, having researched hundreds of agencies across Portugal and Spain and written a personalised proposal for each one. Also runs Ryvo’s Instagram, and shaped the brand’s visual identity. Recently completed a one-month summer internship at Bergamot, a real estate company, gaining hands-on knowledge of the industry, and is in the second year of Business Management at IE University, Madrid.",
+      facts: [["Hundreds", "Agencies researched"], ["Bergamot", "Real estate internship"], ["IE University", "Business Management"]] as [string, string][],
+    },
     citiesLabel: "WHERE WE WORK",
     km: "503 KM", // Lisbon to Madrid, great circle
     company: "Ryvo Digital is a brand of PEDRO SEIXAS VALE - CONSULTORIA, LDA.",
@@ -407,6 +416,13 @@ const pt: typeof en = {
       martim: "Prospeção, redes sociais e gestão de contactos. Muitas vezes, a primeira pessoa de quem uma agência ouve falar.",
       phil: "Marketing, contratos, negociações e faturação na área dos websites. Da primeira mensagem ao negócio fechado.",
     },
+    readMore: ["Ler mais", "Ler menos"] as [string, string],
+    readAbout: "sobre",
+    martim: {
+      lead: "A primeira pessoa de quem a maioria das agências ouve falar.",
+      bio: "Conduz a prospeção de agências da Ryvo: analisou centenas de agências em Portugal e Espanha e escreveu uma proposta personalizada para cada uma. Gere também o Instagram da Ryvo e deu forma à identidade visual da marca. Concluiu recentemente um estágio de verão de um mês na Bergamot, uma empresa imobiliária, onde ganhou conhecimento prático do setor, e frequenta o segundo ano de Gestão de Empresas na IE University, em Madrid.",
+      facts: [["Centenas", "Agências analisadas"], ["Bergamot", "Estágio no imobiliário"], ["IE University", "Gestão de Empresas"]] as [string, string][],
+    },
     citiesLabel: "ONDE TRABALHAMOS",
     km: "503 KM", // Lisbon to Madrid, great circle
     company: "A Ryvo Digital é uma marca da PEDRO SEIXAS VALE - CONSULTORIA, LDA.",
@@ -626,6 +642,13 @@ const es: typeof en = {
       manuel: "Adapta el sistema a cada agencia y dirige su configuración, de la primera llamada a la puesta en marcha.",
       martim: "Prospección, redes sociales y gestión de contactos. A menudo, la primera persona de la que una agencia tiene noticia.",
       phil: "Marketing, contratos, negociaciones y facturación en el área de sitios web. Del primer mensaje al acuerdo firmado.",
+    },
+    readMore: ["Leer más", "Leer menos"] as [string, string],
+    readAbout: "sobre",
+    martim: {
+      lead: "La primera persona de la que tienen noticia la mayoría de las agencias.",
+      bio: "Dirige la prospección de agencias de Ryvo: ha analizado cientos de agencias en Portugal y España y ha redactado una propuesta personalizada para cada una. También gestiona el Instagram de Ryvo y ha dado forma a la identidad visual de la marca. Acaba de completar unas prácticas de verano de un mes en Bergamot, una empresa inmobiliaria, donde ha adquirido un conocimiento práctico del sector, y cursa el segundo año de Administración de Empresas en IE University, Madrid.",
+      facts: [["Cientos", "Agencias analizadas"], ["Bergamot", "Prácticas en el sector inmobiliario"], ["IE University", "Administración de Empresas"]] as [string, string][],
     },
     citiesLabel: "DÓNDE TRABAJAMOS",
     km: "503 KM", // Lisbon to Madrid, great circle
