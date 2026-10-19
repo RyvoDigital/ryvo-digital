@@ -1,0 +1,146 @@
+/* The anatomy of a website. Sizes are in container units (cqw: 1% of the
+   page's width), so one design scales from a phone to a wide screen. --p is
+   set by the scroll (0 = one finished page, 1 = taken apart). */
+
+.root {
+  --p: 0;
+  --gap: 15cqw;      /* distance between layers, fully apart */
+  --rx: 54deg;       /* the stack tips back… */
+  --rz: 30deg;       /* …and turns, into an isometric view (this way round,
+                        no layer ever covers the labels of the one below) */
+  position: relative;
+  width: 100%;
+  container-type: inline-size;
+  aspect-ratio: 100 / 68;
+  perspective: 2400px;
+  perspective-origin: 50% 40%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+@media (max-width: 767px) {
+  .root { --gap: 14cqw; --rx: 50deg; --rz: 22deg; }
+}
+/* Reduced motion: a still exploded view (nothing scrolls it, nothing flies). */
+@media (prefers-reduced-motion: reduce) {
+  .root { --p: 0.82; }
+}
+
+.tilt, .intro, .stack, .layer { position: absolute; inset: 0; transform-style: preserve-3d; }
+.stack {
+  transform: rotateX(calc(var(--p) * var(--rx))) rotateZ(calc(var(--p) * var(--rz))) scale(calc(1 - var(--p) * 0.14));
+  will-change: transform;
+}
+.layer {
+  /* a hair apart even when assembled, so coplanar layers never fight */
+  transform: translateZ(calc(var(--k) * (var(--p) * var(--gap) + 0.4px)));
+  will-change: transform;
+}
+.layerIn { position: absolute; inset: 0; }
+
+/* On load: the stack settles flat while each layer flies in from in front
+   of the screen and locks into place. About 1.5 s, once, from the first paint. */
+.intro { animation: anat-settle 1.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.layerIn { animation: anat-fly 1.1s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: calc(var(--i) * 0.09s); }
+@keyframes anat-settle { from { transform: rotateX(26deg) rotateZ(-12deg) scale(0.92); } }
+@keyframes anat-fly { from { opacity: 0; transform: translate3d(0, -5cqw, calc((5 - var(--i)) * 7cqw)); } }
+
+/* Each layer's sheet of milk glass, seen only as the page comes apart. */
+.glass {
+  position: absolute;
+  inset: 0;
+  border-radius: 2.2cqw;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.2));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.85),
+    0 0 0 1px rgba(11, 12, 14, 0.05),
+    0 3cqw 7cqw -2cqw rgba(40, 44, 52, 0.22);
+  opacity: var(--p);
+}
+
+/* The label beside each layer. */
+.tag {
+  position: absolute;
+  left: calc(100% + 2.6cqw);
+  top: 42%;
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: max(10px, 1.65cqw);
+  letter-spacing: 0.14em;
+  color: #0b0c0e;
+  opacity: calc(var(--p) * 1.8 - 0.6);
+}
+.tag::before { content: ""; width: 2.2cqw; height: 1px; background: #5e636b; }
+.tagN { color: #5e636b; }
+
+/* ── 1 · grid ─────────────────────────────────────────────────────────── */
+.gridLines {
+  position: absolute;
+  inset: 0 5cqw;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.4cqw;
+  opacity: var(--p);
+}
+.gridLines i { background: rgba(94, 99, 107, 0.07); box-shadow: inset 1px 0 rgba(94, 99, 107, 0.28), inset -1px 0 rgba(94, 99, 107, 0.28); }
+
+/* ── 2 · layout ───────────────────────────────────────────────────────── */
+.pageBg {
+  position: absolute;
+  inset: 0;
+  border-radius: 2.2cqw;
+  background: linear-gradient(180deg, #fdfdfe, #f6f7f9);
+  box-shadow: inset 0 0 0 1px rgba(11, 12, 14, 0.06), 0 5cqw 10cqw -4cqw rgba(40, 44, 52, 0.32);
+  opacity: calc(1 - var(--p) * 0.42);
+}
+.navBlock { position: absolute; left: 0; right: 0; top: 8cqw; height: 1px; background: #e4e7eb; }
+.heroBlock { position: absolute; left: 50cqw; top: 11.5cqw; width: 45cqw; height: 33cqw; border-radius: 1.6cqw; background: #eceef1; }
+.textBlock { position: absolute; left: 5cqw; top: 13cqw; width: 38cqw; height: 31cqw; border-radius: 1.2cqw; border: 1px dashed rgba(94, 99, 107, calc(var(--p) * 0.5)); }
+.card { position: absolute; top: 48.5cqw; left: calc(5cqw + var(--c) * 30.5cqw); width: 29cqw; height: 16.5cqw; border-radius: 1.4cqw; background: #f1f2f4; box-shadow: inset 0 0 0 1px rgba(11, 12, 14, 0.04); }
+
+/* ── 3 · type ─────────────────────────────────────────────────────────── */
+.mark { position: absolute; left: 5cqw; top: 2.6cqw; width: 2.8cqw; height: 2.8cqw; border-radius: 50%; border: 0.35cqw solid #0b0c0e; }
+.mark i { position: absolute; inset: 0.55cqw; border-radius: 50%; background: #0b0c0e; clip-path: inset(0 50% 0 0); }
+.navWords { position: absolute; right: 12cqw; top: 3cqw; display: flex; gap: 3.2cqw; font-size: 1.45cqw; line-height: 1.4; color: #34383e; }
+.navWords b { font-weight: 500; }
+.eyebrow { position: absolute; left: 5cqw; top: 14.5cqw; font-family: var(--font-mono); font-size: 1.2cqw; letter-spacing: 0.16em; text-transform: uppercase; color: #5e636b; }
+.headline { position: absolute; left: 5cqw; top: 18cqw; font-family: "Archivo", var(--font-sans); font-size: 6.2cqw; font-weight: 500; font-stretch: 114%; line-height: 0.98; letter-spacing: -0.045em; color: #0b0c0e; }
+.body { position: absolute; left: 5cqw; top: 32.4cqw; font-size: 1.55cqw; line-height: 1.45; color: #4f545c; }
+.caption { position: absolute; top: 59.4cqw; left: calc(6.4cqw + var(--c) * 30.5cqw); width: 26.2cqw; display: flex; justify-content: space-between; align-items: baseline; font-size: 1.45cqw; line-height: 1.4; color: #0b0c0e; }
+.caption b { font-weight: 500; }
+.caption i { font-style: normal; font-family: var(--font-mono); font-size: 1.1cqw; color: #7e838b; }
+
+/* ── 4 · image ────────────────────────────────────────────────────────── */
+.heroImg {
+  position: absolute; left: 50cqw; top: 11.5cqw; width: 45cqw; height: 33cqw; border-radius: 1.6cqw; overflow: hidden;
+  background: radial-gradient(90% 80% at 30% 0%, #ffffff 0%, #e6e8ec 45%, #c9cdd3 100%);
+}
+.sphere {
+  position: absolute; left: 50%; top: 46%; width: 17cqw; height: 17cqw; translate: -50% -50%; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #ffffff 0%, #eef0f2 12%, #a9aeb6 38%, #4a4e54 66%, #131418 88%, #2e3136 100%);
+  box-shadow: inset -1.2cqw -1.6cqw 3cqw rgba(0, 0, 0, 0.35);
+}
+.floor { position: absolute; left: 50%; top: 75%; width: 20cqw; height: 3cqw; translate: -50% 0; border-radius: 50%; background: radial-gradient(closest-side, rgba(11, 12, 14, 0.35), transparent); }
+.thumb { position: absolute; top: 49.6cqw; left: calc(6cqw + var(--c) * 30.5cqw); width: 27cqw; height: 8.4cqw; border-radius: 1cqw; overflow: hidden; background: linear-gradient(180deg, #e9ebee, #d3d6db); }
+.thumb i { position: absolute; left: 50%; top: 55%; translate: -50% -50%; }
+.t0 i { width: 5cqw; height: 5cqw; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #fff 0%, #a9aeb6 40%, #2a2d32 90%); }
+.t1 i { width: 4.4cqw; height: 6cqw; border-radius: 2.2cqw 2.2cqw 0 0; top: 62%; background: linear-gradient(90deg, #8e939b, #fafbfc 40%, #a9aeb6 70%, #4a4e54); }
+.t2 i { width: 5.4cqw; height: 5.4cqw; border-radius: 50%; background: radial-gradient(closest-side, transparent 58%, #f4f5f7 62%, #8e939b 80%, #2e3136 96%, transparent 100%); }
+
+/* ── 5 · interaction ─────────────────────────────────────────────────── */
+.button { position: absolute; left: 5cqw; top: 39cqw; display: flex; align-items: center; gap: 1.6cqw; height: 4.6cqw; padding: 0 0.6cqw 0 2cqw; border-radius: 999px; background: #0b0c0e; color: #f1f2f4; font-size: 1.5cqw; font-weight: 600; }
+.button i { display: grid; place-items: center; width: 3.4cqw; height: 3.4cqw; border-radius: 50%; background: #f1f2f4; color: #0b0c0e; font-style: normal; font-size: 1.4cqw; }
+.halo { position: absolute; left: 4.2cqw; top: 38.2cqw; width: 16.6cqw; height: 6.2cqw; border-radius: 999px; box-shadow: 0 0 0 0.3cqw rgba(11, 12, 14, 0.12); opacity: calc(0.4 + var(--p) * 0.6); }
+.cursor { position: absolute; left: 17.4cqw; top: 41.6cqw; width: 3.4cqw; height: 3.4cqw; overflow: visible; fill: #0b0c0e; stroke: #fff; stroke-width: 1.4; stroke-linejoin: round; filter: drop-shadow(0 0.4cqw 0.6cqw rgba(11, 12, 14, 0.3)); }
+.toggle { position: absolute; right: 5cqw; top: 2.7cqw; width: 4.6cqw; height: 2.6cqw; border-radius: 999px; background: #0b0c0e; }
+.toggle i { position: absolute; right: 0.35cqw; top: 0.35cqw; width: 1.9cqw; height: 1.9cqw; border-radius: 50%; background: #f1f2f4; }
+
+/* Phones: fewer layers (no grid). */
+@media (max-width: 767px) {
+  .grid { display: none; }
+}
+
+/* the five layers (named so each can be addressed) */
+.grid, .layout, .type, .image, .interaction { pointer-events: none; }

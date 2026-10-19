@@ -28,6 +28,8 @@ import * as React from "react";
  *   file from outside (a list of page names beside the folder, say).
  * - The CSS is one hoisted, de-duplicated <style> (React 19 `href`), not one
  *   per folder.
+ * - Hover is quick and symmetric (250 ms in, 200 ms out) and the glass is a
+ *   pre-blurred layer, not a live backdrop-filter, so nothing re-blurs late.
  * - Reduced motion: every transition is instant and the tilt is off.
  */
 
@@ -297,6 +299,14 @@ export default function GlassFolder({
 
           {/* the frosted front panel, hinged on its bottom edge */}
           <div className="gf-front" style={{ clipPath: "path('" + FRONT_PATH + "')" }}>
+            {/* the frost: a pre-blurred copy of the back picture, painted once and
+                moved as a layer (never a live backdrop-filter, which re-blurs on
+                every frame of the hinge and lags) */}
+            {image ? (
+              <div className="gf-frost" aria-hidden="true">
+                <Picture img={image} className="gf-frost-art" sizes="200px" w={W + 24} h={H + 24} />
+              </div>
+            ) : null}
             <div className="gf-tint" aria-hidden="true" />
             <div className="gf-spec" aria-hidden="true" />
             <svg className="gf-rim gf-front-rim" viewBox={"0 0 " + W + " " + FRONT_H} aria-hidden="true">
@@ -416,7 +426,7 @@ const GF_CSS = `
   position: absolute;
   inset: 0;
   transform: perspective(1400px) rotateX(calc(var(--gf-py) * -3deg)) rotateY(calc(var(--gf-px) * 4deg));
-  transition: transform 1s var(--gf-ease);
+  transition: transform .6s var(--gf-ease);
 }
 
 .gf-shadow {
@@ -489,8 +499,12 @@ const GF_CSS = `
   transform:
     translate(calc(var(--gf-jx) + var(--gf-slot) * var(--gf-spread)), calc(var(--gf-lift) + var(--gf-depth) * var(--gf-stack) * -1))
     rotate(calc(var(--gf-jr) + var(--gf-slot) * var(--gf-fan)));
-  transition: transform .9s var(--gf-ease) calc(var(--gf-depth) * 40ms), box-shadow .4s var(--gf-ease), translate 1s var(--gf-ease), opacity 1s var(--gf-ease);
+  transition: transform .2s var(--gf-ease), box-shadow .2s var(--gf-ease), translate 1s var(--gf-ease), opacity 1s var(--gf-ease);
 }
+@media (hover: hover) {
+  .gf-root:hover .gf-sheet { transition-duration: .25s, .25s, 1s, 1s; }
+}
+.gf-root[data-open] .gf-sheet { transition-duration: .6s, .25s, 1s, 1s; }
 .gf-sheet--art { background: #131418; }
 .gf-root[data-open] .gf-sheet:hover,
 .gf-root[data-open] .gf-sheet:focus-visible,
@@ -524,8 +538,8 @@ const GF_CSS = `
   gap: 10px;
   white-space: nowrap;
 }
-.gf-sheet-name { overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; font-weight: 560; letter-spacing: -.005em; color: #0b0c0e; }
-.gf-sheet-meta { flex: none; font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: rgba(11, 12, 14, .55); }
+.gf-sheet-name { overflow: hidden; text-overflow: ellipsis; padding-bottom: .14em; font-size: 12.5px; font-weight: 560; letter-spacing: -.005em; color: #0b0c0e; }
+.gf-sheet-meta { flex: none; font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgba(11, 12, 14, .55); }
 .gf-sheet--art .gf-sheet-name { color: #f1f2f4; }
 .gf-sheet--art .gf-sheet-meta { color: rgba(241, 242, 244, .74); }
 .gf-lines { position: absolute; left: 14px; right: 14px; top: 40px; display: flex; flex-direction: column; gap: 9px; }
@@ -539,11 +553,29 @@ const GF_CSS = `
   width: 340px;
   height: 198px;
   z-index: 10;
-  -webkit-backdrop-filter: blur(20px) saturate(1.1);
-  backdrop-filter: blur(20px) saturate(1.1);
+  background: linear-gradient(180deg, #e9ebee, #dcdfe4);
   transform-origin: 50% 100%;
   transform: perspective(760px) rotateX(var(--gf-hinge));
-  transition: transform 1s var(--gf-ease), translate 1s var(--gf-ease), opacity 1s var(--gf-ease);
+  transition: transform .2s var(--gf-ease), translate 1s var(--gf-ease), opacity 1s var(--gf-ease);
+  will-change: transform;
+}
+.gf-root[data-tone="dark"] .gf-front { background: linear-gradient(180deg, #1c1e22, #0b0c0e); }
+@media (hover: hover) {
+  .gf-root:hover .gf-front { transition-duration: .25s, 1s, 1s; }
+}
+.gf-root[data-open] .gf-front { transition-duration: .6s, 1s, 1s; }
+.gf-frost { position: absolute; inset: 0; overflow: hidden; }
+.gf-frost-art {
+  position: absolute;
+  left: -12px;
+  top: -86px;
+  width: 364px;
+  height: 296px;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 0;
+  filter: blur(14px) saturate(1.1);
+  transform: scale(1.08);
 }
 .gf-tint { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, .3) 0%, rgba(250, 251, 252, .62) 42%, rgba(246, 247, 249, .92) 100%); }
 .gf-root[data-tone="dark"] .gf-tint { background: linear-gradient(180deg, rgba(19, 20, 24, .16) 0%, rgba(13, 14, 17, .58) 46%, rgba(9, 10, 12, .92) 100%); }
@@ -564,12 +596,12 @@ const GF_CSS = `
 .gf-hit:focus-visible ~ .gf-label .gf-title { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
 .gf-front:has(.gf-hit:focus-visible) .gf-front-rim path { stroke-width: 5; }
 
-.gf-label { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: 5px; max-width: 250px; pointer-events: none; color: var(--gf-ink); }
+.gf-label { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: 5px; max-width: 292px; pointer-events: none; color: var(--gf-ink); }
 .gf-root[data-place="bottom-left"] .gf-label { left: 26px; bottom: 26px; }
 .gf-root[data-place="top-left"] .gf-label { left: 26px; top: 48px; }
 .gf-root[data-place="top-right"] .gf-label { right: 30px; top: 52px; align-items: flex-end; text-align: right; }
-.gf-title { font-size: 18px; font-weight: 500; font-stretch: 112%; line-height: 1.12; letter-spacing: -.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.gf-meta { font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--gf-ink-soft); white-space: nowrap; }
+.gf-title { font-size: 18px; font-weight: 500; font-stretch: 112%; line-height: 1.12; letter-spacing: -.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-bottom: .14em; margin-bottom: -.14em; }
+.gf-meta { font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--gf-ink-soft); white-space: nowrap; }
 
 /* ---- entrance: the folder assembles itself ---------------------------------- */
 .gf-root:not([data-entered]) .gf-back,
@@ -578,7 +610,8 @@ const GF_CSS = `
 .gf-root:not([data-entered]) .gf-front { translate: 0 46px; opacity: 0; }
 .gf-root:not([data-entered]) .gf-shadow { opacity: 0; }
 .gf-back, .gf-back-rim { transition: translate 1.1s var(--gf-ease), opacity 1s var(--gf-ease); }
-.gf-root[data-entered] .gf-sheet { transition-delay: calc(var(--gf-depth) * 40ms), 0s, calc(.18s + var(--gf-depth) * 90ms), calc(.18s + var(--gf-depth) * 90ms); }
+.gf-root[data-entered] .gf-sheet { transition-delay: 0s, 0s, calc(.18s + var(--gf-depth) * 90ms), calc(.18s + var(--gf-depth) * 90ms); }
+.gf-root[data-entered][data-open] .gf-sheet { transition-delay: calc(var(--gf-depth) * 30ms), 0s, 0s, 0s; }
 .gf-root[data-entered] .gf-front { transition-delay: 0s, .42s, .42s; }
 
 @media (prefers-reduced-motion: reduce) {
