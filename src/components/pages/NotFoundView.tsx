@@ -7,7 +7,7 @@ import PageHero, { ObjectArt } from "./PageHero";
 import PageFrame from "./PageFrame";
 import s from "./Pages.module.css";
 
-// The 404, in the page's language: links to both sides and Book a call.
+// The 404, in the page's language: links home, to both sides and Book a call.
 export default function NotFoundView({ lang }: { lang: Locale }) {
   const t = getDictionary(lang);
   const p = getPages(lang).notFound;
@@ -19,6 +19,7 @@ export default function NotFoundView({ lang }: { lang: Locale }) {
         sub={<p className="m-0">{p.body}</p>}
         actions={
           <span className={s.links}>
+            <Link href={`/${lang}`} className="btn-ghost">{p.home}</Link>
             <Link href={`/${lang}/automations`} className="btn-ghost">{p.automations}</Link>
             <Link href={`/${lang}/websites`} className="btn-ghost">{p.websites}</Link>
             <BookButton href={book} label={t.nav.book} />
