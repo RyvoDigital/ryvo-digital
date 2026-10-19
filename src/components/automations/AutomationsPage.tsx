@@ -5,10 +5,12 @@ import Link from "next/link";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import type { Pages } from "@/i18n/pages";
-import SiteNav from "@/components/chrome/SiteNav";
+import TopBar from "@/components/chrome/TopBar";
 import { BookButton } from "@/components/chrome/Icons";
 import Pricing from "@/components/home/Pricing";
 import SiteFooter from "@/components/chrome/SiteFooter";
+import FloatingNav from "@/components/chrome/FloatingNav";
+import StickyBook from "@/components/chrome/StickyBook";
 import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import Signature from "./Signature";
 import HeroScene from "./HeroScene";
@@ -73,6 +75,8 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
     if (!el) return;
     let revert: (() => void) | undefined;
     let cancelled = false;
+    let idle: ReturnType<typeof setTimeout> | undefined;
+    const off: (() => void)[] = []; // DOM listeners (gsap's revert does not remove them)
 
     startMotion().then((m) => {
       if (cancelled) return;
@@ -171,12 +175,15 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
             gsap.set(tilt, { transformPerspective: 800 });
             const rx = gsap.quickTo(tilt, "rotationX", { duration: 1.1, ease: "expo.out" });
             const ry = gsap.quickTo(tilt, "rotationY", { duration: 1.1, ease: "expo.out" });
-            node.addEventListener("pointermove", (e) => {
+            const move = (e: PointerEvent) => {
               const r = node.getBoundingClientRect();
               ry(((e.clientX - r.left) / r.width - 0.5) * 14);
               rx(-((e.clientY - r.top) / r.height - 0.5) * 10);
-            }, { passive: true });
-            node.addEventListener("pointerleave", () => { rx(0); ry(0); });
+            };
+            const leave = () => { rx(0); ry(0); };
+            node.addEventListener("pointermove", move, { passive: true });
+            node.addEventListener("pointerleave", leave);
+            off.push(() => { node.removeEventListener("pointermove", move); node.removeEventListener("pointerleave", leave); });
           }
         }
 
@@ -219,30 +226,26 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
         once(cta, "top 55%", () => gsap.to(ctaRise, { opacity: 1, y: 0, duration: 1.1, stagger: 0.08, delay: 0.35, ease: "expo.out" }));
 
         // (The footer runs its own motion: SiteFooter.)
-        const footer = el.querySelector<HTMLElement>("[data-footer]")!;
 
-        // ── The dock: in range from the hero to the close; shown only while
-        // scrolling up (to navigate), hidden while reading or scrolling down,
-        // and always aside over the film, the close and the footer ──────────
+        // ── The dock: the five spreads' own index, in range only while they
+        // are on screen; shown while scrolling up (to jump), hidden while
+        // reading or scrolling down. The site's pill stays the navigation ────
         const dock = el.querySelector<HTMLElement>("[data-dock]")!;
-        ScrollTrigger.create({ trigger: hero, start: "bottom 65%", endTrigger: cta, end: "top 80%", onToggle: (st) => (dock.dataset.show = String(st.isActive)) });
-        const zones = [film, cta, footer];
-        for (const zone of zones) ScrollTrigger.create({ trigger: zone, start: "top 92%", end: "bottom 8%", onToggle: (st) => (zone.dataset.dockAside = String(st.isActive)) });
-        const aside = () => zones.some((z) => z.dataset.dockAside === "true");
-        let idle: ReturnType<typeof setTimeout> | undefined;
+        const first = el.querySelector("[data-spread='0']")!, last = el.querySelector("[data-spread='4']")!;
+        ScrollTrigger.create({ trigger: first, start: "top 60%", endTrigger: last, end: "bottom 40%", onToggle: (st) => (dock.dataset.show = String(st.isActive)) });
         ScrollTrigger.create({
-          trigger: el.querySelector("main"), start: "top top", end: "bottom bottom",
+          trigger: first, start: "top 60%", endTrigger: last, end: "bottom 40%",
           onUpdate: (st) => {
-            dock.dataset.up = String(st.direction < 0 && !aside());
+            dock.dataset.up = String(st.direction < 0);
             clearTimeout(idle);
             idle = setTimeout(() => (dock.dataset.up = "false"), 2200);
           },
         });
-        gsap.fromTo(dock.querySelector("[data-dock-progress]"), { scaleX: 0 }, { scaleX: 1, ease: "none", scrollTrigger: { trigger: el.querySelector("main"), start: "top top", end: "bottom bottom", scrub: true } });
+        gsap.fromTo(dock.querySelector("[data-dock-progress]"), { scaleX: 0 }, { scaleX: 1, ease: "none", scrollTrigger: { trigger: first, start: "top 60%", endTrigger: last, end: "bottom 40%", scrub: true } });
       }, el);
 
       refreshWhenSettled(m);
-      revert = () => ctx.revert();
+      revert = () => { ctx.revert(); clearTimeout(idle); off.forEach((f) => f()); };
     });
 
     return () => {
@@ -255,9 +258,7 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
 
   return (
     <div ref={root} className={s.page}>
-      <header className={s.top}>
-        <SiteNav lang={lang} t={t} bookHref={book} path="/automations" />
-      </header>
+      <TopBar lang={lang} t={t} bookHref={book} />
 
       <main>
         {/* ── Hero: one screen; the headline reads across the top band ────── */}
@@ -359,8 +360,10 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
         </section>
       </main>
 
-      <div data-after-faq><SiteFooter lang={lang} t={t} bookHref={book} /></div>
-      <Dock names={names} bookHref={book} book={t.nav.book} label={ui.sections} />
+      <SiteFooter lang={lang} t={t} bookHref={book} />
+      <Dock names={names} label={ui.sections} />
+      <FloatingNav lang={lang} t={t} bookHref={book} />
+      <StickyBook href={book} label={t.pill.book} />
     </div>
   );
 }

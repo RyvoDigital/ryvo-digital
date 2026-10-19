@@ -34,7 +34,7 @@ export default function PageHero({
       <section className={`${s.card} ${compact ? s.compact : ""}`} data-tone={tone} aria-labelledby="page-title">
         <div aria-hidden="true" className={s.glow} />
         <div className={hs.nav}>
-          <SiteNav lang={lang} t={t} bookHref={bookHref} path={path} linksClassName={hs.inlineLinks} fold logoClassName={hs.cardLogo} />
+          <SiteNav lang={lang} t={t} bookHref={bookHref} linksClassName={hs.inlineLinks} fold logoClassName={hs.cardLogo} />
         </div>
         <div className={s.heroBody}>
           <div className={s.heroCopy}>

@@ -6,7 +6,7 @@ import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import type { Pages } from "@/i18n/pages";
 import { ArrowUpRight } from "@/components/chrome/Icons";
-import SiteNav from "@/components/chrome/SiteNav";
+import TopBar from "@/components/chrome/TopBar";
 import SiteFooter from "@/components/chrome/SiteFooter";
 import FloatingNav from "@/components/chrome/FloatingNav";
 import { FALLBACK_LINKS } from "@/lib/booking/config";
@@ -61,9 +61,7 @@ export default function BookPage({ lang, t, p, initial, force }: { lang: Locale;
   return (
     <>
       <div className={s.page}>
-        <header className={s.top}>
-          <SiteNav lang={lang} t={t} bookHref={bookHref} path="/book" />
-        </header>
+        <TopBar lang={lang} t={t} bookHref={bookHref} />
 
         <main id="book" className={s.main} data-hero>
           <div className={s.glow} aria-hidden="true" />

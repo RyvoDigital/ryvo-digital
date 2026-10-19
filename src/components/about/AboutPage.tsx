@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import SiteNav from "@/components/chrome/SiteNav";
+import TopBar from "@/components/chrome/TopBar";
 import PageFrame from "@/components/pages/PageFrame";
 import { BookButton } from "@/components/chrome/Icons";
 import WordReveal, { Words } from "@/components/chrome/WordReveal";
@@ -110,9 +110,7 @@ export default function AboutPage({ c }: { c: AboutContent }) {
   return (
     <PageFrame lang={lang} t={t} bookHref={book}>
     <div ref={root} className={s.page}>
-      <header className={s.top}>
-        <SiteNav lang={lang} t={t} bookHref={book} path="/about" />
-      </header>
+      <TopBar lang={lang} t={t} bookHref={book} />
 
       <main>
         {/* ── Hero: where we work, drawn as you scroll ─────────────────────── */}

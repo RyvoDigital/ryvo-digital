@@ -1,10 +1,11 @@
-import { BookButton } from "@/components/chrome/Icons";
 import s from "./AutomationsPage.module.css";
 
-// The section dock: a calm solid pill, bottom centre. It shows after the hero
-// and hides over the closing call to action. The active index and the
-// progress line are set by AutomationsPage's ScrollTriggers (no state, no re-render).
-export default function Dock({ names, bookHref, book, label }: { names: string[]; bookHref: string; book: string; label: string }) {
+// The five spreads' own index: a quiet pill, bottom centre, wide screens only.
+// It is in range only over the spreads and never carries the site's
+// navigation or Book (the floating pill does, as on every page). The active
+// index and the progress line are set by AutomationsPage's ScrollTriggers (no
+// state, no re-render).
+export default function Dock({ names, label }: { names: string[]; label: string }) {
   return (
     <nav className={s.dock} aria-label={label} data-dock data-show="false">
       <ol className={s.dockIdx}>
@@ -14,7 +15,6 @@ export default function Dock({ names, bookHref, book, label }: { names: string[]
           </li>
         ))}
       </ol>
-      <BookButton href={bookHref} label={book} className={s.dockBook} />
       <span className={s.dockProgress} aria-hidden="true"><span data-dock-progress /></span>
     </nav>
   );

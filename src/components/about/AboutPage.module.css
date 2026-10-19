@@ -19,7 +19,6 @@
   :global(.js) .hero [data-rise] { opacity: 0; animation: show-after 0s 2.5s forwards; }
 }
 
-.top { position: absolute; inset: 0 0 auto; z-index: 20; max-width: calc(var(--max) + 2 * var(--pad)); margin: 0 auto; padding: 18px var(--pad) 0; }
 
 /* ── Hero: a sticky stage; the track's height is the scroll that draws the route */
 .hero { position: relative; height: 230vh; }

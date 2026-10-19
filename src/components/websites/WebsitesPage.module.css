@@ -19,7 +19,6 @@
   :global(.js) .page [data-rise] { opacity: 0; animation: show-after 0s 2.5s forwards; }
 }
 
-.top { position: absolute; inset: 0 0 auto; z-index: 20; max-width: calc(var(--max) + 2 * var(--pad)); margin: 0 auto; padding: 18px var(--pad) 0; }
 
 .dim { color: #62666e; }
 .inner { max-width: var(--max); margin: 0 auto; }

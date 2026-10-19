@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LOCALES, type Locale } from "@/i18n/config";
 
-// Keeps the visitor on the same page when switching language.
+// Keeps the visitor on the same page when switching language: the path is read
+// here, so every switch (the bar, the phone menu, the pill's menu) agrees.
 // With fold, the other languages fold away while the hero notch is open.
-export default function LangSwitch({ lang, path = "", label, className = "", fold = false }: { lang: Locale; path?: string; label: string; className?: string; fold?: boolean }) {
+export default function LangSwitch({ lang, label, className = "", fold = false }: { lang: Locale; label: string; className?: string; fold?: boolean }) {
+  const path = (usePathname() ?? "").replace(/^\/[a-z]{2}(?=\/|$)/, "");
   return (
     <nav aria-label={label} className={`font-mono text-[12px] text-steel ${className}`}>
       {LOCALES.map((l, i) => {

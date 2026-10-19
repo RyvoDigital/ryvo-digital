@@ -10,7 +10,6 @@
   position: relative;
 }
 
-.top { position: absolute; inset: 0 0 auto; z-index: 20; max-width: calc(var(--max) + 2 * var(--pad)); margin: 0 auto; padding: 18px var(--pad) 0; }
 
 .main { position: relative; padding: 100px var(--pad) 88px; overflow: clip; }
 

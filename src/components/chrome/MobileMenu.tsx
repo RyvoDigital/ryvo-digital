@@ -10,7 +10,7 @@ import { navLinks } from "./nav-links";
 
 // The full-screen numbered menu (ZARA-style list), with its own button. Used by
 // the in-card bar on phones and by the floating pill on phones.
-export default function MobileMenu({ lang, t, bookHref, path = "", className = "" }: { lang: Locale; t: Dictionary; bookHref: string; path?: string; className?: string }) {
+export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang: Locale; t: Dictionary; bookHref: string; className?: string }) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -89,7 +89,7 @@ export default function MobileMenu({ lang, t, bookHref, path = "", className = "
           ))}
         </ol>
         <div className="mt-auto flex flex-col gap-5">
-          <LangSwitch lang={lang} path={path} label={t.nav.language} className="text-[13px]" />
+          <LangSwitch lang={lang} label={t.nav.language} className="text-[13px]" />
           <BookButton href={bookHref} label={t.nav.book} className="w-full !pl-5" />
         </div>
       </div>
