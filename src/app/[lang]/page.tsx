@@ -37,7 +37,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         <About t={t.about} />
         <Book lang={lang} t={t.book} />
       </main>
-      <SiteFooter lang={lang} t={t} />
+      <SiteFooter lang={lang} t={t} bookHref="#book" />
       <FloatingNav lang={lang} t={t} bookHref="#book" />
       <StickyBook href="#book" label={t.pill.book} />
       <LightSwitch />

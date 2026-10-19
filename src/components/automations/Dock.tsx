@@ -1,12 +1,12 @@
 import { BookButton } from "@/components/chrome/Icons";
-import s from "./proof.module.css";
+import s from "./AutomationsPage.module.css";
 
 // The section dock: a calm solid pill, bottom centre. It shows after the hero
 // and hides over the closing call to action. The active index and the
-// progress line are set by ProofPage's ScrollTriggers (no state, no re-render).
-export default function Dock({ names, bookHref, book }: { names: string[]; bookHref: string; book: string }) {
+// progress line are set by AutomationsPage's ScrollTriggers (no state, no re-render).
+export default function Dock({ names, bookHref, book, label }: { names: string[]; bookHref: string; book: string; label: string }) {
   return (
-    <nav className={s.dock} aria-label="Sections" data-dock data-show="false">
+    <nav className={s.dock} aria-label={label} data-dock data-show="false">
       <ol className={s.dockIdx}>
         {names.map((n, i) => (
           <li key={n}>

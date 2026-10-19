@@ -258,6 +258,7 @@ const pt: Dictionary = {
     fallback: "Abrir a página de marcação",
   },
   pill: { book: "Marcar uma chamada" },
+  footer: { contact: "Contacto", copy: "Copiar o endereço de e-mail", copied: "Copiado", nav: "Rodapé", pages: "Páginas", language: "Idioma", home: "Ryvo Digital, início", place: "Lisboa e Madrid", cities: ["Lisboa", "Madrid"] },
 };
 
 export default pt;

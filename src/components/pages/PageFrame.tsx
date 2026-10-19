@@ -12,7 +12,7 @@ export default function PageFrame({ lang, t, bookHref, light = false, children }
     <>
       <div className={`relative ${light ? "theme-light" : ""}`}>
         {children}
-        <SiteFooter lang={lang} t={t} />
+        <SiteFooter lang={lang} t={t} bookHref={bookHref} />
       </div>
       <FloatingNav lang={lang} t={t} bookHref={bookHref} />
       <StickyBook href={bookHref} label={t.pill.book} />

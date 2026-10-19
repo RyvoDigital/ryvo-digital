@@ -256,6 +256,8 @@ const en = {
     fallback: "Open the booking page",
   },
   pill: { book: "Book a call" },
+  // The site-wide footer (footer b). The legal block stays in English (SiteFooter's LEGAL).
+  footer: { contact: "Contact", copy: "Copy the email address", copied: "Copied", nav: "Footer", pages: "Pages", language: "Language", home: "Ryvo Digital, home", place: "Lisbon & Madrid", cities: ["Lisbon", "Madrid"] },
 };
 
 export default en;

@@ -2,13 +2,13 @@
 
 import type { Dictionary } from "@/i18n";
 import type { Pages } from "@/i18n/pages";
-import r from "./report.module.css";
+import r from "./Report.module.css";
 
 // "Also included": the weekly report, as a landscape card on desks (a column
 // on phones). Silver, plus one accent used only here: Champagne (#D9C7A6), for
 // the key figures, the language bars and the dividers between the parts. Its
 // motion (figures counting up, bars growing, dividers drawing) lives in
-// ProofPage's single ScrollTrigger setup. The figures are the homepage's own
+// AutomationsPage's single ScrollTrigger setup. The figures are the homepage's own
 // example, labelled "Illustrative figures, not a real agency"; no weekday.
 type Rep = Dictionary["how"]["report"];
 

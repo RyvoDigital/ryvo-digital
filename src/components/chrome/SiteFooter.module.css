@@ -1,8 +1,10 @@
 /* The footer: the mercury horizon. */
-.footer { --ease: cubic-bezier(0.16, 1, 0.3, 1); position: relative; overflow-x: clip; padding: clamp(64px, 8vw, 112px) 0 28px; background: linear-gradient(var(--color-page), #0a0b0d); }
+.footer { --ease: cubic-bezier(0.16, 1, 0.3, 1); --footer-end: #0a0b0d; --footer-label: #979ca4; position: relative; overflow-x: clip; padding: clamp(64px, 8vw, 112px) 0 28px; background: linear-gradient(var(--color-page), var(--footer-end)); }
+/* On the light /websites page the footer keeps that page's own tones. */
+:global(.theme-light) .footer { --footer-end: var(--color-page); --footer-label: var(--color-steel); }
 .inner { max-width: calc(1240px + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); display: flex; flex-direction: column; gap: 40px; }
 
-.colLabel { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #979ca4; }
+.colLabel { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--footer-label); }
 .place { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-silver); }
 .cta { display: flex; align-items: center; gap: 22px; }
 
@@ -31,7 +33,7 @@
 .langs { flex-direction: row !important; gap: 18px !important; }
 
 /* The legal block: the landing page's text and links, unchanged. */
-.legal { display: flex; flex-direction: column; gap: 12px; padding-top: 20px; border-top: 1px solid var(--color-line); font-size: 12px; line-height: 1.6; color: #979ca4; }
+.legal { display: flex; flex-direction: column; gap: 12px; padding-top: 20px; border-top: 1px solid var(--color-line); font-size: 12px; line-height: 1.6; color: var(--footer-label); }
 .legalText { margin: 0; max-width: 880px; }
 .block { display: block; }
 .legalLinks { display: flex; gap: 20px; flex-shrink: 0; }

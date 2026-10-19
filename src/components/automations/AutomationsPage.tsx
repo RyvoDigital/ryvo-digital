@@ -3,35 +3,25 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import type { Dictionary } from "@/i18n";
+import type { Locale } from "@/i18n/config";
 import type { Pages } from "@/i18n/pages";
 import SiteNav from "@/components/chrome/SiteNav";
 import { BookButton } from "@/components/chrome/Icons";
 import Pricing from "@/components/home/Pricing";
+import SiteFooter from "@/components/chrome/SiteFooter";
 import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import Signature from "./Signature";
 import HeroScene from "./HeroScene";
 import BrandFilm from "./BrandFilm";
 import Report from "./Report";
 import Faq from "./Faq";
-import ProofFooter from "./ProofFooter";
 import Dock from "./Dock";
 import { objectSrc } from "./objects";
 import { refreshWhenSettled, startMotion } from "./motion";
-import s from "./proof.module.css";
+import s from "./AutomationsPage.module.css";
 
 type P = Pages["automations"];
 
-const BOOK = "/en/book";
-
-// A short bold title for every point, taken from the point itself (listed for
-// approval in docs/design/mockups/automations/round3/README.md).
-const POINT_TITLES: string[][] = [
-  ["Seconds, day and night", "Always disclosed", "The right questions", "Books the viewing", "Hands over to a person", "The right consultant", "“Stop” is honoured"],
-  ["Years of contacts", "Sorted by origin", "Invited back", "No cold outreach"],
-  ["Kept close", "Which buyers it suits", "No CRM needed", "Rules set with you"],
-  ["Four languages", "Legal lines in place", "Approved by your consultant"],
-  ["At the right moment", "Everyone is asked"],
-];
 
 // A point: its title, then its description. A long point (over 140
 // characters) that has more than one sentence shows its first sentence, and
@@ -39,7 +29,7 @@ const POINT_TITLES: string[][] = [
 const LONG = 140;
 const isLong = (text: string) => text.length > LONG;
 
-function Point({ title, text }: { title: string; text: string }) {
+function Point({ title, text, ui }: { title: string; text: string; ui: P["ui"] }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const parts = isLong(text) ? text.match(/^(.+?[.!?])\s+(.+)$/) : null;
@@ -52,7 +42,7 @@ function Point({ title, text }: { title: string; text: string }) {
           <>
             {parts[1]}{" "}
             <span id={id} className={s.ptRest} hidden={!open}>{parts[2]}{" "}</span>
-            <button type="button" className={s.ptMore} aria-expanded={open} aria-controls={id} aria-label={open ? "Show less" : "Show the rest of this point"} onClick={() => setOpen((o) => !o)}>
+            <button type="button" className={s.ptMore} aria-expanded={open} aria-controls={id} aria-label={open ? ui.less : ui.more} onClick={() => setOpen((o) => !o)}>
               <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
             </button>
           </>
@@ -72,9 +62,11 @@ function ObjectPicture({ i }: { i: number }) {
   );
 }
 
-export default function ProofPage({ t, p, ctaLabel, place, light }: { t: Dictionary; p: P; ctaLabel: string; place: string; light?: "clean" | "haze" }) {
+export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale; t: Dictionary; p: P; ctaLabel: string }) {
   const root = useRef<HTMLDivElement>(null);
   const names = t.automationNames;
+  const ui = p.ui;
+  const book = `/${lang}/book`;
 
   useEffect(() => {
     const el = root.current;
@@ -226,7 +218,7 @@ export default function ProofPage({ t, p, ctaLabel, place, light }: { t: Diction
         });
         once(cta, "top 55%", () => gsap.to(ctaRise, { opacity: 1, y: 0, duration: 1.1, stagger: 0.08, delay: 0.35, ease: "expo.out" }));
 
-        // (The footer runs its own motion: ProofFooter, by variant.)
+        // (The footer runs its own motion: SiteFooter.)
         const footer = el.querySelector<HTMLElement>("[data-footer]")!;
 
         // ── The dock: in range from the hero to the close; shown only while
@@ -264,41 +256,41 @@ export default function ProofPage({ t, p, ctaLabel, place, light }: { t: Diction
   return (
     <div ref={root} className={s.page}>
       <header className={s.top}>
-        <SiteNav lang="en" t={t} bookHref={BOOK} path="/automations" />
+        <SiteNav lang={lang} t={t} bookHref={book} path="/automations" />
       </header>
 
       <main>
         {/* ── Hero: one screen; the headline reads across the top band ────── */}
-        <section id="top" className={s.hero} data-hero aria-labelledby="proof-title">
+        <section id="top" className={s.hero} data-hero aria-labelledby="automations-title">
           <div className={s.heroA}>
             {/* The scroll fade moves these wrappers; the rise and the line split
                 move what is inside them, so no element has two owners. */}
             <span className={s.heroLabel} data-hero-copy><span className="mono-label" data-hero-rise>{p.label}</span></span>
-            <h1 id="proof-title" className={`display ${s.h1}`}>
+            <h1 id="automations-title" className={`display ${s.h1}`}>
               <span className={s.h1Part} data-hero-copy><span data-split="a">{p.title[0]} {p.title[1]}</span></span>{" "}
               <span className={`${s.h1Part} ${s.h1B}`} data-hero-copy><span data-split="b">{p.title[2]} {p.title[3]}</span></span>
             </h1>
           </div>
           <div className={s.heroStage} data-hero-stage>
-            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} light={light} />
+            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} label={ui.scene} marks={ui.index} />
           </div>
           <div className={s.heroActions} data-hero-copy>
             <span className={s.actions} data-hero-rise>
-              <BookButton href={BOOK} label={t.nav.book} />
-              <Link href="/en#demo" className={s.textLink}>{p.see}</Link>
+              <BookButton href={book} label={t.nav.book} />
+              <Link href={`/${lang}#demo`} className={s.textLink}>{p.see}</Link>
             </span>
           </div>
         </section>
 
         {/* ── The sub, then the brand film, then the index ───────────────── */}
-        <section className={s.intro} data-section="intro" aria-label="About these automations">
+        <section className={s.intro} data-section="intro" aria-label={ui.intro}>
           {/* The homepage's scroll word reveal: same component, same timing. */}
           <WordReveal as="p" className={s.introText}><Words text={p.sub} /></WordReveal>
         </section>
 
-        <BrandFilm label="What Ryvo builds" />
+        <BrandFilm lang={lang} label={ui.film} alt={ui.filmAlt} play={ui.play} pause={ui.pause} />
 
-        <nav className={s.index} data-section="index" aria-label="The five automations">
+        <nav className={s.index} data-section="index" aria-label={ui.index}>
           <ol className={s.indexList}>
             {names.map((n, i) => (
               <li key={n} data-reveal>
@@ -328,14 +320,14 @@ export default function ProofPage({ t, p, ctaLabel, place, light }: { t: Diction
                 <div className={s.objTilt} data-tilt><div data-float><ObjectPicture i={i} /></div></div>
               </div>
               <ul className={s.pointGrid} data-points>
-                {pts.map((pt, k) => <Point key={pt} title={POINT_TITLES[i][k]} text={pt} />)}
+                {pts.map((pt, k) => <Point key={pt} title={ui.pointTitles[i][k]} text={pt} ui={ui} />)}
               </ul>
             </section>
           );
         })}
 
         {/* ── Checks ─────────────────────────────────────────────────────── */}
-        <section className={s.checks} data-checks aria-label="Before anything is switched on">
+        <section className={s.checks} data-checks aria-label={ui.checks}>
           <p className={s.checksText}>
             {words.map((w, k) => <span key={k} data-word>{w}{k < words.length - 1 ? " " : ""}</span>)}
           </p>
@@ -345,15 +337,15 @@ export default function ProofPage({ t, p, ctaLabel, place, light }: { t: Diction
 
         {/* ── Pricing: the homepage's own picker, with each row's amount ──── */}
         <div className={s.pricingHome}>
-          <Pricing lang="en" t={{ ...t.pricing, label: p.pricingLabel }} names={names} bookHref={BOOK} addOns />
+          <Pricing lang={lang} t={{ ...t.pricing, label: p.pricingLabel }} names={names} bookHref={book} addOns />
         </div>
 
-        <Faq label={p.faqLabel} items={p.faq} line={p.cta.body.split(". ").slice(-1)[0]} book={t.nav.book} bookHref={BOOK} />
+        <Faq label={p.faqLabel} items={p.faq} line={p.cta.body.split(". ").slice(-1)[0]} book={t.nav.book} bookHref={book} />
 
         {/* ── Closing: the mercury ───────────────────────────────────────── */}
         <section className={s.cta} data-cta data-after-faq aria-labelledby="cta-title">
           <div className={s.ctaStage}>
-            <Signature sig="chrome" kind="cta" objects={[0]} poster={0} label="A chrome speech bubble over liquid mercury" />
+            <Signature sig="chrome" kind="cta" objects={[0]} poster={0} label={ui.ctaArt} />
           </div>
           <div className={s.ctaText}>
             <span className="mono-label" data-cta-rise>{ctaLabel}</span>
@@ -362,13 +354,13 @@ export default function ProofPage({ t, p, ctaLabel, place, light }: { t: Diction
               <span className={s.h1Line} data-dim="true">{p.cta.title[1]}</span>
             </h2>
             <p className={s.ctaBody} data-cta-rise>{p.cta.body}</p>
-            <div data-cta-rise><BookButton href={BOOK} label={t.nav.book} /></div>
+            <div data-cta-rise><BookButton href={book} label={t.nav.book} /></div>
           </div>
         </section>
       </main>
 
-      <div data-after-faq><ProofFooter t={t} place={place} bookHref={BOOK} /></div>
-      <Dock names={names} bookHref={BOOK} book={t.nav.book} />
+      <div data-after-faq><SiteFooter lang={lang} t={t} bookHref={book} /></div>
+      <Dock names={names} bookHref={book} book={t.nav.book} label={ui.sections} />
     </div>
   );
 }

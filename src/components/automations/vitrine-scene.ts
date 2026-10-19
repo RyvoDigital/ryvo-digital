@@ -13,9 +13,7 @@
 //     clean air a beam is barely seen: light shows where it lands. So: the
 //     slot; a soft spill on the floor around it; the object's underside
 //     (brightest low, fading up it, and fading as it leaves the slot); a
-//     faint graze on the glass nearest the slot. With ?light=haze (dev only),
-//     a very faint haze rises from the slot itself, raymarched, attached to
-//     it, widening only slightly and gone below the object's underside;
+//     faint graze on the glass nearest the slot;
 //   · the object: lit by the same falloff (brightest low, fading upward), its
 //     lower edges catching the light as chrome does;
 //   · the glass: glints along its lower edges and a soft rising gradient on
@@ -46,9 +44,6 @@ export type VitrineOptions = {
   // its final speed: VP9 with alpha (Chrome, Firefox) and HEVC with alpha
   // (Safari). Its first frame is the still's pose.
   clips: ({ webm: string; hevc: string } | null)[]; // null: no clip, the still turns
-  // Round 8, dev only: "clean" (light where it lands) or "haze" (plus a very
-  // faint haze attached to the slot).
-  light?: "clean" | "haze";
   reduced: boolean;
 };
 
@@ -228,56 +223,6 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
-// The haze (?light=haze): raymarched through the case's interior, its source
-// the slot's segment. Brightest at the slot, fading with height, widening only
-// slightly, and gone before the resting object's underside. The volume is the
-// case's inside and the haze is zero long before its faces, so nothing in it
-// has an outline.
-const HAZE_VERT = /* glsl */ `
-varying vec3 vW;
-void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
-const HAZE_FRAG = /* glsl */ `
-uniform vec3 uMin;
-uniform vec3 uMax;
-uniform float uFloor;
-uniform vec3 uSlot;
-uniform vec3 uLightCol;
-uniform float uTop;  // the resting object's underside, above the floor
-uniform float uInt;
-varying vec3 vW;
-float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
-void main() {
-  vec3 ro = cameraPosition;
-  vec3 rd = normalize(vW - ro);
-  vec3 t0 = (uMin - ro) / rd, t1 = (uMax - ro) / rd;
-  vec3 lo = min(t0, t1), hi = max(t0, t1);
-  float tn = max(max(max(lo.x, lo.y), lo.z), 0.0);
-  float tf = min(min(hi.x, hi.y), hi.z);
-  float len = max(tf - tn, 0.0);
-  const int N = 40;
-  float dt = len / float(N);
-  float j = ign(gl_FragCoord.xy);
-  float acc = 0.0;
-  for (int i = 0; i < N; i++) {
-    vec3 p = ro + rd * (tn + (float(i) + j) * dt);
-    float h = p.y - uFloor;
-    if (h <= 0.0) continue;
-    float w = 0.03 + h * 0.08;
-    float dx = max(abs(p.x) - uSlot.x, 0.0);
-    float dz = p.z - uSlot.y;
-    float we = w + 0.32; // the slot's ends fade long and soft: no edge
-    float lat = exp(-(dz * dz) / (w * w) - (dx * dx) / (we * we));
-    float fall = exp(-h / 0.3);
-    float cap = 1.0 - smoothstep(uTop * 0.45, uTop * 0.92, h);
-    acc += lat * fall * cap * smoothstep(0.0, 0.01, h);
-  }
-  float g = acc * dt * uInt;
-  g += (j - 0.5) / 255.0 * step(0.0005, g);
-  gl_FragColor = vec4(uLightCol * max(g, 0.0), 1.0);
-  #include <tonemapping_fragment>
-  #include <colorspace_fragment>
-}`;
-
 // The plinth's cap: a rounded rectangle with the slot cut through it; both
 // are bevelled, so every edge catches a fine line of light.
 function capGeometry() {
@@ -333,7 +278,6 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   });
 
   const slotU = { uFloor: { value: FLOOR }, uSlot: { value: new Vector3(SLOT.len / 2, SLOT.z, 1) }, uLightCol: { value: LIGHT.clone() } };
-  const lightMode = opts.light ?? "clean";
   const plane = new PlaneGeometry(SIZE, SIZE);
   const planes = stills.map((t) => {
     const mat = new ShaderMaterial({
@@ -381,14 +325,12 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   // callback) and again on every render while it plays: Chrome's callback
   // fires for every frame, WebKit's sometimes merges two, so the render-time
   // copy makes sure each render shows the newest decoded frame.
-  const uploads = opts.clips.map(() => 0); // dev measurement: frames copied
   const drawFrame = (i: number) => {
     const g = frames[i], v = videos[i], t = vtex[i];
     if (!g || !v || !t || v.readyState < 2) return;
     g.clearRect(0, 0, g.canvas.width, g.canvas.height);
     g.drawImage(v, 0, 0, g.canvas.width, g.canvas.height);
     t.needsUpdate = true;
-    uploads[i]++;
   };
   const hasFrameCallback = typeof HTMLVideoElement !== "undefined" && "requestVideoFrameCallback" in HTMLVideoElement.prototype;
   const video = (i: number) => {
@@ -461,17 +403,6 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   spill.renderOrder = 2;
   base.add(spill);
 
-  // ── The haze (?light=haze only): attached to the slot, raymarched ───────
-  const hMin = new Vector3(-CASE.w / 2 + 0.12, FLOOR - 0.2, -CASE.d / 2 + 0.12), hMax = new Vector3(CASE.w / 2 - 0.12, FLOOR + CASE.h - 0.15, CASE.d / 2 - 0.12);
-  const hazeMat = new ShaderMaterial({
-    vertexShader: HAZE_VERT, fragmentShader: HAZE_FRAG, transparent: true, depthWrite: false, side: FrontSide, blending: AdditiveBlending, toneMapped: true,
-    uniforms: { uMin: { value: hMin.clone() }, uMax: { value: hMax.clone() }, uTop: { value: 1.5 }, uInt: { value: 0.4 }, ...slotU },
-  });
-  const haze = new Mesh(new BoxGeometry(hMax.x - hMin.x, hMax.y - hMin.y, hMax.z - hMin.z), hazeMat);
-  haze.renderOrder = 2;
-  haze.visible = lightMode === "haze";
-  scene.add(haze);
-
   // ── The case: thin, clear glass with softly rounded edges ────────────────
   const caseGeo = new RoundedBoxGeometry(CASE.w, CASE.h, CASE.d, 10, CASE.r);
   const front = new TransmissionMaterial({ color: 0xffffff, ior: 1.5, envMap: envTex, envMapIntensity: 0.75, specularIntensity: 1, roughness: 0, side: FrontSide, clearcoat: 0.45, clearcoatRoughness: 0.03 }, 6);
@@ -541,7 +472,6 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
     const narrow = aspect < 1.1;
     const spacing = narrow ? 3.4 : 4.6;
     const lift = scroll * 0.35;
-    let restW = 0, restTop = 0;
     planes.forEach((m, i) => {
       let d = (((i - pos) % n) + n) % n;
       if (d > n / 2) d -= n;
@@ -558,10 +488,6 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
       // Where an object has no footage (or the browser cannot play its alpha),
       // its clean still turns gently at rest instead, at the display's rate.
       if (m.material.uniforms.uKey.value < 0.5) m.rotateY(Math.sin(t * 0.6 + i) * 0.14 * (1 - near));
-      // The haze stops below whatever rests (weighted across a glide, so its
-      // height moves smoothly).
-      const w = Math.max(0, 1 - ad);
-      restW += w; restTop += w * (m.position.y - b.h * SIZE * k * 0.5);
       const u = m.material.uniforms;
       u.opacity.value = Math.max(0, Math.min(1, 1 - (ad - 0.45) * 0.78));
       u.uUp.value = Math.max(0, 1 - Math.max(0, ad - 0.2) * 1.4); // the uplight reaches it inside the case
@@ -580,12 +506,6 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
     // The case, its plinth and its light rise a little as the page scrolls on.
     glass.position.y = FLOOR + CASE.h / 2 + LIFT + lift;
     base.position.y = FLOOR + lift;
-    // The haze lives in world space: its volume rises with the case, and it
-    // fades out below the resting object's underside.
-    if (restW > 0) hazeMat.uniforms.uTop.value = Math.max(0.3, restTop / restW - (FLOOR + lift));
-    haze.position.set((hMin.x + hMax.x) / 2, (hMin.y + hMax.y) / 2 + lift, (hMin.z + hMax.z) / 2);
-    hazeMat.uniforms.uMin.value.copy(hMin).setY(hMin.y + lift);
-    hazeMat.uniforms.uMax.value.copy(hMax).setY(hMax.y + lift);
     slotU.uFloor.value = FLOOR + lift;
     front.t.uUpY.value = FLOOR + lift;
   };
@@ -612,28 +532,6 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   glass.visible = true;
   await renderer.compileAsync(scene, camera);
   stills.forEach((t) => renderer.initTexture(t));
-
-  if (process.env.NODE_ENV !== "production") {
-    // Dev only: render one exact frame and return it, for checks in browsers
-    // whose animation loop is paused (a locked screen, an offscreen window).
-    // The row is placed at `p`; any clip near it is loaded and seeked to `at`
-    // seconds first, so the frame shows real footage, not the still.
-    const shot = async (p: number, at = 2) => {
-      pos = p;
-      layout(performance.now() / 1000);
-      await Promise.all(videos.map((v) => !v ? null : new Promise<void>((ok) => {
-        const go = () => { const done = () => ok(); v.addEventListener("seeked", done, { once: true }); v.currentTime = at; setTimeout(done, 3000); };
-        if (v.readyState >= 1) go(); else v.addEventListener("loadedmetadata", go, { once: true });
-      })));
-      await new Promise((ok) => setTimeout(ok, 300));
-      videos.forEach((_, i) => drawFrame(i));
-      pos = p; // (a live loop may have moved it meanwhile)
-      layout(performance.now() / 1000);
-      render(performance.now() / 1000);
-      return canvas.toDataURL("image/png");
-    };
-    (window as unknown as Record<string, unknown>).__vitrine = { scene, camera, front, renderer, videos, spillMat, hazeMat, frames, uploads, planes, stills, alpha: () => alphaOK, format, floatBlend, shot, light: lightMode };
-  }
 
   return {
     render,

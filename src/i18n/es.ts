@@ -259,6 +259,7 @@ const es: Dictionary = {
     fallback: "Abrir la página de reserva",
   },
   pill: { book: "Reservar una llamada" },
+  footer: { contact: "Contacto", copy: "Copiar la dirección de correo", copied: "Copiado", nav: "Pie de página", pages: "Páginas", language: "Idioma", home: "Ryvo Digital, inicio", place: "Lisboa y Madrid", cities: ["Lisboa", "Madrid"] },
 };
 
 export default es;

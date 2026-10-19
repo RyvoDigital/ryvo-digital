@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { BookButton } from "@/components/chrome/Icons";
 import { startMotion } from "./motion";
-import q from "./faq.module.css";
+import q from "./Faq.module.css";
 
 // Questions: a sticky column (the heading, one line, Book a call) beside the
 // nine numbered questions. Opening one never animates height: the layout

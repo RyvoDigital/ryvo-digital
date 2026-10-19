@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { startMotion, isReduced } from "./motion";
 import type { Sig, Stage, StageKind } from "./stage-scene";
 import { clipSrc, objectSrc } from "./objects";
-import s from "./proof.module.css";
+import s from "./AutomationsPage.module.css";
 
 // One signature moment. three.js and the scene load only when the stage comes
 // within 800 px of view; it renders from gsap.ticker only while on screen and
@@ -15,7 +15,6 @@ export type SignatureApi = { renderNow: () => void };
 type Props = {
   sig: Sig; kind: StageKind; objects: number[]; poster: number; label: string;
   posterSrc?: string; // a rendered frame of the scene, shown when WebGL is off
-  light?: "clean" | "haze"; // the vitrine's light (dev-only comparison)
   // The hero's carousel: read every tick; told when the stage leaves or returns.
   getPos?: () => number;
   getHover?: () => number;
@@ -23,7 +22,7 @@ type Props = {
   onReady?: (api: SignatureApi) => void;
 };
 
-export default function Signature({ sig, kind, objects, poster, label, posterSrc, light, getPos, getHover, onVisible, onReady }: Props) {
+export default function Signature({ sig, kind, objects, poster, label, posterSrc, getPos, getHover, onVisible, onReady }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const hooks = useRef({ getPos, getHover, onVisible, onReady });
   useEffect(() => { hooks.current = { getPos, getHover, onVisible, onReady }; });
@@ -57,7 +56,7 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
         const srcs = objects.map((i) => objectSrc(i, 800, "webp"));
         // The hero is the vitrine; the close is the mercury stage.
         const made = kind === "hero"
-          ? import("./vitrine-scene").then(({ createVitrine }) => createVitrine(cv!, { objects: srcs, clips: objects.map((i) => clipSrc(i)), reduced, light }))
+          ? import("./vitrine-scene").then(({ createVitrine }) => createVitrine(cv!, { objects: srcs, clips: objects.map((i) => clipSrc(i)), reduced }))
           : import("./stage-scene").then(({ createStage }) => createStage(cv!, { sig, kind, objects: srcs, reduced }));
         if (disposed) return;
         stage = await made;
@@ -153,7 +152,7 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
       stage?.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sig, kind, light, objects.join(",")]);
+  }, [sig, kind, objects.join(",")]);
 
   return (
     <div ref={wrap} className={s.sig} data-kind={kind} data-ready={ready} role="img" aria-label={label}>

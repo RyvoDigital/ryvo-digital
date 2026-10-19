@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Signature, { type SignatureApi } from "./Signature";
-import { startMotion, isReduced, type ProofMotion } from "./motion";
-import s from "./proof.module.css";
+import { startMotion, isReduced, type PageMotion } from "./motion";
+import s from "./AutomationsPage.module.css";
 
 // The hero's loop: the five objects pass into the vitrine in turn, 01 → 05 and
 // back to 01. Nothing is tied to scroll and nothing pins. Each object rests in
@@ -23,7 +23,7 @@ const SETTLED = 0.004; // within this of the target (and nearly still), it rests
 
 const wrap = (p: number) => ((p % N) + N) % N;
 
-export default function HeroScene({ names, taglines, light }: { names: string[]; taglines: string[]; light?: "clean" | "haze" }) {
+export default function HeroScene({ names, taglines, label, marks }: { names: string[]; taglines: string[]; label: string; marks: string }) {
   const pos = useRef({ p: 0 }); // what the scene reads: the row's position, wrapped
   const [target, setTarget] = useState(0); // the number lit in the progress mark
   const [shown, setShown] = useState(0); // the label under the case
@@ -35,7 +35,7 @@ export default function HeroScene({ names, taglines, light }: { names: string[];
   const state = useRef({ visible: true, dragging: false });
 
   useEffect(() => {
-    let m: ProofMotion | null = null;
+    let m: PageMotion | null = null;
     let cancelled = false;
     const reduced = isReduced();
     // x: the row (unwrapped), v: its velocity, to: the target (an integer).
@@ -151,7 +151,7 @@ export default function HeroScene({ names, taglines, light }: { names: string[];
   return (
     <div className={s.heroScene}>
       <div ref={scene} className={s.heroCanvas} data-hero-scene>
-        <Signature sig="crystal" kind="hero" light={light} objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/proof/vitrine-poster-v3.webp" label="The five automations as chrome objects, shown one at a time in a lit glass case"
+        <Signature sig="crystal" kind="hero" objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/automations/vitrine-poster.webp" label={label}
           getPos={() => pos.current.p} onVisible={onVisible} onReady={(a) => { api.current = a; }} />
       </div>
       <div className={s.heroCaption} aria-live="polite">
@@ -159,7 +159,7 @@ export default function HeroScene({ names, taglines, light }: { names: string[];
           <span className={s.capName}>0{shown + 1} · {names[shown]}</span>
           <span className={s.capTag}>{taglines[shown]}</span>
         </p>
-        <ol className={s.marks} aria-label="The five automations">
+        <ol className={s.marks} aria-label={marks}>
           {names.map((n, i) => (
             <li key={n}>
               <button type="button" className={s.mark} data-on={i === target} aria-current={i === target ? "true" : undefined} aria-label={`0${i + 1} ${n}`} onClick={() => ctl.current?.go(i)}>
