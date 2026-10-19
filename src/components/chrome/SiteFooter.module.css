@@ -50,8 +50,13 @@
 .mailMask { display: block; overflow: hidden; padding-bottom: 0.1em; margin-bottom: -0.1em; }
 .mailRise { display: block; }
 .mailBig .mail { font-size: clamp(30px, 8.6vw, 104px); letter-spacing: -0.05em; }
-.horizon { position: relative; height: 90px; margin: 40px 0 36px; }
+.horizon {
+  position: relative; height: 90px; margin: 40px 0 36px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+}
 .horizon svg { position: absolute; inset: 0; display: block; }
+.glow { filter: blur(5px); will-change: filter; }
 .bRow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 36px; }
 .brand { display: flex; flex-direction: column; gap: 10px; }
 .mark { display: inline-flex; align-self: flex-start; font-family: "Archivo", "Archivo Wide Fallback", var(--font-sans); font-size: 44px; font-weight: 700; font-stretch: 125%; letter-spacing: 0.04em; line-height: 1; text-decoration: none; }

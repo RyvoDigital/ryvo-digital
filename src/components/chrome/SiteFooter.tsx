@@ -179,7 +179,24 @@ export default function SiteFooter({ lang, t, bookHref }: { lang: Locale; t: Dic
           <div className={s.cta}><BookButton href={bookHref ?? `/${lang}/book`} label={t.nav.book} /></div>
         </div>
       </div>
+      {/* Three layers in paint order: the pool, the glow, the chrome line. The
+          glow's blur and the fade at both ends are CSS (a layer filter and a
+          mask image), which the compositor applies on the GPU. As an SVG
+          filter and mask they were re-rasterised on every frame of the moving
+          line: a whole CPU core in Safari while the footer was on screen. */}
       <div className={s.horizon} data-horizon-wrap aria-hidden="true">
+        <svg viewBox={`0 0 ${HW} ${HH}`} preserveAspectRatio="none" width="100%" height="100%">
+          <defs>
+            <linearGradient id="hz-pool" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="rgba(205,209,217,0.10)" />
+              <stop offset="1" stopColor="rgba(205,209,217,0)" />
+            </linearGradient>
+          </defs>
+          <path data-horizon-fill fill="url(#hz-pool)" />
+        </svg>
+        <svg viewBox={`0 0 ${HW} ${HH}`} preserveAspectRatio="none" width="100%" height="100%" className={s.glow}>
+          <path data-horizon fill="none" stroke="rgba(230,233,238,0.35)" strokeWidth="6" vectorEffect="non-scaling-stroke" />
+        </svg>
         <svg viewBox={`0 0 ${HW} ${HH}`} preserveAspectRatio="none" width="100%" height="100%">
           <defs>
             <linearGradient id="hz-chrome" x1="0" x2="1" y1="0" y2="0" data-horizon-sheen>
@@ -189,24 +206,8 @@ export default function SiteFooter({ lang, t, bookHref }: { lang: Locale; t: Dic
               <stop offset="0.65" stopColor="#c8ccd3" />
               <stop offset="1" stopColor="#5d6168" />
             </linearGradient>
-            <linearGradient id="hz-pool" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="rgba(205,209,217,0.10)" />
-              <stop offset="1" stopColor="rgba(205,209,217,0)" />
-            </linearGradient>
-            <linearGradient id="hz-fade" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0" stopColor="#fff" stopOpacity="0" />
-              <stop offset="0.12" stopColor="#fff" stopOpacity="1" />
-              <stop offset="0.88" stopColor="#fff" stopOpacity="1" />
-              <stop offset="1" stopColor="#fff" stopOpacity="0" />
-            </linearGradient>
-            <mask id="hz-mask"><rect width={HW} height={HH} fill="url(#hz-fade)" /></mask>
-            <filter id="hz-glow" x="-5%" y="-100%" width="110%" height="300%"><feGaussianBlur stdDeviation="5" /></filter>
           </defs>
-          <g mask="url(#hz-mask)">
-            <path data-horizon-fill fill="url(#hz-pool)" />
-            <path data-horizon fill="none" stroke="rgba(230,233,238,0.35)" strokeWidth="6" filter="url(#hz-glow)" vectorEffect="non-scaling-stroke" />
-            <path data-horizon fill="none" stroke="url(#hz-chrome)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-          </g>
+          <path data-horizon fill="none" stroke="url(#hz-chrome)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
         </svg>
       </div>
       <div className={s.inner}>
