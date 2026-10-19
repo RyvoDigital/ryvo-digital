@@ -8,14 +8,14 @@
 // Light (round 6): real light, not a sprite.
 //   · the slot: a bevelled channel through the plinth's cap, a diffuser strip
 //     glowing inside it, its walls catching that glow;
-//   · the beam: a raymarched volume rising from the slot, its density falling
-//     off with height and with distance from the slot's line, dithered so it
-//     never bands;
+//   · the glow (round 7): one soft vertical glow rising from the slot,
+//     brightest there and fading smoothly to nothing exactly at the bottom of
+//     the resting object; it faces the camera and falls to zero at its sides
+//     and top, so no outline can be seen at any angle; dithered, no banding;
 //   · the object: lit by the same falloff (brightest low, fading upward), its
 //     lower edges catching the light as chrome does;
 //   · the glass: glints along its lower edges and a soft rising gradient on
-//     its faces (transmission-material.ts, uUp*); a gentle pool on the floor
-//     and a soft authored bloom around the slot;
+//     its faces (transmission-material.ts, uUp*); a faint pool on the floor;
 //   · a filmic shoulder: highlights roll off smoothly to white, while the toe
 //     stays linear so the page black (#07080a) matches the page exactly.
 //
@@ -27,10 +27,10 @@
 // seen through the glass is as sharp as what is not. It never runs its own
 // loop: the page calls render() from gsap.ticker while the stage is on screen.
 import {
-  AdditiveBlending, BackSide, BoxGeometry, CanvasTexture, Color, CustomBlending, CustomToneMapping, DoubleSide, ExtrudeGeometry,
-  FrontSide, Group, HalfFloatType, Plane, LinearSRGBColorSpace, MaxEquation, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, Path,
+  AdditiveBlending, BoxGeometry, CanvasTexture, Color, CustomBlending, CustomToneMapping, DoubleSide, ExtrudeGeometry,
+  FrontSide, Group, HalfFloatType, LinearSRGBColorSpace, MaxEquation, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, Path,
   PerspectiveCamera, PlaneGeometry, PMREMGenerator, Scene, ShaderChunk, ShaderMaterial, Shape, SRGBColorSpace, Texture,
-  TextureLoader, Vector3, VideoTexture, WebGLRenderer, WebGLRenderTarget,
+  TextureLoader, UnsignedByteType, Vector3, WebGLRenderer, WebGLRenderTarget,
 } from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { TransmissionMaterial } from "./transmission-material";
@@ -38,7 +38,10 @@ import type { Stage } from "./stage-scene";
 
 export type VitrineOptions = {
   objects: string[]; // the stills, with alpha, square, all framed the same
-  clips: { webm: string; mp4: string }[]; // each object's turning footage (webm: alpha-matted; mp4: on black); its first frame is the still
+  // Each object's turning footage, alpha-matted and interpolated to 60 fps at
+  // its final speed: VP9 with alpha (Chrome, Firefox) and HEVC with alpha
+  // (Safari). Its first frame is the still's pose.
+  clips: { webm: string; hevc: string }[];
   reduced: boolean;
 };
 
@@ -51,7 +54,13 @@ const CASE = { w: 3.3, h: 3.4, d: 3.0, r: 0.16 };
 const PLINTH = { w: 3.62, d: 3.32, cap: 0.14, reveal: 0.018, body: 0.9, bevel: 0.014 };
 const SLOT = { len: 1.56, w: 0.09, z: 0.1, depth: 0.007 }; // the light slot, in the cap: its diffuser sits nearly flush, so it reads from a low view
 const REST_Y = FLOOR + CASE.h * 0.5 + 0.12;
-const CONTENT = 1.75; // a resting object's real content fits this box
+// A resting object sits in the clear centre of the case's front face as the
+// camera sees it, with margin from every edge, so the glass never distorts it
+// (refraction shows only while it glides in and out). Seen from 25° left, the
+// front face spans about −0.86 … +2.13 across the screen from the case's
+// centre: a 1.5 box shifted 0.4 to the right clears its left edge by 0.5.
+const CONTENT = 1.5;
+const REST_SHIFT = 0.4;
 const SIZE = 3.1; // each object's plane
 
 // The camera: a three-quarter view, from above and from the left.
@@ -125,7 +134,7 @@ const gauss = (w: number, h: number) => paint(w, h, (g) => {
   g.putImageData(img, 0, 0);
 });
 
-// The slot's light, shared by the beam and the objects: it falls off with
+// The slot's light on the objects: it falls off with
 // height above the slot (inverse-square-like) and with distance from the
 // slot's line, spreading as it rises.
 const LIGHT_GLSL = /* glsl */ `
@@ -137,7 +146,7 @@ float slotLight(vec3 p, float spread) {
   float w = 0.03 + h * spread;
   float dz = p.z - uSlot.y;
   float dx = max(abs(p.x) - uSlot.x, 0.0);
-  float we = w + 0.3; // the slot's ends fade softly: no edge up the beam
+  float we = w + 0.3; // the slot's ends fade softly
   float lat = exp(-(dz * dz) / (w * w) - (dx * dx) / (we * we));
   float fall = 1.0 / (1.0 + h * h * 1.8);
   return lat * fall * smoothstep(0.0, 0.03, h);
@@ -156,26 +165,24 @@ void main() {
 }`;
 const OBJ_FRAG = /* glsl */ `
 uniform sampler2D map;
-uniform sampler2D shape; // the still: its softened alpha bounds where footage on black may show
 uniform float opacity;
 uniform float uUp;   // how much of the uplight reaches it (1 inside the case)
 uniform float uDim;  // 1 inside the case, lower while it waits outside
-uniform float uKey;  // 0: a still with alpha; 1: footage on black; 2: footage with its own alpha
+uniform float uKey;  // 0: the still; 1: its footage (both carry their own alpha)
 varying vec2 vUv;
 varying vec3 vW;
 ${LIGHT_GLSL}
 float coverage(vec2 uv) {
   vec4 t = texture2D(map, uv);
-  return (uKey > 0.5 && uKey < 1.5) ? smoothstep(0.004, 0.03, max(t.r, max(t.g, t.b))) : t.a;
+  return t.a;
 }
 void main() {
   vec4 t = texture2D(map, vUv);
-  // Footage on black (where the browser cannot play alpha video) is limited to
-  // the object's own silhouette, softened by a coarse mip, and its black floor
-  // (with the codec's faint blocks in it) is taken to zero.
-  bool onBlack = uKey > 0.5 && uKey < 1.5;
-  float a = onBlack ? smoothstep(0.02, 0.3, texture2D(shape, vUv, 4.0).a) : t.a;
-  vec3 c = onBlack ? max(t.rgb * a - 0.006, 0.0) * 1.006 : t.rgb * a;
+  // Still or footage, a clean cut-out with its own alpha. (Footage on a
+  // background is never shown: round 7.)
+  float a = t.a;
+  if (a < 0.002) discard; // an empty pixel writes nothing, in any browser
+  vec3 c = t.rgb * a;
   // The uplight: the slot's light at this point, lifting what is bright (the
   // chrome reflects it) more than the dark; and the lower edges, which face
   // the light, catching it (where the object is, but nothing is below it).
@@ -184,46 +191,34 @@ void main() {
   float L = slotLight(vW, 0.45) * uUp * 3.2;
   float below = coverage(vUv - vec2(0.0, 0.026));
   float edge = coverage(vUv) * (1.0 - below);
-  c += L * (0.012 + c * 1.0) + L * edge * 0.42;
+  // (Everything here scales with coverage: an empty pixel gets no light, so
+  // the object's square never shows.)
+  c += L * (0.012 * a + c * 1.0) + L * edge * 0.42;
   gl_FragColor = vec4(c * uDim * opacity, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }`;
 
-// The beam: raymarched through a box around it, additive.
-const BEAM_VERT = /* glsl */ `
-varying vec3 vW;
-void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
-const BEAM_FRAG = /* glsl */ `
-uniform vec3 uMin;
-uniform vec3 uMax;
+// The glow: a camera-facing plane from the slot up to the resting object's
+// underside. Its light is brightest at the slot, falls to exactly zero at its
+// top (the object's underside) and, as a soft gaussian, to zero at its sides,
+// so it has no edge; a fine dither keeps the faint gradient from banding.
+const GLOW_VERT = /* glsl */ `
+varying vec2 vUv;
+void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+const GLOW_FRAG = /* glsl */ `
 uniform float uInt;
-varying vec3 vW;
-${LIGHT_GLSL}
-// Interleaved gradient noise: a fine, even dither for the march.
+varying vec2 vUv;
 float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
 void main() {
-  vec3 ro = cameraPosition;
-  vec3 rd = normalize(vW - ro);
-  vec3 t0 = (uMin - ro) / rd, t1 = (uMax - ro) / rd;
-  vec3 lo = min(t0, t1), hi = max(t0, t1);
-  float tn = max(max(max(lo.x, lo.y), lo.z), 0.0);
-  float tf = min(min(hi.x, hi.y), hi.z);
-  float len = max(tf - tn, 0.0);
-  const int N = 32;
-  float dt = len / float(N);
-  float j = ign(gl_FragCoord.xy);
-  float acc = 0.0;
-  for (int i = 0; i < N; i++) {
-    vec3 p = ro + rd * (tn + (float(i) + j) * dt);
-    float h = p.y - uFloor;
-    // Wider as it rises, its energy spread over its width, and fading out
-    // well below the lid.
-    float d = slotLight(p, 0.16) / (1.0 + h * 1.4);
-    acc += d * (1.0 - smoothstep(1.6, 3.0, h));
-  }
-  acc *= dt * uInt;
-  gl_FragColor = vec4(vec3(0.95, 0.965, 1.0) * acc, 1.0);
+  float u = vUv.x * 2.0 - 1.0;
+  float v = clamp(vUv.y, 0.0, 1.0);
+  float side = (exp(-u * u * 4.5) - exp(-4.5)) / (1.0 - exp(-4.5)); // exactly 0 at the sides
+  float up = pow(1.0 - v, 1.25);                     // exactly 0 at the top
+  float base = smoothstep(0.0, 0.035, v);            // born just above the slot
+  float g = max(side, 0.0) * up * base * uInt;
+  g += (ign(gl_FragCoord.xy) - 0.5) / 255.0 * step(0.0005, g);
+  gl_FragColor = vec4(vec3(0.95, 0.965, 1.0) * max(g, 0.0), 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }`;
@@ -288,7 +283,7 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
     const mat = new ShaderMaterial({
       vertexShader: OBJ_VERT, fragmentShader: OBJ_FRAG, transparent: true, depthWrite: false, toneMapped: true,
       blending: CustomBlending, blendEquation: MaxEquation,
-      uniforms: { map: { value: t }, shape: { value: t }, opacity: { value: 1 }, uUp: { value: 0 }, uDim: { value: 1 }, uKey: { value: 0 }, ...slotU },
+      uniforms: { map: { value: t }, opacity: { value: 1 }, uUp: { value: 0 }, uDim: { value: 1 }, uKey: { value: 0 }, ...slotU },
     });
     const m = new Mesh(plane, mat); m.renderOrder = 3; scene.add(m); return m;
   });
@@ -298,22 +293,55 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   // over from the still the moment its first frame (the still's own pose) is
   // decoded; from then on it simply plays while the object rests and holds
   // its frame otherwise, so nothing ever jumps back to the still.
-  // VP9 with alpha where the browser honours it (Chrome, Firefox, Edge);
-  // Safari ignores VP9's alpha, so it plays the footage on black instead.
+  // HEVC with alpha in Safari (it ignores VP9's alpha); VP9 with alpha in
+  // Chrome and Firefox. Neither: the clean still, turning gently. The first
+  // decoded frame is also checked: its corners must be transparent, or the
+  // browser has dropped the alpha, and every object falls back to its still.
   const safari = /^((?!chrome|android|crios|fxios|edg).)*safari/i.test(navigator.userAgent);
-  const webm = !safari && document.createElement("video").canPlayType('video/webm; codecs="vp9"') !== "";
+  const probe = document.createElement("video");
+  const format: "hevc" | "webm" | null = safari
+    ? (probe.canPlayType('video/mp4; codecs="hvc1"') ? "hevc" : null)
+    : (probe.canPlayType('video/webm; codecs="vp9"') ? "webm" : null);
+  let alphaOK: boolean | null = format ? null : false; // null: not yet verified
+  const check = document.createElement("canvas"); check.width = check.height = 16;
+  const verify = (v: HTMLVideoElement) => {
+    try {
+      const g = check.getContext("2d", { willReadFrequently: true })!;
+      g.clearRect(0, 0, 16, 16); g.drawImage(v, 0, 0, 16, 16);
+      const d = g.getImageData(0, 0, 16, 16).data;
+      const corners = [0, 15, 240, 255].map((p) => d[p * 4 + 3]);
+      alphaOK = corners.every((a) => a < 16);
+    } catch { alphaOK = false; }
+  };
   const videos: (HTMLVideoElement | null)[] = opts.clips.map(() => null);
-  const vtex: (VideoTexture | null)[] = opts.clips.map(() => null);
+  const vtex: (Texture | null)[] = opts.clips.map(() => null);
+  // Each new frame is drawn into a small 2D canvas, and that canvas is the
+  // texture, in every browser. Safari drops HEVC's alpha when a video goes
+  // straight to WebGL (its transparent area then shows as a faint square), and
+  // Chrome's direct video upload skips the sRGB decode (the object turns pale);
+  // through a canvas, both keep their alpha and decode exactly like the stills.
+  const frames: (CanvasRenderingContext2D | null)[] = opts.clips.map(() => null);
+  const drawFrame = (i: number) => {
+    const g = frames[i], v = videos[i], t = vtex[i];
+    if (!g || !v || !t || v.readyState < 2) return;
+    g.clearRect(0, 0, g.canvas.width, g.canvas.height);
+    g.drawImage(v, 0, 0, g.canvas.width, g.canvas.height);
+    t.needsUpdate = true;
+  };
   const video = (i: number) => {
-    if (opts.reduced || !opts.clips[i]) return null;
+    if (opts.reduced || !opts.clips[i] || !format || alphaOK === false) return null;
     if (!videos[i]) {
       const v = document.createElement("video");
       v.muted = true; v.loop = true; v.playsInline = true; v.preload = "auto";
-      v.src = webm ? opts.clips[i].webm : opts.clips[i].mp4;
-      v.playbackRate = 0.45; v.defaultPlaybackRate = 0.45; // a slow turn
+      v.src = format === "hevc" ? opts.clips[i].hevc : opts.clips[i].webm; // already at its slow, 60 fps turn
+      v.addEventListener("loadeddata", () => { if (alphaOK === null) verify(v); }, { once: true });
       videos[i] = v;
-      const t = new VideoTexture(v); t.colorSpace = SRGBColorSpace;
+      const c = document.createElement("canvas"); c.width = c.height = 512;
+      frames[i] = c.getContext("2d");
+      const t = new CanvasTexture(c); t.colorSpace = SRGBColorSpace;
       vtex[i] = t;
+      v.addEventListener("seeked", () => drawFrame(i));
+      v.addEventListener("loadeddata", () => drawFrame(i));
     }
     return videos[i];
   };
@@ -358,31 +386,20 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   }
   base.add(diffuser);
 
-  // ── The light around the slot: a soft bloom, a gentle pool on the floor ──
-  const glow = gauss(256, 64);
+  // ── A faint pool of light on the floor around the slot ─────────────────
   const add = (map: Texture, w: number, h: number, opacity: number) => {
     const m = new Mesh(new PlaneGeometry(w, h), new MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: AdditiveBlending, opacity }));
     base.add(m); return m;
   };
   const pool = add(gauss(256, 256), 2.2, 1.0, 0.09); // a gentle pool on the floor, longer along the slot
   pool.rotation.x = -Math.PI / 2; pool.position.set(0, 0.012, SLOT.z);
-  const bloomFlat = add(glow, 2.0, 0.3, 0.24); // the slot's bloom on the floor
-  bloomFlat.rotation.x = -Math.PI / 2; bloomFlat.position.set(0, 0.016, SLOT.z);
-  const bloomUp = add(glow, 1.9, 0.2, 0.14); // and seen edge-on, facing the camera
-  bloomUp.position.set(0, 0.05, SLOT.z);
 
-  // ── The beam: a raymarched volume rising from the slot ─────────────────
-  // Its box reaches below the floor (where the density is zero), and the march
-  // starts from the box's front faces: a box face lying on the plinth top
-  // would fight it for depth and stripe the floor.
-  const bMin = new Vector3(-1.45, FLOOR - 0.25, SLOT.z - 1.25), bMax = new Vector3(1.45, FLOOR + 3.1, SLOT.z + 1.25);
-  const beamMat = new ShaderMaterial({
-    vertexShader: BEAM_VERT, fragmentShader: BEAM_FRAG, transparent: true, depthWrite: false, side: FrontSide, blending: AdditiveBlending, toneMapped: true,
-    uniforms: { uMin: { value: bMin.clone() }, uMax: { value: bMax.clone() }, uInt: { value: 0.5 }, ...slotU },
-  });
-  const beam = new Mesh(new BoxGeometry(bMax.x - bMin.x, bMax.y - bMin.y, bMax.z - bMin.z), beamMat);
-  beam.renderOrder = 2;
-  scene.add(beam);
+  // ── The glow: one soft vertical light from the slot to the object ──────
+  const glowMat = new ShaderMaterial({ vertexShader: GLOW_VERT, fragmentShader: GLOW_FRAG, transparent: true, depthWrite: false, blending: AdditiveBlending, toneMapped: true, uniforms: { uInt: { value: 0.13 } } });
+  const glowGeo = new PlaneGeometry(1, 1); glowGeo.translate(0, 0.5, 0); // grows up from its base
+  const glowMesh = new Mesh(glowGeo, glowMat);
+  glowMesh.renderOrder = 2;
+  scene.add(glowMesh);
 
   // ── The case: thin, clear glass with softly rounded edges ────────────────
   const caseGeo = new RoundedBoxGeometry(CASE.w, CASE.h, CASE.d, 10, CASE.r);
@@ -397,19 +414,18 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   const glass = new Mesh(caseGeo, front);
   const LIFT = 0.02; // the glass stands a hair above the plinth: no coplanar faces
   scene.add(glass);
-  // The inner walls, seen through the front: their faint reflections only.
-  const backMat = new MeshPhysicalMaterial({ color: 0x000000, metalness: 0, roughness: 0.3, envMap: envTex, envMapIntensity: 0.05, side: BackSide, transparent: true, blending: AdditiveBlending, depthWrite: false });
-  // A vitrine has no glass floor (the case stands open on the plinth), so the
-  // inner layer stops just above it: its bottom face would mirror the studio
-  // as stepped slivers on the lit floor.
-  const floorClip = new Plane(new Vector3(0, 1, 0), -(FLOOR + 0.06));
-  backMat.clippingPlanes = [floorClip];
-  renderer.localClippingEnabled = true;
-  const inner = new Mesh(caseGeo, backMat);
-  inner.renderOrder = 1;
-  scene.add(inner);
+  // (No inner-wall layer, round 7: its faint reflection read as a lit panel
+  // behind the object. The glass is clear: only its faces and edges show.)
 
-  const rt = new WebGLRenderTarget(2, 2, { type: HalfFloatType, colorSpace: LinearSRGBColorSpace, depthBuffer: true, samples: 4 });
+  // The buffer: half float where the browser can blend into it (Chrome,
+  // Firefox); otherwise (Safari has no EXT_float_blend) an 8-bit sRGB buffer,
+  // which blends everywhere and keeps its precision in the darks. Blending
+  // into a float target without that extension is silently skipped, and the
+  // objects' squares then overwrite the light behind them.
+  const floatBlend = renderer.extensions.has("EXT_float_blend");
+  const rt = new WebGLRenderTarget(2, 2, floatBlend
+    ? { type: HalfFloatType, colorSpace: LinearSRGBColorSpace, depthBuffer: true, samples: 4 }
+    : { type: UnsignedByteType, colorSpace: SRGBColorSpace, depthBuffer: true, samples: 4 });
 
   // ── State ──────────────────────────────────────────────────────────────
   let scroll = 0, px = 0, py = 0, pos = 0;
@@ -453,6 +469,7 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
     const narrow = aspect < 1.1;
     const spacing = narrow ? 3.4 : 4.6;
     const lift = scroll * 0.35;
+    let glowW = 0, glowTop = 0, glowX = 0, glowZ = 0;
     planes.forEach((m, i) => {
       let d = (((i - pos) % n) + n) % n;
       if (d > n / 2) d -= n;
@@ -463,9 +480,16 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
       const bob = Math.sin(t * 0.55 + i * 1.7) * 0.03;
       m.quaternion.copy(camera.quaternion); // each object faces the camera
       m.position.set(0, REST_Y + bob + lift - b.cy * SIZE * k, 0)
-        .addScaledVector(right, d * spacing - b.cx * SIZE * k)
+        .addScaledVector(right, d * spacing - b.cx * SIZE * k + REST_SHIFT * (1 - near))
         .addScaledVector(away, near * 0.9);
       m.scale.setScalar(k);
+      // Where an object has no footage (or the browser cannot play its alpha),
+      // its clean still turns gently at rest instead, at the display's rate.
+      if (m.material.uniforms.uKey.value < 0.5) m.rotateY(Math.sin(t * 0.6 + i) * 0.14 * (1 - near));
+      // The glow reaches exactly the underside of whatever rests (weighted
+      // across a glide, so its height moves smoothly).
+      const w = Math.max(0, 1 - ad);
+      glowW += w; glowTop += w * (m.position.y - b.h * SIZE * k * 0.5); glowX += w * m.position.x; glowZ += w * m.position.z;
       const u = m.material.uniforms;
       u.opacity.value = Math.max(0, Math.min(1, 1 - (ad - 0.45) * 0.78));
       u.uUp.value = Math.max(0, 1 - Math.max(0, ad - 0.2) * 1.4); // the uplight reaches it inside the case
@@ -473,33 +497,37 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
       // The footage: ready while it is next or resting; it plays only at rest.
       const v = ad < 1.05 ? video(i) : videos[i];
       if (v) {
-        if (v.readyState >= 2 && u.map.value !== vtex[i]) { u.map.value = vtex[i]; u.uKey.value = webm ? 2 : 1; }
+        if (v.readyState >= 2 && alphaOK && u.map.value !== vtex[i]) { u.map.value = vtex[i]; u.uKey.value = 1; }
+        if (alphaOK === false && u.map.value !== stills[i]) { u.map.value = stills[i]; u.uKey.value = 0; }
         const rest = ad < 0.04 && playing;
         if (rest && v.paused) v.play().catch(() => {});
         else if (!rest && !v.paused) v.pause();
+        if (!v.paused) drawFrame(i);
       }
     });
     // The case, its plinth and its light rise a little as the page scrolls on.
-    glass.position.y = inner.position.y = FLOOR + CASE.h / 2 + LIFT + lift;
+    glass.position.y = FLOOR + CASE.h / 2 + LIFT + lift;
     base.position.y = FLOOR + lift;
-    beam.position.set((bMin.x + bMax.x) / 2, (bMin.y + bMax.y) / 2 + lift, (bMin.z + bMax.z) / 2);
-    beamMat.uniforms.uMin.value.copy(bMin).setY(bMin.y + lift);
-    beamMat.uniforms.uMax.value.copy(bMax).setY(bMax.y + lift);
+    // The glow stands on the slot, under the resting object, facing the camera.
+    if (glowW > 0) {
+      const top = glowTop / glowW, gx = glowX / glowW;
+      const h = Math.max(0.2, top - (FLOOR + lift) - 0.02);
+      glowMesh.position.set(Math.max(-0.5, Math.min(0.5, gx)), FLOOR + lift + 0.004, SLOT.z);
+      glowMesh.scale.set(1.9, h, 1);
+      glowMesh.rotation.set(0, Math.atan2(camera.position.x - glowMesh.position.x, camera.position.z - glowMesh.position.z), 0);
+    }
     slotU.uFloor.value = FLOOR + lift;
-    floorClip.constant = -(FLOOR + 0.06 + lift);
     front.t.uUpY.value = FLOOR + lift;
-    // The edge-on bloom turns to face the camera about the vertical.
-    bloomUp.rotation.set(0, Math.atan2(camera.position.x, camera.position.z - SLOT.z), 0);
   };
 
   const render = (time: number) => {
     layout(time);
     // The buffer: everything but the front glass, which then refracts it.
-    glass.visible = false; inner.visible = true;
+    glass.visible = false;
     renderer.setRenderTarget(rt);
     renderer.render(scene, camera);
     renderer.setRenderTarget(null);
-    glass.visible = true; inner.visible = false;
+    glass.visible = true;
     front.t.uBuffer.value = rt.texture;
     renderer.render(scene, camera);
   };
@@ -507,15 +535,35 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
   // Compile every program before the first frame (off the main thread where
   // the browser can), with each target bound, and upload the textures.
   layout(0);
-  glass.visible = false; inner.visible = true;
+  glass.visible = false;
   renderer.setRenderTarget(rt);
   await renderer.compileAsync(scene, camera);
   renderer.setRenderTarget(null);
-  glass.visible = true; inner.visible = false;
+  glass.visible = true;
   await renderer.compileAsync(scene, camera);
   stills.forEach((t) => renderer.initTexture(t));
 
-  if (process.env.NODE_ENV !== "production") (window as unknown as Record<string, unknown>).__vitrine = { scene, camera, front, renderer, videos, beamMat };
+  if (process.env.NODE_ENV !== "production") {
+    // Dev only: render one exact frame and return it, for checks in browsers
+    // whose animation loop is paused (a locked screen, an offscreen window).
+    // The row is placed at `p`; any clip near it is loaded and seeked to `at`
+    // seconds first, so the frame shows real footage, not the still.
+    const shot = async (p: number, at = 2) => {
+      pos = p;
+      layout(performance.now() / 1000);
+      await Promise.all(videos.map((v) => !v ? null : new Promise<void>((ok) => {
+        const go = () => { const done = () => ok(); v.addEventListener("seeked", done, { once: true }); v.currentTime = at; setTimeout(done, 3000); };
+        if (v.readyState >= 1) go(); else v.addEventListener("loadedmetadata", go, { once: true });
+      })));
+      await new Promise((ok) => setTimeout(ok, 300));
+      videos.forEach((_, i) => drawFrame(i));
+      pos = p; // (a live loop may have moved it meanwhile)
+      layout(performance.now() / 1000);
+      render(performance.now() / 1000);
+      return canvas.toDataURL("image/png");
+    };
+    (window as unknown as Record<string, unknown>).__vitrine = { scene, camera, front, renderer, videos, glowMat, planes, stills, alpha: () => alphaOK, format, floatBlend, shot };
+  }
 
   return {
     render,

@@ -151,7 +151,7 @@ export default function HeroScene({ names, taglines }: { names: string[]; taglin
   return (
     <div className={s.heroScene}>
       <div ref={scene} className={s.heroCanvas} data-hero-scene>
-        <Signature sig="crystal" kind="hero" objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/proof/vitrine-poster-v2.webp" label="The five automations as chrome objects, shown one at a time in a lit glass case"
+        <Signature sig="crystal" kind="hero" objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/proof/vitrine-poster-v3.webp" label="The five automations as chrome objects, shown one at a time in a lit glass case"
           getPos={() => pos.current.p} onVisible={onVisible} onReady={(a) => { api.current = a; }} />
       </div>
       <div className={s.heroCaption} aria-live="polite">

@@ -10,8 +10,9 @@ export function objectSrc(i: number, size: (typeof OBJECT_SIZES)[number], ext: "
 }
 
 // Each object's turning footage for the vitrine (Seedance 2.5, from its own
-// still; 512 px). Its first frame is the still's pose. Round 6: the webm is
-// alpha-matted frame by frame (a clean cut-out); the mp4 (Safari) is on black.
+// still; 512 px). Round 7: interpolated to 60 fps at its final speed (RIFE),
+// alpha-matted frame by frame, as VP9 with alpha (Chrome, Firefox) and HEVC
+// with alpha (Safari). Its first frame is the still's pose.
 export function clipSrc(i: number) {
-  return { webm: `/media/proof/turn/${OBJECTS[i]}-v2.webm`, mp4: `/media/proof/turn/${OBJECTS[i]}-v2.mp4` };
+  return { webm: `/media/proof/turn/${OBJECTS[i]}-v3.webm`, hevc: `/media/proof/turn/${OBJECTS[i]}-v3.mov` };
 }
