@@ -1,0 +1,35 @@
+/* The globe stage. Before three.js arrives (and if WebGL never does) a soft
+   CSS halo holds the place of the limb, so the stage is never an empty hole. */
+.stage { position: relative; overflow: hidden; user-select: none; contain: layout paint; }
+.halo {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(closest-side at var(--hx, 62%) var(--hy, 52%), rgba(205, 209, 217, 0.07), rgba(205, 209, 217, 0.025) 62%, transparent 76%);
+  transition: opacity 1.6s var(--ease-out-expo);
+}
+.stage[data-ready="true"] .halo { opacity: 0.35; }
+.canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 1.4s var(--ease-out-expo); }
+.stage[data-ready="true"] .canvas { opacity: 1; }
+
+.tag, .km { position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0; transition: opacity 0.9s var(--ease-out-expo); will-change: transform, opacity; }
+.tag[data-on="true"], .km[data-on="true"] { opacity: 1; }
+.tag { display: grid; gap: 3px; }
+.tag :global(.mono-label) { color: var(--color-silver); text-shadow: 0 1px 10px #000, 0 0 3px #000; white-space: nowrap; }
+.tag[data-side="left"] { margin: 16px 0 0 -16px; translate: -100% 0; text-align: right; }
+.tag[data-side="right"] { margin: -66px 0 0 16px; }
+.name {
+  font-family: "Archivo", "Archivo Wide Fallback", var(--font-sans);
+  font-size: clamp(20px, 2.4vw, 34px);
+  font-weight: 500;
+  font-stretch: 112%;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: var(--color-text);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.8);
+}
+.km { translate: -50% 0; padding: 5px 11px; border-radius: 999px; background: rgba(10, 11, 13, 0.6); border: 1px solid rgba(205, 209, 217, 0.16); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.km :global(.mono-label) { color: var(--color-silver); }
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas, .tag, .km, .halo { transition: none; }
+}

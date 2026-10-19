@@ -178,12 +178,14 @@ const en = {
     intro: "Ryvo Digital works from Lisbon and Madrid on two lines of work, with its own people behind each. We design, build and run everything ourselves, so whichever you hire us for, you speak to the people who do the work.",
     teamLabel: "THE TEAM",
     sides: ["REAL ESTATE AUTOMATIONS", "WEBSITES & DIGITAL PRESENCE"],
-    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Marketing & Communications" },
+    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Business & Communications" },
     lines: {
       manuel: "Adapts the system to each agency and runs its setup, from the first call to go-live.",
       martim: "Outreach, social media and lead management. Often the first person an agency hears from.",
+      phil: "Marketing, contracts, negotiations and invoicing on the websites side. From the first message to the signed deal.",
     },
     citiesLabel: "WHERE WE WORK",
+    km: "503 KM", // Lisbon to Madrid, great circle
     company: "Ryvo Digital is a brand of PEDRO SEIXAS VALE - CONSULTORIA, LDA.",
   },
   book: {
@@ -192,6 +194,24 @@ const en = {
     label: "BOOK A CALL",
     title: ["Let’s talk."],
     sub: "A short call about real estate automations or a website project. Pick the call, then a time. Or write to",
+    // The booking card (Manuel's round-2 pick, 19 Oct 2026). The people on
+    // each call are confirmed by Manuel; the "next" lines follow doneBody.
+    with: ["With Manuel or Martim", "With Manuel or Phil"],
+    steps: ["Call", "Time", "Details"],
+    next: "What happens next",
+    nextSteps: [
+      "You pick a time that suits you.",
+      "A Google Calendar invitation with the Meet link reaches your inbox. Accept, decline or reschedule from it.",
+      "Thirty minutes on Google Meet.",
+    ],
+    write: "Prefer to write?",
+    copy: "Copy",
+    copied: "Copied",
+    cities: ["Lisbon", "Madrid"],
+    // The visitor's time zone in plain words: {city} is Lisbon, Madrid or the zone's own city.
+    zone: "Times in {city} time",
+    duration: "30 minutes",
+    where: "Google Meet",
   },
   notFound: {
     metaTitle: "Page not found · Ryvo Digital",
@@ -381,12 +401,14 @@ const pt: typeof en = {
     intro: "A Ryvo Digital trabalha a partir de Lisboa e Madrid em duas áreas, cada uma com as suas pessoas. Desenhamos, desenvolvemos e gerimos tudo nós mesmos, por isso, seja qual for o motivo por que nos contrata, fala com quem faz o trabalho.",
     teamLabel: "A EQUIPA",
     sides: ["AUTOMAÇÕES IMOBILIÁRIAS", "WEBSITES E PRESENÇA DIGITAL"],
-    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Marketing & Communications" },
+    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Business & Communications" },
     lines: {
       manuel: "Adapta o sistema a cada agência e conduz a configuração, da primeira chamada à entrada em funcionamento.",
       martim: "Prospeção, redes sociais e gestão de contactos. Muitas vezes, a primeira pessoa de quem uma agência ouve falar.",
+      phil: "Marketing, contratos, negociações e faturação na área dos websites. Da primeira mensagem ao negócio fechado.",
     },
     citiesLabel: "ONDE TRABALHAMOS",
+    km: "503 KM", // Lisbon to Madrid, great circle
     company: "A Ryvo Digital é uma marca da PEDRO SEIXAS VALE - CONSULTORIA, LDA.",
   },
   book: {
@@ -395,6 +417,21 @@ const pt: typeof en = {
     label: "MARCAR UMA CHAMADA",
     title: ["Vamos conversar."],
     sub: "Uma chamada curta sobre automações imobiliárias ou um projeto de website. Escolha a chamada e depois um horário. Ou escreva para",
+    with: ["Com o Manuel ou o Martim", "Com o Manuel ou o Phil"],
+    steps: ["Chamada", "Horário", "Dados"],
+    next: "O que acontece a seguir",
+    nextSteps: [
+      "Escolhe o horário que lhe convém.",
+      "Recebe um convite do Google Calendar com o link do Meet. Pode aceitar, recusar ou reagendar a partir dele.",
+      "Trinta minutos no Google Meet.",
+    ],
+    write: "Prefere escrever?",
+    copy: "Copiar",
+    copied: "Copiado",
+    cities: ["Lisboa", "Madrid"],
+    zone: "Hora de {city}",
+    duration: "30 minutos",
+    where: "Google Meet",
   },
   notFound: {
     metaTitle: "Página não encontrada · Ryvo Digital",
@@ -584,12 +621,14 @@ const es: typeof en = {
     intro: "Ryvo Digital trabaja desde Lisboa y Madrid en dos líneas de trabajo, cada una con sus propias personas. Diseñamos, desarrollamos y gestionamos todo nosotros mismos, así que, nos contrate para lo que nos contrate, habla con quienes hacen el trabajo.",
     teamLabel: "EL EQUIPO",
     sides: ["AUTOMATIZACIONES INMOBILIARIAS", "SITIOS WEB Y PRESENCIA DIGITAL"],
-    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Marketing & Communications" },
+    roles: { manuel: "Founder & Engineering", martim: "Marketing & Communications", phil: "Business & Communications" },
     lines: {
       manuel: "Adapta el sistema a cada agencia y dirige su configuración, de la primera llamada a la puesta en marcha.",
       martim: "Prospección, redes sociales y gestión de contactos. A menudo, la primera persona de la que una agencia tiene noticia.",
+      phil: "Marketing, contratos, negociaciones y facturación en el área de sitios web. Del primer mensaje al acuerdo firmado.",
     },
     citiesLabel: "DÓNDE TRABAJAMOS",
+    km: "503 KM", // Lisbon to Madrid, great circle
     company: "Ryvo Digital es una marca de PEDRO SEIXAS VALE - CONSULTORIA, LDA.",
   },
   book: {
@@ -598,6 +637,21 @@ const es: typeof en = {
     label: "RESERVAR UNA LLAMADA",
     title: ["Hablemos."],
     sub: "Una llamada breve sobre automatizaciones inmobiliarias o un proyecto web. Elija la llamada y después un horario. O escriba a",
+    with: ["Con Manuel o Martim", "Con Manuel o Phil"],
+    steps: ["Llamada", "Horario", "Datos"],
+    next: "Qué pasa después",
+    nextSteps: [
+      "Elige el horario que le va bien.",
+      "Recibe una invitación de Google Calendar con el enlace de Meet. Puede aceptarla, rechazarla o cambiar la hora desde ella.",
+      "Treinta minutos en Google Meet.",
+    ],
+    write: "¿Prefiere escribir?",
+    copy: "Copiar",
+    copied: "Copiado",
+    cities: ["Lisboa", "Madrid"],
+    zone: "Hora de {city}",
+    duration: "30 minutos",
+    where: "Google Meet",
   },
   notFound: {
     metaTitle: "Página no encontrada · Ryvo Digital",
