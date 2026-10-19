@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { startMotion } from "@/components/automations/motion";
-import { CITIES } from "@/components/lab/globe-shared";
+import { CITIES } from "./globe-shared";
 import type { Framing, RouteGlobe as Scene } from "./route-scene";
 import s from "./RouteGlobe.module.css";
 

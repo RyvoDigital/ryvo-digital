@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/lib/gsap";
 import type { Globe } from "./globe-scene";
-import { CITIES, FOCUS, view, toVec, unpack } from "./globe-shared";
+import { CITIES, FOCUS, view, toVec, unpack } from "@/components/about/globe-shared";
 import s from "./palette.module.css";
 
 // ── 12 Two cities, on a globe ───────────────────────────────────────────────
@@ -55,7 +55,7 @@ export function CitiesGlobe() {
         run();
       } catch {
         // No WebGL: the same settled frame as a 2D dot poster.
-        const { SPARSE, DENSE } = await import("./globe-dots");
+        const { SPARSE, DENSE } = await import("@/components/about/globe-dots");
         if (!disposed) { place(drawPoster(canvas, SPARSE, DENSE), true); setReady(true); }
       }
     };

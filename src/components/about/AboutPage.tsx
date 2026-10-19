@@ -6,7 +6,7 @@ import PageFrame from "@/components/pages/PageFrame";
 import { BookButton } from "@/components/chrome/Icons";
 import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import { startMotion, refreshWhenSettled } from "@/components/automations/motion";
-import { CITIES } from "@/components/lab/globe-shared";
+import { CITIES } from "./globe-shared";
 import RouteGlobe from "./RouteGlobe";
 import type { AboutContent } from "./content";
 import s from "./AboutPage.module.css";

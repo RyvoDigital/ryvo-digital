@@ -7,8 +7,8 @@ import {
   PerspectiveCamera, Points, Scene, ShaderMaterial, SphereGeometry, SRGBColorSpace, TubeGeometry,
   Vector3, WebGLRenderer, MathUtils,
 } from "three";
-import { SPARSE, DENSE } from "./globe-dots";
-import { CITIES, FOCUS, SETTLE_S, ARC_S, LIGHT_S, view, unpack, toVec } from "./globe-shared";
+import { SPARSE, DENSE } from "@/components/about/globe-dots";
+import { CITIES, FOCUS, SETTLE_S, ARC_S, LIGHT_S, view, unpack, toVec } from "@/components/about/globe-shared";
 
 const V = (lat: number, lon: number, r: number) => new Vector3().copy(toVec(lat, lon, r));
 
