@@ -4,10 +4,10 @@ import { createContext, useContext } from "react";
 // three films: every frame, timing, animation and layout is the same. The
 // names and taglines are the site's own (src/i18n); a line that would not fit
 // the English layout is reworded shorter, never the layout changed (measured
-// at the film's sizes, 19 Oct 2026): PT "Acompanhamento" alone is wider than
-// the name's box, so the film says "Seguimento de compradores"; ES "Cinco
-// automatizaciones" fills the frame at 168 px, so "5 automatizaciones"; the
-// night line is a little shorter in both; PT's third statement drops "sempre"
+// at the film's sizes, 19 Oct 2026): PT 03 is "Seguimento de compradores",
+// the name the site uses too ("Acompanhamento" alone was wider than the
+// name's box); ES "Cinco automatizaciones" fills the frame at 168 px, so
+// "5 automatizaciones"; the night line is a little shorter in both; PT's third statement drops "sempre"
 // to keep 0.4 s a word plus 1 s within its fixed 4.6 s. "\n" in a name sets
 // its line break (otherwise it breaks at its middle word, as in English).
 export type Lang = "en" | "pt" | "es";
@@ -37,7 +37,7 @@ const COPY = {
     intro: ["Cinco automações", "desde o primeiro contacto até depois da escritura."],
     moments: [
       ["Concierge de entrada", "Cada pedido respondido em poucos segundos, no idioma do comprador, e a visita marcada."],
-      ["Reactivação\nde contactos", "Retome o contacto com quem já conhece a sua agência."],
+      ["Reativação\nde contactos", "Retome o contacto com quem já conhece a sua agência."],
       ["Seguimento de compradores", "Mantenha por perto quem ainda não está pronto para comprar."],
       ["Lançamento\nde angariações", "Uma angariação, quatro idiomas, as menções legais no sítio."],
       ["Pós-escritura", "Um agradecimento e um pedido de avaliação, a cada cliente."],

@@ -184,7 +184,7 @@ const en = {
 const pt: typeof en = {
   automations: {
     metaTitle: "Automações imobiliárias, do primeiro contacto a depois da escritura · Ryvo Digital",
-    metaDescription: "Cinco automações feitas por nós para agências em Portugal e em Espanha: Concierge de entrada, Reactivação de contactos, Acompanhamento de compradores, Lançamento de angariações e Pós-escritura. Preços de lançamento.",
+    metaDescription: "Cinco automações feitas por nós para agências em Portugal e em Espanha: Concierge de entrada, Reativação de contactos, Seguimento de compradores, Lançamento de angariações e Pós-escritura. Preços de lançamento.",
     label: "AUTOMAÇÕES IMOBILIÁRIAS",
     title: ["Cinco automações", "que acompanham os seus clientes,", "desde o primeiro contacto", "até depois da escritura."],
     sub: "Pensadas para agências boutique que vendem casas premium em Portugal e em Espanha. Adaptamos cada uma à forma como a sua agência já trabalha e gerimo-la por si, com uma mensalidade. O preço e a negociação ficam sempre a cargo da sua equipa.",
@@ -253,7 +253,7 @@ const pt: typeof en = {
       ["Quanto tempo demora a configuração?", "O nosso objetivo é entrar em funcionamento até seis semanas após a assinatura. A verificação da Meta define parte desse ritmo, por isso nunca prometemos uma data que dependa da Meta."],
       ["Pode dizer algo errado sobre um imóvel?", "Responde a partir dos factos que nos dá. Quando uma pergunta exige um facto que não tem, passa a conversa a uma pessoa em vez de adivinhar."],
       ["Há um período de experiência gratuito?", "Não, mas podemos começar com um piloto pago. Pergunte-nos na chamada."],
-      ["E os nossos contactos existentes e o RGPD?", "Antes de a Reactivação de contactos enviar o que quer que seja, organizamos os seus contactos pela respetiva origem. Os contactos sem origem documentada, e as oposições, nunca são contactados."],
+      ["E os nossos contactos existentes e o RGPD?", "Antes de a Reativação de contactos enviar o que quer que seja, organizamos os seus contactos pela respetiva origem. Os contactos sem origem documentada, e as oposições, nunca são contactados."],
     ],
     cta: {
       title: ["Veja a funcionar,", "depois decida."],

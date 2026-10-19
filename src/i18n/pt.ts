@@ -58,8 +58,8 @@ const pt: Dictionary = {
   },
   automationNames: [
     "Concierge de entrada",
-    "Reactivação de contactos",
-    "Acompanhamento de compradores",
+    "Reativação de contactos",
+    "Seguimento de compradores",
     "Lançamento de angariações",
     "Pós-escritura",
   ],
@@ -100,7 +100,7 @@ const pt: Dictionary = {
     titleA: "Cinco automações.",
     titleB: "Um só percurso do cliente, da primeira mensagem até depois da escritura.",
     titleBShort: "Um só percurso.",
-    loopNote: ["Cada escritura alimenta", "a próxima reactivação"],
+    loopNote: ["Cada escritura alimenta", "a próxima reativação"],
     open: "Ver detalhes",
     items: [
       "Responde a cada novo pedido em segundos, no idioma do comprador, qualifica-o e marca a visita na sua agenda. Depois entrega o cliente ao consultor certo, com tudo o que já foi dito.",
@@ -174,7 +174,7 @@ const pt: Dictionary = {
       sections: [
         ["Primeira resposta", [["Conversas iniciadas", "46"], ["respondidas", "46"], ["resposta mais lenta", "41 s"], ["sem resposta até ao fim da semana", "0"]]],
         ["Passadas a uma pessoa", [["preço e negociação", "3"], ["pediu para falar com uma pessoa", "2"], ["jurídica, fiscal ou contratual", "1"], ["valor acima do limiar", "1"]]],
-        ["Reactivação", [["contactos reactivados", "12"], ["consentimentos obtidos", "9"]]],
+        ["Reativação", [["contactos reativados", "12"], ["consentimentos obtidos", "9"]]],
       ],
       languagesLabel: "Idiomas em que o assistente respondeu",
       languages: [["PT", 48], ["EN", 33], ["ES", 13], ["FR", 6]],
@@ -204,7 +204,7 @@ const pt: Dictionary = {
     none: "Escolha pelo menos uma",
     cta: "Pedir uma proposta à medida",
     fine: [
-      "A Reactivação inclui 1 000 mensagens de campanha por mês; acima disso, a tarifa de mensagem da Meta é cobrada ao custo.",
+      "A Reativação inclui 1 000 mensagens de campanha por mês; acima disso, a tarifa de mensagem da Meta é cobrada ao custo.",
       "Para agências até 8 consultores e um escritório; equipas maiores recebem uma proposta.",
     ],
   },

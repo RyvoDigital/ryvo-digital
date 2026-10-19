@@ -99,3 +99,15 @@ The approved proof (ac046ad) is now the real `/[lang]/automations`. It was moved
     - **PT statement 3:** drops "sempre", to keep 0.4 s a word plus 1 s within its fixed 4.6 s.
     - **Line breaks:** "Reactivação / de contactos", "Lançamento / de angariações", "Reactivación / de contactos" and "Lanzamiento / de captaciones" break before "de", so each line stays within the name's box. The words are unchanged.
 - **Stills of every caption:** `film-pt-captions.jpg`, `film-es-captions.jpg`.
+
+## PT wording fixes (19 Oct, after approval)
+- **The 1990 spelling (AO90), as the site already uses elsewhere:**
+  - "Reactivação" → "Reativação" (the name, the pricing note, the report, the FAQ, the metadata, the film);
+  - "reactivação" → "reativação" (the homepage's loop note);
+  - "reactivados" → "reativados" (the report).
+- **The sweep of all PT copy** (`pt.ts`, the PT block of `pages.ts`, `video/src/copy.ts`, the demo chats) found no other old spellings. "Contacto", "facto" and "secção" stay, as Portugal still writes them.
+- **One name per product:** "Acompanhamento de compradores" → "Seguimento de compradores" on the site (homepage, pricing rows and metadata), as in the film. The FAQ never named it.
+- **The PT film** was re-rendered with the same chunked render and encode. Against the previous PT film, only frames 1121–1466 differ: the "Reativação de contactos" scene. Every other frame matches, and it is still 3,930 frames (65.5 s).
+- **The homepage (`/pt`, before b08d3f8 vs after):** every section has the same height at 1440 and 390 px. Only the PT words changed:
+  - at 390 px, nothing moves;
+  - at 1440 px, pricing row 03 ("Seguimento de compradores") now fits on one line where "Acompanhamento de compradores" wrapped to two, so the rows below it and the price column (centred against the list) sit a few pixels higher. The section is the same size.
