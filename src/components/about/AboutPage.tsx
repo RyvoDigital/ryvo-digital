@@ -6,7 +6,7 @@ import PageFrame from "@/components/pages/PageFrame";
 import { BookButton } from "@/components/chrome/Icons";
 import Expander, { PlusMark } from "@/components/ui/Expander";
 import WordReveal, { Words } from "@/components/chrome/WordReveal";
-import { startMotion, refreshWhenSettled } from "@/components/automations/motion";
+import { usePageMotion } from "@/lib/motion";
 import { CITIES } from "./globe-shared";
 import RouteGlobe from "./RouteGlobe";
 import type { AboutContent } from "./content";
@@ -45,87 +45,70 @@ export default function AboutPage({ c }: { c: AboutContent }) {
     return () => ro.disconnect();
   }, []);
 
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    let revert: (() => void) | undefined;
-    let cancelled = false;
-    startMotion().then((m) => {
-      if (cancelled) return;
-      const { gsap, ScrollTrigger, SplitText, reduced } = m;
-      el.dataset.motion = reduced ? "reduced" : "on";
-      if (reduced) return;
-      const ctx = gsap.context(() => {
-        const q = (sel: string, scope: ParentNode = el) => Array.from(scope.querySelectorAll<HTMLElement>(sel));
-        const once = (trigger: Element, start: string, fn: () => void) => ScrollTrigger.create({ trigger, start, once: true, onEnter: fn });
-        const h = hero.current!;
+  usePageMotion(root, ({ gsap, ScrollTrigger, SplitText, q, once }) => {
+    const el = root.current!;
+    const h = hero.current!;
 
-        // ── Hero: the headline rises; while the route draws it drifts up ───
-        for (const t of q("[data-split]")) {
-          const first = h.contains(t);
-          SplitText.create(t, {
-            type: "lines", mask: "lines", autoSplit: true,
-            onSplit(self) {
-              t.dataset.ready = "true";
-              return gsap.from(self.lines, { yPercent: 108, duration: 1.3, stagger: 0.08, ease: "expo.out", delay: first ? 0.1 : 0, scrollTrigger: first ? undefined : { trigger: t, start: "top 84%", once: true } });
-            },
-          });
-        }
-        gsap.fromTo(q("[data-rise]", h), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1.1, stagger: 0.08, delay: 0.5 });
-        gsap.to(h.querySelector("[data-hero-head]"), { yPercent: -22, opacity: 0.0, ease: "none", scrollTrigger: { trigger: h, start: "top top", end: "65% top", scrub: true } });
-        gsap.to(h.querySelector("[data-hero-foot]"), { opacity: 0, ease: "none", scrollTrigger: { trigger: h, start: "55% top", end: "bottom bottom", scrub: true } });
+    // ── Hero: the headline rises; while the route draws it drifts up ───
+    for (const t of q("[data-split]")) {
+      const first = h.contains(t);
+      SplitText.create(t, {
+        type: "lines", mask: "lines", autoSplit: true,
+        onSplit(self) {
+          t.dataset.ready = "true";
+          return gsap.from(self.lines, { yPercent: 108, duration: 1.3, stagger: 0.08, ease: "expo.out", delay: first ? 0.1 : 0, scrollTrigger: first ? undefined : { trigger: t, start: "top 84%", once: true } });
+        },
+      });
+    }
+    gsap.fromTo(q("[data-rise]", h), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1.1, stagger: 0.08, delay: 0.5 });
+    gsap.to(h.querySelector("[data-hero-head]"), { yPercent: -22, opacity: 0.0, ease: "none", scrollTrigger: { trigger: h, start: "top top", end: "65% top", scrub: true } });
+    gsap.to(h.querySelector("[data-hero-foot]"), { opacity: 0, ease: "none", scrollTrigger: { trigger: h, start: "55% top", end: "bottom bottom", scrub: true } });
 
-        // ── The rail: the numeral rolls to the chapter in view ──────────────
-        const roll = el.querySelector<HTMLElement>("[data-roll]")!;
-        const items = q("[data-index]");
-        const go = (i: number) => {
-          roll.style.transform = `translate3d(0, ${-i * 100 / chapters.length}%, 0)`;
-          items.forEach((a, k) => (a.dataset.active = String(k === i)));
-        };
-        q("[data-chapter]").forEach((ch, i) => {
-          ScrollTrigger.create({ trigger: ch, start: "top 55%", end: "bottom 55%", onToggle: (st) => st.isActive && go(i) });
-        });
-        // A slow parallax on the rail's numeral: it drifts against the page.
-        gsap.fromTo(el.querySelector("[data-rail-num]"), { y: 40 }, { y: -40, ease: "none", scrollTrigger: { trigger: el.querySelector("[data-body]"), start: "top bottom", end: "bottom top", scrub: true } });
-
-        // ── 01 · the figure wipes in, left to right, with the scroll ────────
-        const fig = el.querySelector<HTMLElement>("[data-wipe]")!;
-        gsap.fromTo(fig, { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none", scrollTrigger: { trigger: fig, start: "top 88%", end: "top 40%", scrub: 0.6 } });
-        gsap.fromTo(el.querySelector("[data-wipe-edge]"), { left: "0%", opacity: 1 }, { left: "100%", opacity: 0, ease: "none", scrollTrigger: { trigger: fig, start: "top 88%", end: "top 40%", scrub: 0.6 } });
-
-        // ── Simple pieces settle in once ────────────────────────────────────
-        for (const sec of q("[data-chapter], [data-close]")) {
-          const its = q("[data-in]", sec);
-          if (!its.length) continue;
-          gsap.set(its, { opacity: 0, y: 22 });
-          once(sec, "top 74%", () => gsap.to(its, { opacity: 1, y: 0, duration: 1.15, stagger: 0.07 }));
-        }
-
-        // ── 02 · the ledger: rows rule in, then the marks light ─────────────
-        const ledger = el.querySelector<HTMLElement>("[data-ledger]")!;
-        const rules = q("[data-rule]", ledger), rows = q("[data-row]", ledger), marks = q("[data-mark]", ledger);
-        gsap.set(rules, { scaleX: 0 });
-        gsap.set(rows, { opacity: 0, y: 18 });
-        gsap.set(marks, { scale: 0 });
-        once(ledger, "top 76%", () => {
-          gsap.to(rules, { scaleX: 1, duration: 1.5, stagger: 0.12, ease: "expo.inOut" });
-          gsap.to(rows, { opacity: 1, y: 0, duration: 1.3, stagger: 0.12, delay: 0.2 });
-          gsap.to(marks, { scale: 1, duration: 0.8, stagger: 0.08, delay: 0.6 });
-        });
-
-        // ── 03 · the small route draws as it arrives ────────────────────────
-        const path = el.querySelector<SVGPathElement>("[data-mini-route]");
-        if (path) {
-          const len = path.getTotalLength();
-          gsap.fromTo(path, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1.8, ease: "expo.inOut", scrollTrigger: { trigger: path, start: "top 80%", once: true } });
-        }
-      }, el);
-      refreshWhenSettled(m);
-      revert = () => ctx.revert();
+    // ── The rail: the numeral rolls to the chapter in view ──────────────
+    const roll = el.querySelector<HTMLElement>("[data-roll]")!;
+    const items = q("[data-index]");
+    const go = (i: number) => {
+      roll.style.transform = `translate3d(0, ${-i * 100 / chapters.length}%, 0)`;
+      items.forEach((a, k) => (a.dataset.active = String(k === i)));
+    };
+    q("[data-chapter]").forEach((ch, i) => {
+      ScrollTrigger.create({ trigger: ch, start: "top 55%", end: "bottom 55%", onToggle: (st) => st.isActive && go(i) });
     });
-    return () => { cancelled = true; revert?.(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // A slow parallax on the rail's numeral: it drifts against the page.
+    gsap.fromTo(el.querySelector("[data-rail-num]"), { y: 40 }, { y: -40, ease: "none", scrollTrigger: { trigger: el.querySelector("[data-body]"), start: "top bottom", end: "bottom top", scrub: true } });
+
+    // ── 01 · the figure wipes in, left to right, with the scroll ────────
+    const fig = el.querySelector<HTMLElement>("[data-wipe]")!;
+    gsap.fromTo(fig, { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none", scrollTrigger: { trigger: fig, start: "top 88%", end: "top 40%", scrub: 0.6 } });
+    gsap.fromTo(el.querySelector("[data-wipe-edge]"), { left: "0%", opacity: 1 }, { left: "100%", opacity: 0, ease: "none", scrollTrigger: { trigger: fig, start: "top 88%", end: "top 40%", scrub: 0.6 } });
+
+    // ── Simple pieces settle in once ────────────────────────────────────
+    for (const sec of q("[data-chapter], [data-close]")) {
+      const its = q("[data-in]", sec);
+      if (!its.length) continue;
+      gsap.set(its, { opacity: 0, y: 22 });
+      once(sec, "top 74%", () => gsap.to(its, { opacity: 1, y: 0, duration: 1.15, stagger: 0.07 }));
+    }
+
+    // ── 02 · the ledger: rows rule in, then the marks light ─────────────
+    const ledger = el.querySelector<HTMLElement>("[data-ledger]")!;
+    const rules = q("[data-rule]", ledger), rows = q("[data-row]", ledger), marks = q("[data-mark]", ledger);
+    gsap.set(rules, { scaleX: 0 });
+    gsap.set(rows, { opacity: 0, y: 18 });
+    gsap.set(marks, { scale: 0 });
+    once(ledger, "top 76%", () => {
+      gsap.to(rules, { scaleX: 1, duration: 1.5, stagger: 0.12, ease: "expo.inOut" });
+      gsap.to(rows, { opacity: 1, y: 0, duration: 1.3, stagger: 0.12, delay: 0.2 });
+      gsap.to(marks, { scale: 1, duration: 0.8, stagger: 0.08, delay: 0.6 });
+    });
+
+    // ── 03 · the small route draws as it arrives ────────────────────────
+    const path = el.querySelector<SVGPathElement>("[data-mini-route]");
+    if (path) {
+      const len = path.getTotalLength();
+      gsap.fromTo(path, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1.8, ease: "expo.inOut", scrollTrigger: { trigger: path, start: "top 80%", once: true } });
+    }
+  });
 
   const [lisbon, madrid] = CITIES;
 

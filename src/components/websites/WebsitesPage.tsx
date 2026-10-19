@@ -13,7 +13,7 @@ import Faq from "@/components/pages/Faq";
 import GlassFolder from "@/components/ui/glass-folder-cards";
 import Anatomy from "./Anatomy";
 import { CASES } from "./work";
-import { settle, splitLines, usePageMotion } from "./motion";
+import { settle, splitLines, usePageMotion } from "@/lib/motion";
 import s from "./WebsitesPage.module.css";
 
 type P = Pages["websites"];

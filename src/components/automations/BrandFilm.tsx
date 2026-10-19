@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Locale } from "@/i18n/config";
-import { isReduced } from "./motion";
+import { prefersReducedMotion as isReduced } from "@/lib/gsap";
 import f from "./BrandFilm.module.css";
 
 // The brand film (video/, Remotion): what Ryvo builds, 35 s, silent, looping,

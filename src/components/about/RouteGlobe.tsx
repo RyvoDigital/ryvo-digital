@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type RefObject } from "react";
-import { startMotion } from "@/components/automations/motion";
+import { startMotion } from "@/lib/motion";
 import { whenScrollRests } from "@/lib/gl";
 import { CITIES } from "./globe-shared";
 import type { Framing, RouteGlobe as Scene } from "./route-scene";

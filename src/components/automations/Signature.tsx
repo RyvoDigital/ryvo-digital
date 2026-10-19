@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { startMotion, isReduced } from "./motion";
+import { startMotion } from "@/lib/motion";
+import { prefersReducedMotion as isReduced } from "@/lib/gsap";
 import type { Sig, Stage, StageKind } from "./stage-scene";
 import { clipSrc, objectSrc } from "./objects";
 import { whenScrollRests } from "@/lib/gl";

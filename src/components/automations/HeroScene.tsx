@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Signature, { type SignatureApi } from "./Signature";
-import { startMotion, isReduced, type PageMotion } from "./motion";
+import { startMotion, type PageMotion } from "@/lib/motion";
+import { prefersReducedMotion as isReduced } from "@/lib/gsap";
 import s from "./AutomationsPage.module.css";
 
 // The hero's loop: the five objects pass into the vitrine in turn, 01 → 05 and
