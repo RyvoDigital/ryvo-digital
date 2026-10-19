@@ -1,0 +1,152 @@
+/* Direction B: the route opens. The globe is the hero; then a reading layout
+   with a sticky rail. Same quiet tokens as /automations: obsidian, hairlines,
+   chrome only on the numerals. */
+.page {
+  --pad: var(--gutter);
+  --max: 1392px;
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --section: clamp(96px, 12vw, 180px);
+  position: relative;
+  background: var(--color-page);
+  color: var(--color-text);
+  overflow-x: clip;
+}
+.dim { color: var(--color-steel); }
+
+@keyframes show-after { to { visibility: visible; opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) {
+  :global(.js) .page [data-split]:not([data-ready]) { visibility: hidden; animation: show-after 0s 2.5s forwards; }
+  :global(.js) .hero [data-rise] { opacity: 0; animation: show-after 0s 2.5s forwards; }
+}
+
+.top { position: absolute; inset: 0 0 auto; z-index: 20; max-width: calc(var(--max) + 2 * var(--pad)); margin: 0 auto; padding: 18px var(--pad) 0; }
+
+/* ── Hero: a sticky stage; the track's height is the scroll that draws the route */
+.hero { position: relative; height: 230vh; }
+.sticky { position: sticky; top: 0; height: 100svh; min-height: 560px; overflow: hidden; }
+.globe { position: absolute; inset: 0; --hx: 50%; --hy: 92%; }
+.heroHead { position: absolute; top: 100px; left: var(--pad); right: var(--pad); display: grid; gap: 14px; will-change: transform, opacity; }
+.h1 { margin: 0; font-size: clamp(40px, 11vw, 112px); line-height: 0.95; }
+.heroFoot { position: absolute; left: var(--pad); right: var(--pad); bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 0; }
+.heroFoot dt { grid-column: 1 / -1; }
+.coord { margin: 0; display: grid; gap: 2px; }
+.coordName { font-size: 15px; font-weight: 500; color: var(--color-text); }
+.coord :global(.mono-label) { color: var(--color-silver); }
+
+@media (min-width: 1024px) {
+  .hero { height: 260vh; }
+  .heroHead { top: 120px; left: max(var(--pad), calc((100vw - var(--max)) / 2)); right: auto; max-width: 980px; }
+  .h1 { font-size: clamp(64px, 7.4vw, 124px); }
+  .heroFoot { left: max(var(--pad), calc((100vw - var(--max)) / 2)); right: auto; bottom: 36px; width: 400px; gap: 12px 32px; }
+  .coordName { font-size: 17px; }
+}
+
+/* ── The reading layout ───────────────────────────────────────────────────── */
+.body { position: relative; max-width: calc(var(--max) + 2 * var(--pad)); margin: 0 auto; padding: 0 var(--pad); }
+.rail { display: none; }
+.chapters { display: grid; }
+.chapter { position: relative; display: grid; gap: 26px; padding: var(--section) 0 0; }
+.chapter:last-child { padding-bottom: var(--section); }
+.chHead { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--color-steel); padding-top: 14px; border-top: 1px solid var(--color-line); }
+
+@media (min-width: 1024px) {
+  .body { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 48px; }
+  .rail { display: block; position: relative; }
+  .railIn { position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column; justify-content: space-between; padding: 110px 0 36px; }
+  .chHead { display: none; }
+}
+
+/* The rail: a giant numeral that rolls to the chapter, then the index. */
+.numMask { height: clamp(150px, 15vw, 240px); overflow: hidden; will-change: transform; }
+.roll { display: flex; flex-direction: column; transition: transform 1.1s var(--ease-out-expo); }
+.num { display: block; height: clamp(150px, 15vw, 240px); font-size: clamp(150px, 15vw, 240px); line-height: 0.9; letter-spacing: -0.06em; }
+.index { display: grid; gap: 2px; margin: auto 0 28px; padding: 0; list-style: none; }
+.indexItem { display: flex; gap: 14px; align-items: baseline; min-height: 36px; padding: 6px 0; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-steel); transition: color 0.5s var(--ease); }
+.indexItem[data-active="true"] { color: var(--color-text); }
+.indexItem:hover { color: var(--color-text); }
+.indexNum { min-width: 2ch; }
+.indexItem[data-active="true"] .indexNum::after { content: ""; display: inline-block; width: 22px; height: 1px; margin: 0 0 3px 10px; background: var(--color-silver); }
+.company { margin: 0; max-width: 34ch; font-size: 12px; line-height: 1.5; color: var(--color-steel); }
+
+/* 01 · the figure, wiped in */
+.proofH { margin: 0; display: grid; gap: 16px; font-weight: inherit; }
+.wipe { position: relative; display: block; width: fit-content; }
+.fig { display: block; font-size: clamp(84px, 24vw, 260px); line-height: 0.86; letter-spacing: -0.06em; padding-bottom: 0.06em; }
+.wipeEdge { position: absolute; top: 4%; bottom: 4%; width: 1px; background: var(--color-mist); box-shadow: 0 0 16px rgba(238, 240, 242, 0.7); opacity: 0; }
+.figLabel { display: block; font-size: clamp(26px, 6.6vw, 48px); line-height: 1; color: var(--color-steel); max-width: 18ch; }
+.lead { margin: 0; max-width: 46ch; font-size: 16px; line-height: 1.55; color: var(--color-body); }
+@media (min-width: 1024px) { .lead { font-size: 17px; } }
+
+/* 02 · the statement and the ledger */
+.intro { margin: 0; max-width: 30ch; font-size: clamp(22px, 5.8vw, 38px); line-height: 1.22; letter-spacing: -0.02em; }
+.ledger { width: 100%; margin-top: 36px; border-collapse: collapse; }
+.ledger thead { display: none; }
+.row { display: grid; grid-template-columns: 1fr; padding: 26px 0; position: relative; }
+.rule { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--color-line-2); transform-origin: 0 50%; }
+.who { position: relative; text-align: left; font-weight: inherit; }
+.who .rule { top: -26px; }
+.whoIn { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: start; }
+.mono { font-size: 44px; line-height: 0.82; letter-spacing: -0.05em; color: transparent; -webkit-text-stroke: 1px rgba(205, 209, 217, 0.6); min-width: 1.6em; }
+.whoText { display: grid; gap: 7px; }
+.name { font-size: 24px; line-height: 1.05; }
+.line { margin-top: 4px; font-size: 15px; line-height: 1.55; color: var(--color-body); max-width: 40ch; }
+.cell { display: none; position: relative; }
+.cell[data-on="true"] { display: flex; align-items: center; gap: 10px; padding: 12px 0 0 calc(1.6em * 44 / 16 + 18px); }
+.cell .rule { display: none; }
+.mark { width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--color-mist); box-shadow: 0 0 12px rgba(238, 240, 242, 0.55); }
+.cellLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--color-silver); }
+@media (max-width: 1023px) { .cell[data-on="true"] + .cell[data-on="true"] { padding-top: 6px; } }
+
+@media (min-width: 1024px) {
+  .intro { font-size: clamp(28px, 2.6vw, 38px); }
+  .ledger { margin-top: 64px; }
+  .ledger thead { display: table-header-group; }
+  .row { display: table-row; padding: 0; }
+  .lhPerson, .lhSide { padding: 0 0 18px; text-align: left; vertical-align: bottom; font-weight: 400; }
+  .lhSide { width: 22%; padding-left: 18px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; line-height: 1.6; color: var(--color-silver); }
+  .sideIdx { display: block; margin-bottom: 6px; color: var(--color-steel); }
+  .who, .cell { display: table-cell; position: relative; padding: 34px 0 38px; vertical-align: top; }
+  .who .rule, .cell .rule { display: block; top: 0; }
+  .cell, .cell[data-on="true"] { display: table-cell; padding: 46px 0 0 18px; }
+  .cellLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .mark { display: block; width: 11px; height: 11px; }
+  .none { display: block; width: 22px; height: 1px; margin-top: 5px; background: var(--color-line-2); }
+  .whoIn { gap: 28px; }
+  .mono { font-size: clamp(56px, 5vw, 80px); }
+  .name { font-size: clamp(24px, 2vw, 30px); }
+}
+
+/* 03 · the two cities, small */
+.cities { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 16px; }
+.cityCol { display: grid; gap: 4px; }
+.cityCol:last-child { text-align: right; }
+.city { font-size: clamp(28px, 8vw, 72px); line-height: 1; }
+.mini { width: 100%; height: clamp(30px, 6vw, 60px); color: var(--color-silver); overflow: visible; margin-bottom: 26px; }
+.km { justify-self: center; }
+.companyInline { margin: 18px 0 0; font-size: 12px; line-height: 1.5; color: var(--color-steel); }
+@media (min-width: 1024px) { .companyInline { display: none; } .cities { gap: 32px; } }
+
+/* ── The close: a calm split ─────────────────────────────────────────────── */
+.close {
+  position: relative;
+  display: grid;
+  gap: 28px;
+  max-width: calc(var(--max) + 2 * var(--pad));
+  margin: 0 auto;
+  padding: calc(var(--section) * 0.8) var(--pad) var(--section);
+  border-top: 1px solid var(--color-line);
+  isolation: isolate;
+}
+.closeGlow { position: absolute; inset: 0; z-index: -1; background: radial-gradient(40% 60% at 25% 70%, rgba(205, 209, 217, 0.08), transparent 70%); pointer-events: none; }
+.closeA { display: grid; gap: 18px; }
+.closeH2 { margin: 0; font-size: clamp(40px, 11vw, 96px); line-height: 0.96; }
+.closeB { display: grid; gap: 22px; align-content: end; }
+@media (min-width: 1024px) {
+  .close { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 48px; align-items: end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero { height: auto; }
+  .sticky { position: relative; height: 100svh; }
+  .roll { transition: none; }
+}
