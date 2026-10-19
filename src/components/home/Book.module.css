@@ -58,6 +58,7 @@
   border-radius: 50%;
   background: radial-gradient(closest-side, rgba(236, 238, 242, 0.58), rgba(169, 174, 182, 0.22) 46%, transparent 78%);
   filter: blur(36px);
+  will-change: filter; /* its own layer: the compositor blurs it once, not every tile paint (Safari) */
   pointer-events: none;
 }
 

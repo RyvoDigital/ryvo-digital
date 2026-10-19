@@ -439,6 +439,7 @@ const GF_CSS = `
   border-radius: 40px;
   background: rgba(40, 44, 52, .3);
   filter: blur(22px);
+  will-change: filter;
   transform: translateX(calc(var(--gf-px) * -8px));
   transition: transform 1s var(--gf-ease), opacity 1s var(--gf-ease);
 }

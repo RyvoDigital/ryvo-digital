@@ -13,6 +13,7 @@ import {
 } from "three";
 import { SPARSE, DENSE } from "./globe-dots";
 import { CITIES, FOCUS, toVec, unpack } from "./globe-shared";
+import { glPixelRatio } from "@/lib/gl";
 
 export const TURN = 0.42;
 export const ARC_END = 0.86;
@@ -47,7 +48,7 @@ export type RouteGlobe = {
 export function createRouteGlobe(canvas: HTMLCanvasElement, framing: Framing, onFrame: Frame): RouteGlobe {
   const FOV = 30;
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(glPixelRatio());
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.setClearColor(0x000000, 0);
 
@@ -233,6 +234,7 @@ export function createRouteGlobe(canvas: HTMLCanvasElement, framing: Framing, on
       [body, halo, arc].forEach((m) => { m.geometry.dispose(); (m.material as ShaderMaterial).dispose(); });
       dotGeo.dispose(); dotMat.dispose(); glowGeo.dispose(); glowMat.dispose();
       renderer.dispose();
+      renderer.forceContextLoss(); // free the context now, not at GC (Safari caps live contexts)
     },
   };
 }

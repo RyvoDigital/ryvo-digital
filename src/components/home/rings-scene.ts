@@ -6,14 +6,18 @@ import {
   Quaternion, Scene, SRGBColorSpace, TorusGeometry, Vector3, WebGLRenderer,
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import type { gsap as GSAP } from "gsap";
+import { glPixelRatio } from "@/lib/gl";
 
 export type Rings = { start: () => void; stop: () => void; resize: () => void; dispose: () => void; renderAt: (turn: number) => void };
 
 const TURN_SECONDS = 26; // one full revolution: slow, calm
 
-export function createRings(canvas: HTMLCanvasElement, { opaque = false } = {}): Rings {
+// It turns on the site's one ticker (gsap.ticker, which also drives Lenis and
+// ScrollTrigger): no requestAnimationFrame loop of its own.
+export function createRings(canvas: HTMLCanvasElement, { opaque = false, ticker }: { opaque?: boolean; ticker: typeof GSAP.ticker }): Rings {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: !opaque, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(glPixelRatio());
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -68,24 +72,23 @@ export function createRings(canvas: HTMLCanvasElement, { opaque = false } = {}):
     renderer.render(scene, camera);
   };
 
-  let raf = 0, last = 0, turn = 0;
-  const tick = (t: number) => {
-    raf = requestAnimationFrame(tick);
-    const dt = last ? Math.min(0.05, (t - last) / 1000) : 0;
-    last = t;
-    turn = (turn + dt / TURN_SECONDS) % 1;
+  let on = false, turn = 0;
+  const tick = (_time: number, deltaMs: number) => {
+    turn = (turn + Math.min(0.05, deltaMs / 1000) / TURN_SECONDS) % 1;
     renderAt(turn);
   };
+  const stop = () => { if (on) { on = false; ticker.remove(tick); } };
 
   resize();
   return {
-    start: () => { if (!raf) { last = 0; raf = requestAnimationFrame(tick); } },
-    stop: () => { cancelAnimationFrame(raf); raf = 0; },
+    start: () => { if (!on) { on = true; ticker.add(tick); } },
+    stop,
     resize,
     renderAt,
     dispose: () => {
-      cancelAnimationFrame(raf);
+      stop();
       geo.dispose(); chrome.dispose(); env.dispose(); pmrem.dispose(); renderer.dispose();
+      renderer.forceContextLoss();
     },
   };
 }

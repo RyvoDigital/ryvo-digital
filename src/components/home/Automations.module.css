@@ -88,6 +88,7 @@
   border-radius: 50%;
   background: radial-gradient(50% 50% at 50% 50%, rgba(205, 209, 217, 0.22), rgba(205, 209, 217, 0.06) 55%, transparent 72%);
   filter: blur(10px);
+  will-change: filter; /* blurred by the compositor (Safari) */
   pointer-events: none;
 }
 

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
-import { prefersReducedMotion, withMotion } from "@/lib/gsap";
+import { loadMotion, prefersReducedMotion, withMotion } from "@/lib/gsap";
+import { whenScrollRests } from "@/lib/gl";
 import { ArrowUpRight } from "@/components/chrome/Icons";
 import type { Rings } from "./rings-scene";
 import styles from "./Automations.module.css";
@@ -30,11 +31,15 @@ function LoopStage({ active, note }: { active: number; note: string[] }) {
     let onScreen = false;
     let gone = false;
     const run = () => { if (!rings) return; if (onScreen && !document.hidden) rings.start(); else rings.stop(); };
+    let cancelBuild: (() => void) | undefined;
     const load = async () => {
       try {
-        const { createRings } = await import("./rings-scene");
+        const [{ createRings }, { gsap }] = await Promise.all([import("./rings-scene"), loadMotion()]);
         if (gone) return;
-        rings = createRings(cv, { opaque: posterMode });
+        // The build is one long task: run it while the page rests.
+        await new Promise<void>((resolve) => { cancelBuild = whenScrollRests(resolve); });
+        if (gone) return;
+        rings = createRings(cv, { opaque: posterMode, ticker: gsap.ticker });
         if (posterMode) rings.renderAt(0);
         else run();
         setLive(true);
@@ -50,7 +55,7 @@ function LoopStage({ active, note }: { active: number; note: string[] }) {
     ro.observe(cv);
     const onVis = () => !posterMode && run();
     document.addEventListener("visibilitychange", onVis);
-    return () => { gone = true; near.disconnect(); seen.disconnect(); ro.disconnect(); document.removeEventListener("visibilitychange", onVis); rings?.dispose(); };
+    return () => { gone = true; cancelBuild?.(); near.disconnect(); seen.disconnect(); ro.disconnect(); document.removeEventListener("visibilitychange", onVis); rings?.dispose(); };
   }, []);
 
   return (

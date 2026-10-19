@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { startMotion } from "@/components/automations/motion";
+import { whenScrollRests } from "@/lib/gl";
 import { CITIES } from "./globe-shared";
 import type { Framing, RouteGlobe as Scene } from "./route-scene";
 import s from "./RouteGlobe.module.css";
@@ -53,6 +54,7 @@ export default function RouteGlobe({
     let globe: Scene | null = null;
     let disposed = false;
     let cleanup: (() => void) | undefined;
+    let cancelBuild: (() => void) | undefined;
 
     const place = (labels: { x: number; y: number; on: boolean }[], arc: number) => {
       labels.forEach((l, i) => {
@@ -73,6 +75,9 @@ export default function RouteGlobe({
     const load = async () => {
       try {
         const [{ createRouteGlobe, TURN }, m] = await Promise.all([import("./route-scene"), startMotion()]);
+        if (disposed) return;
+        // The build is one long task: run it while the page rests.
+        await new Promise<void>((resolve) => { cancelBuild = whenScrollRests(resolve); });
         if (disposed) return;
         const { gsap, ScrollTrigger, reduced } = m;
         globe = createRouteGlobe(canvas, FRAMES[framing], place);
@@ -112,8 +117,8 @@ export default function RouteGlobe({
 
     let near: IntersectionObserver | undefined;
     let idle: number | undefined;
+    const go = () => load();
     if (eager) {
-      const go = () => load();
       if (document.readyState === "complete") idle = window.setTimeout(go, 200);
       else window.addEventListener("load", go, { once: true });
     } else {
@@ -126,6 +131,8 @@ export default function RouteGlobe({
     return () => {
       disposed = true;
       near?.disconnect(); ro.disconnect(); clearTimeout(idle);
+      window.removeEventListener("load", go);
+      cancelBuild?.();
       cleanup?.();
       globe?.dispose();
     };

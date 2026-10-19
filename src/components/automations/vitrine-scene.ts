@@ -37,6 +37,7 @@ import {
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { TransmissionMaterial } from "./transmission-material";
 import type { Stage } from "./stage-scene";
+import { glPixelRatio } from "@/lib/gl";
 
 export type VitrineOptions = {
   objects: string[]; // the stills, with alpha, square, all framed the same
@@ -249,7 +250,7 @@ function capGeometry() {
 
 export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOptions): Promise<Stage & { setPlaying: (on: boolean) => void }> {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(glPixelRatio());
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = CustomToneMapping;
   renderer.toneMappingExposure = 1;
@@ -558,6 +559,7 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
       });
       rt.dispose(); envTex.dispose();
       renderer.dispose();
+      renderer.forceContextLoss(); // free the context now, not at GC (Safari caps live contexts)
     },
   };
 }

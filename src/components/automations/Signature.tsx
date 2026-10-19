@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { startMotion, isReduced } from "./motion";
 import type { Sig, Stage, StageKind } from "./stage-scene";
 import { clipSrc, objectSrc } from "./objects";
+import { whenScrollRests } from "@/lib/gl";
 import s from "./AutomationsPage.module.css";
 
 // One signature moment. three.js and the scene load only when the stage comes
@@ -53,6 +54,9 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
         const probe = document.createElement("canvas");
         if (!(probe.getContext("webgl2") || probe.getContext("webgl"))) throw new Error("no webgl");
         const m = await startMotion();
+        // The build is one long task: run it while the page rests.
+        await new Promise<void>((resolve) => { cleanups.push(whenScrollRests(resolve)); });
+        if (disposed) return;
         const srcs = objects.map((i) => objectSrc(i, 800, "webp"));
         // The hero is the vitrine; the close is the mercury stage.
         const made = kind === "hero"

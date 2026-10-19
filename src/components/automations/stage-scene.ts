@@ -6,6 +6,7 @@ import {
   Color, DoubleSide, Mesh, MeshBasicMaterial, NoToneMapping, PerspectiveCamera, PlaneGeometry, PMREMGenerator,
   Scene, ShaderMaterial, SRGBColorSpace, Texture, TextureLoader, Vector2, Vector3, Vector4, WebGLRenderer,
 } from "three";
+import { glPixelRatio } from "@/lib/gl";
 
 export type Sig = "crystal" | "chrome";
 export type StageKind = "hero" | "cta";
@@ -158,7 +159,7 @@ void main() {
 
 export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions): Promise<Stage> {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(glPixelRatio());
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = NoToneMapping;
   renderer.setClearColor(PAGE, 1);
@@ -268,6 +269,7 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
       pool?.geometry.dispose(); poolMat?.dispose();
       envTex.dispose();
       renderer.dispose();
+      renderer.forceContextLoss(); // free the context now, not at GC (Safari caps live contexts)
     },
   };
 }
