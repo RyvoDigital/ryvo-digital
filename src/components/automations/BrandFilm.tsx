@@ -67,8 +67,11 @@ export default function BrandFilm({ lang, label, alt, play, pause }: { lang: Loc
             poster={`${M}/brand-film-poster-${film}-1920.webp`}
             aria-label={alt}
           >
-            {/* One file: H.264 at 2560 × 1600, 60 fps (11.3 MB), which every
-                browser plays; a WebM would only add weight. */}
+            {/* H.264, which every browser plays (a WebM would only add
+                weight): 2560 × 1600 at 60 fps (11–12 MB) on wide screens,
+                and on phones and tablets the same film at 1280 × 800, 60 fps
+                (3.4–3.5 MB, SSIM ≥ 0.997 against the master scaled). */}
+            <source src={`${M}/brand-film-${film}-m.mp4`} type="video/mp4" media="(max-width: 1023px)" />
             <source src={`${M}/brand-film-${film}.mp4`} type="video/mp4" />
           </video>
           <span className={f.glass} aria-hidden="true" />
