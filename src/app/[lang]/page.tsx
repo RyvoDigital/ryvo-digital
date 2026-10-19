@@ -16,14 +16,28 @@ import LightSwitch from "@/components/home/LightSwitch";
 import SiteFooter from "@/components/chrome/SiteFooter";
 import StickyBook from "@/components/chrome/StickyBook";
 import FloatingNav from "@/components/chrome/FloatingNav";
+import { SITE_URL } from "@/i18n/config";
 
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const t = getDictionary(lang);
 
+  // The company, for search engines (schema.org Organization).
+  const org = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Ryvo Digital",
+    legalName: "PEDRO SEIXAS VALE - CONSULTORIA, LDA",
+    url: SITE_URL,
+    logo: `${SITE_URL}/brand/ryvo-logo.png`,
+    email: "hello@ryvodigital.com",
+    address: { "@type": "PostalAddress", streetAddress: "Rua Tomás da Fonseca, N 26, Edifício 3, 5º Esq", postalCode: "1600-256", addressLocality: "Lisboa", addressCountry: "PT" },
+    sameAs: ["https://www.linkedin.com/company/ryvodigital"],
+  };
   return (
     <div className="relative">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(org) }} />
       <Hero lang={lang} t={t} />
       <main>
         <NightShift t={t.night} />
