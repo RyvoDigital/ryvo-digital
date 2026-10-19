@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Dictionary } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import LangSwitch from "./LangSwitch";
@@ -14,6 +15,13 @@ import { navLinks } from "./nav-links";
 // inert, so it is never in the tab order or the accessibility tree.
 export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang: Locale; t: Dictionary; bookHref: string; className?: string }) {
   const [open, setOpen] = useState(false);
+  // The panel lives in <body>: the floating pill has a backdrop-filter, which
+  // makes it the containing block of anything fixed inside it, so a panel
+  // there was trapped in the pill's own box. It takes the light tone from
+  // where its button sits (the websites page).
+  const [mounted, setMounted] = useState(false);
+  const [light, setLight] = useState(false);
+  useEffect(() => { queueMicrotask(() => setMounted(true)); }, []);
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const id = useId();
@@ -54,7 +62,7 @@ export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang
         aria-label={t.nav.menu}
         aria-expanded={open}
         aria-controls={id}
-        onClick={() => setOpen(true)}
+        onClick={() => { setLight(!!buttonRef.current?.closest(".theme-light")); setOpen(true); }}
         className={`flex h-11 w-11 items-center justify-center rounded-full border border-line-2 bg-[rgba(241,242,244,0.04)] ${className}`}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -62,6 +70,7 @@ export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang
           <path d="M4 15h16" />
         </svg>
       </button>
+      {mounted && createPortal(
       <div
         id={id}
         ref={panelRef}
@@ -70,7 +79,7 @@ export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang
         aria-label={t.nav.main}
         inert={!open}
         data-open={open}
-        className="menu-panel fixed inset-0 z-[80] flex flex-col bg-page/95 px-[max(18px,env(safe-area-inset-left))] pb-[max(32px,env(safe-area-inset-bottom))] pt-[max(22px,env(safe-area-inset-top))] backdrop-blur-xl"
+        className={`${light ? "theme-light " : ""}menu-panel fixed inset-0 z-[80] flex flex-col bg-page/95 px-[max(18px,env(safe-area-inset-left))] pb-[max(32px,env(safe-area-inset-bottom))] pt-[max(22px,env(safe-area-inset-top))] backdrop-blur-xl`}
       >
         <div className="flex items-center justify-between">
           <span className="text-[17px] font-bold tracking-[0.06em]" style={{ fontStretch: "125%" }}>RYVO</span>
@@ -95,7 +104,8 @@ export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang
           <LangSwitch lang={lang} label={t.nav.language} className="text-[13px]" />
           <BookButton href={bookHref} label={t.nav.book} className="w-full !pl-5" />
         </div>
-      </div>
+      </div>,
+      document.body)}
     </>
   );
 }
