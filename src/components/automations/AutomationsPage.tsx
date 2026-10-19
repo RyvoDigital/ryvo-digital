@@ -222,7 +222,7 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
     // reading or scrolling down. The site's pill stays the navigation ────
     const dock = el.querySelector<HTMLElement>("[data-dock]")!;
     const first = el.querySelector("[data-spread='0']")!, last = el.querySelector("[data-spread='4']")!;
-    ScrollTrigger.create({ trigger: first, start: "top 60%", endTrigger: last, end: "bottom 40%", onToggle: (st) => (dock.dataset.show = String(st.isActive)) });
+    ScrollTrigger.create({ trigger: first, start: "top 60%", endTrigger: last, end: "bottom 40%", onToggle: (st) => { dock.dataset.show = String(st.isActive); dock.inert = !st.isActive; } });
     ScrollTrigger.create({
       trigger: first, start: "top 60%", endTrigger: last, end: "bottom 40%",
       onUpdate: (st) => {
@@ -326,7 +326,7 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
         {/* ── Closing: the mercury ───────────────────────────────────────── */}
         <section className={s.cta} data-cta aria-labelledby="cta-title">
           <div className={s.ctaStage}>
-            <Signature sig="chrome" kind="cta" objects={[0]} poster={0} label={ui.ctaArt} />
+            <Signature sig="chrome" kind="cta" objects={[0]} poster={0} />
           </div>
           <div className={s.ctaText}>
             <span className="mono-label" data-cta-rise>{ctaLabel}</span>

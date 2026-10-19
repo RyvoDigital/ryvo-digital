@@ -595,6 +595,8 @@ const GF_CSS = `
 .gf-root[data-tone="dark"] .gf-front-rim { opacity: .5; }
 
 .gf-hit { all: unset; position: absolute; inset: 0; z-index: 1; cursor: pointer; }
+/* the site's focus ring, around the whole folder (the front is clipped to its shape) */
+.gf-root:has(.gf-hit:focus-visible) { outline: 2px solid var(--color-silver, #3d4147); outline-offset: 10px; border-radius: 28px; }
 .gf-hit:focus-visible ~ .gf-label .gf-title { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
 .gf-front:has(.gf-hit:focus-visible) .gf-front-rim path { stroke-width: 5; }
 

@@ -14,7 +14,9 @@ import s from "./RouteGlobe.module.css";
 // arc draws from Lisbon to Madrid. It renders on the site's GSAP ticker (the
 // same tick as Lenis and ScrollTrigger), only while on screen. Reduced motion:
 // one still frame, route drawn. No WebGL: the stage keeps its CSS halo and
-// the city names, so nothing is missing from the page.
+// the city names, so nothing is missing from the page. Decorative: the
+// cities and their coordinates are written out on the page beside it, so the
+// canvas is hidden from assistive tech.
 
 // Large and low under the headline, the limb across the bottom of the screen;
 // as the route draws it rises and the camera closes on Iberia.
@@ -25,7 +27,7 @@ const FRAMES: Record<"hero", Framing> = {
 };
 
 export default function RouteGlobe({
-  track, range = ["top 70%", "bottom 80%"], framing = "hero", names, km, label, className = "", eager = false, tags: showTags = true, onArc,
+  track, range = ["top 70%", "bottom 80%"], framing = "hero", names, km, className = "", eager = false, tags: showTags = true, onArc,
 }: {
   /** Show the city names and the distance on the globe itself. */
   tags?: boolean;
@@ -37,7 +39,6 @@ export default function RouteGlobe({
   /** The two city names as the page writes them (Lisbon, Madrid; Lisboa, Madrid). */
   names: [string, string];
   km: string;
-  label: string;
   className?: string;
   /** Load as soon as the page is idle (the globe is above the fold), not when near. */
   eager?: boolean;
@@ -144,7 +145,7 @@ export default function RouteGlobe({
   return (
     <div ref={box} className={`${s.stage} ${className}`} data-ready={ready} data-arc="none">
       <div className={s.halo} aria-hidden="true" />
-      <canvas ref={cv} className={s.canvas} role="img" aria-label={label} />
+      <canvas ref={cv} className={s.canvas} aria-hidden="true" />
       {showTags && CITIES.map((c, i) => (
         <div key={c.key} ref={(n) => { tags.current[i] = n; }} className={s.tag} data-side={i === 0 ? "left" : "right"} data-on="false" aria-hidden="true">
           <span className={s.name}>{names[i]}</span>

@@ -123,7 +123,7 @@ export default function AboutPage({ c }: { c: AboutContent }) {
           <div className={s.sticky}>
             <RouteGlobe
               track={hero} range={["top top", "bottom bottom"]} framing="hero" names={cities} km={p.km} eager
-              className={s.globe} label={`${cities[0]} – ${cities[1]}: ${lisbon.coords}, ${madrid.coords}`}
+              className={s.globe}
             />
             <div className={s.heroHead} data-hero-head>
               <span className="mono-label" data-rise>{p.label}</span>

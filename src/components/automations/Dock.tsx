@@ -4,10 +4,11 @@ import s from "./AutomationsPage.module.css";
 // It is in range only over the spreads and never carries the site's
 // navigation or Book (the floating pill does, as on every page). The active
 // index and the progress line are set by AutomationsPage's ScrollTriggers (no
-// state, no re-render).
+// state, no re-render). Out of range it is inert, so Tab never lands in it
+// while it is hidden.
 export default function Dock({ names, label }: { names: string[]; label: string }) {
   return (
-    <nav className={s.dock} aria-label={label} data-dock data-show="false">
+    <nav className={s.dock} aria-label={label} data-dock data-show="false" inert>
       <ol className={s.dockIdx}>
         {names.map((n, i) => (
           <li key={n}>

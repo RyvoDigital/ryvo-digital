@@ -15,7 +15,8 @@ import s from "./AutomationsPage.module.css";
 export type SignatureApi = { renderNow: () => void };
 
 type Props = {
-  sig: Sig; kind: StageKind; objects: number[]; poster: number; label: string;
+  sig: Sig; kind: StageKind; objects: number[]; poster: number;
+  label?: string; // what the stage shows; without one it is decorative and hidden from assistive tech
   posterSrc?: string; // a rendered frame of the scene, shown when WebGL is off
   // The hero's carousel: read every tick; told when the stage leaves or returns.
   getPos?: () => number;
@@ -162,7 +163,7 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
   }, [sig, kind, objects.join(",")]);
 
   return (
-    <div ref={wrap} className={s.sig} data-kind={kind} data-ready={ready} role="img" aria-label={label}>
+    <div ref={wrap} className={s.sig} data-kind={kind} data-ready={ready} {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}>
       <div className={s.sigPoster} data-show={failed} aria-hidden="true">
         {posterSrc ? <img src={posterSrc} alt="" width={1920} height={1200} decoding="async" className={s.sigPosterFull} data-failed={failed} /> : <picture>
           <source type="image/avif" srcSet={`${objectSrc(poster, 800, "avif")} 800w, ${objectSrc(poster, 1200, "avif")} 1200w`} sizes="(min-width: 1024px) 40vw, 80vw" />
