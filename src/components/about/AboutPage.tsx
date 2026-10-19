@@ -53,7 +53,7 @@ export default function AboutPage({ c }: { c: AboutContent }) {
     for (const t of q("[data-split]")) {
       const first = h.contains(t);
       SplitText.create(t, {
-        type: "lines", mask: "lines", autoSplit: true,
+        type: "lines", mask: "lines", autoSplit: true, aria: "none", // lines keep their words whole, so the text reads as it is (an aria-label on a span is not allowed)
         onSplit(self) {
           t.dataset.ready = "true";
           return gsap.from(self.lines, { yPercent: 108, duration: 1.3, stagger: 0.08, ease: "expo.out", delay: first ? 0.1 : 0, scrollTrigger: first ? undefined : { trigger: t, start: "top 84%", once: true } });

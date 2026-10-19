@@ -90,7 +90,7 @@ export function usePageMotion(root: RefObject<HTMLElement | null>, setup: (kit: 
 // Headlines rise out of their own line masks, once.
 export function splitLines({ gsap, SplitText }: Kit, h: HTMLElement, opts: { delay?: number; trigger?: Element; start?: string } = {}) {
   SplitText.create(h, {
-    type: "lines", mask: "lines", autoSplit: true,
+    type: "lines", mask: "lines", autoSplit: true, aria: "none", // lines keep their words whole, so the text reads as it is (an aria-label on a span is not allowed)
     onSplit(self) {
       h.dataset.ready = "true";
       // A line mask is exactly one line box tall, and the display type's line

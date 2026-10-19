@@ -84,7 +84,7 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
     const hero = el.querySelector<HTMLElement>("[data-hero]")!;
     for (const h of q("[data-split]", hero)) {
       SplitText.create(h, {
-        type: "lines", mask: "lines", autoSplit: true,
+        type: "lines", mask: "lines", autoSplit: true, aria: "none", // lines keep their words whole, so the text reads as it is (an aria-label on a span is not allowed)
         onSplit(self) {
           h.dataset.ready = "true";
           return gsap.from(self.lines, { yPercent: 108, duration: 1.25, stagger: 0.075, ease: "expo.out", delay: h.dataset.split === "b" ? 0.25 : 0.05 });
@@ -179,7 +179,12 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
 
     // ── "Switched on only after its checks": the words light as you read ─
     const checks = el.querySelector<HTMLElement>("[data-checks]")!;
-    gsap.fromTo(q("[data-word]", checks), { opacity: 0.16 }, { opacity: 1, stagger: 0.12, ease: "none", scrollTrigger: { trigger: checks, start: "top 78%", end: "bottom 52%", scrub: true } });
+    // The words stay in their full colour until the block is just below the
+    // screen, and only then dim for the reveal (as WordReveal does): as loaded,
+    // the page passes contrast checks.
+    const checkWords = q("[data-word]", checks);
+    const lit = gsap.fromTo(checkWords, { opacity: 0.16 }, { opacity: 1, stagger: 0.12, ease: "none", immediateRender: false, scrollTrigger: { trigger: checks, start: "top 78%", end: "bottom 52%", scrub: true } });
+    ScrollTrigger.create({ trigger: checks, start: "top bottom+=10%", onEnter: () => { if (lit.progress() === 0) gsap.set(checkWords, { opacity: 0.16 }); } });
 
     // ── The report: figures count up, bars grow, the dividers draw ─────
     const report = el.querySelector<HTMLElement>("[data-report]")!;
@@ -207,7 +212,7 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
     const ctaRise = q("[data-cta-rise]", cta);
     gsap.set(ctaRise, { opacity: 0, y: 18 });
     SplitText.create(h2, {
-      type: "lines", mask: "lines", autoSplit: true,
+      type: "lines", mask: "lines", autoSplit: true, aria: "none", // lines keep their words whole, so the text reads as it is (an aria-label on a span is not allowed)
       onSplit(self) {
         h2.dataset.ready = "true";
         return gsap.from(self.lines, { yPercent: 108, duration: 1.25, stagger: 0.08, ease: "expo.out", scrollTrigger: { trigger: cta, start: "top 60%", once: true } });
