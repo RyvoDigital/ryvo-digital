@@ -27,9 +27,18 @@ export default function StickyBook({ href, label }: { href: string; label: strin
     if (hero) heroIo.observe(hero);
     hideOver.forEach((el) => hideIo.observe(el));
 
-    // Phones: direction + what lies under the pill.
+    // Phones: direction (every frame, cheap) + what lies under the pill. The
+    // hit test (elementsFromPoint) is the costly part on a phone, so it runs
+    // at most every 120 ms and once more when the scroll stops; the pill
+    // takes 700 ms to fade anyway.
     let lastY = scrollY;
-    let raf = 0;
+    let raf = 0, lastHit = 0, under = false;
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    const hit = () => {
+      lastHit = performance.now();
+      const px = innerWidth / 2, py = innerHeight - 40;
+      under = document.elementsFromPoint(px, py).some((el) => el.closest("[data-no-pill]") && !el.closest("[data-sticky-book]"));
+    };
     const check = () => {
       raf = 0;
       if (!phone) return;
@@ -37,11 +46,14 @@ export default function StickyBook({ href, label }: { href: string; label: strin
       const down = y > lastY + 2;
       const up = y < lastY - 2;
       lastY = y;
-      const px = innerWidth / 2, py = innerHeight - 40;
-      const under = document.elementsFromPoint(px, py).some((el) => el.closest("[data-no-pill]") && !el.closest("[data-sticky-book]"));
+      if (performance.now() - lastHit > 120) hit();
       setPhoneHide((prev) => (under ? true : down ? true : up ? false : prev));
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(check);
+      clearTimeout(settle);
+      settle = setTimeout(() => { if (!phone) return; hit(); setPhoneHide((prev) => (under ? true : prev)); }, 160);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
 
     const inCalc = (el: EventTarget | null) => el instanceof HTMLElement && !!el.closest("[data-calc]") && el.tagName === "INPUT";
@@ -57,6 +69,7 @@ export default function StickyBook({ href, label }: { href: string; label: strin
       document.removeEventListener("focusout", onOut);
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
+      clearTimeout(settle);
     };
   }, []);
 
