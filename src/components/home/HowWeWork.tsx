@@ -97,7 +97,7 @@ function ReportCard({ t }: { t: T["report"] }) {
         </div>
         <div className={styles.sections}>
           {picks.map(([si, rows]) => {
-            const [title, all] = t.sections[si] as [string, string[][]];
+            const [title, all] = t.sections[si];
             return (
               <div key={title} className="flex flex-col gap-[4px]">
                 <span className="text-[15px] font-semibold">{title}</span>

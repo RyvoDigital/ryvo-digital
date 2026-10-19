@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import LegalPage, { COMPANY, LegalSection } from "@/components/legal/LegalPage";
 import { isLocale } from "@/i18n/config";
@@ -75,7 +76,7 @@ export default async function TermsOfServicePage({ params }: { params: Promise<{
       <LegalSection title="7. Privacy">
         <p>
           How we handle personal data is explained in our{" "}
-          <a href="/privacy-policy">Privacy Policy</a>.
+          <Link href={`/${lang}/privacy-policy`}>Privacy Policy</Link>.
         </p>
       </LegalSection>
 

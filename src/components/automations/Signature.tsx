@@ -164,7 +164,7 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
   return (
     <div ref={wrap} className={s.sig} data-kind={kind} data-ready={ready} role="img" aria-label={label}>
       <div className={s.sigPoster} data-show={failed} aria-hidden="true">
-        {posterSrc ? <img src={posterSrc} alt="" decoding="async" className={s.sigPosterFull} data-failed={failed} /> : <picture>
+        {posterSrc ? <img src={posterSrc} alt="" width={1920} height={1200} decoding="async" className={s.sigPosterFull} data-failed={failed} /> : <picture>
           <source type="image/avif" srcSet={`${objectSrc(poster, 800, "avif")} 800w, ${objectSrc(poster, 1200, "avif")} 1200w`} sizes="(min-width: 1024px) 40vw, 80vw" />
           <img src={objectSrc(poster, 800, "webp")} srcSet={`${objectSrc(poster, 800, "webp")} 800w, ${objectSrc(poster, 1200, "webp")} 1200w`} sizes="(min-width: 1024px) 40vw, 80vw" width={1200} height={1200} alt="" decoding="async" data-failed={failed} />
         </picture>}

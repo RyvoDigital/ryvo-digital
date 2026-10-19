@@ -13,8 +13,8 @@ import r from "./Report.module.css";
 type Rep = Dictionary["how"]["report"];
 
 export default function Report({ p, rep }: { p: Pages["automations"]; rep: Rep }) {
-  const sections = rep.sections as unknown as [string, [string, string][]][];
-  const langs = rep.languages as unknown as [string, number][];
+  const sections = rep.sections;
+  const langs = rep.languages;
   return (
     <section className={r.section} aria-labelledby="report-title" data-section="report" data-report>
       <div className={r.text}>

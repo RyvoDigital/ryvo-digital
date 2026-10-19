@@ -7,12 +7,12 @@ import { prefersReducedMotion, withMotion } from "@/lib/gsap";
 import { nextThursday, useViewingKey } from "@/lib/viewing-date";
 import { CHATS, CHAT_LANGS, LANG_NAME, chatDates, type ChatLang } from "./demo-chats";
 import styles from "./Demo.module.css";
-import ScreenFit from "@/components/chrome/ScreenFit";
+import ScreenFit, { type Corners } from "@/components/chrome/ScreenFit";
 import ChatThread, { useChatPlayer, type Who } from "@/components/chrome/ChatThread";
 
 // The floating phone (Kie.ai, GPT Image 2.5, background removed) and its screen's
 // four true corners, edge-fitted (% of the image); the chat takes its perspective.
-const PHONE = { corners: { TL: [5.92, -0.76], TR: [71.27, 5.97], BR: [101.45, 98.52], BL: [34.12, 97.09] } as const, aspect: 2.17, radius: 0.16 };
+const PHONE: { corners: Corners; aspect: number; radius: number } = { corners: { TL: [5.92, -0.76], TR: [71.27, 5.97], BR: [101.45, 98.52], BL: [34.12, 97.09] }, aspect: 2.17, radius: 0.16 };
 
 const WHOS: Who[] = ["lead", "agent", "lead", "agent", "lead", "agent"];
 
@@ -100,7 +100,7 @@ export default function Demo({ lang, t }: { lang: Locale; t: Dictionary["demo"] 
                 <source type="image/avif" srcSet="/media/demo/phone-400.avif 400w, /media/demo/phone-640.avif 640w, /media/demo/phone-900.avif 900w" sizes="(min-width: 1024px) 320px, 250px" />
                 <img src="/media/demo/phone-640.webp" srcSet="/media/demo/phone-400.webp 400w, /media/demo/phone-640.webp 640w, /media/demo/phone-900.webp 900w" sizes="(min-width: 1024px) 320px, 250px" alt="" width={1198} height={2237} loading="lazy" decoding="async" className={styles.phoneImg} />
               </picture>
-              <ScreenFit corners={PHONE.corners as never} aspect={PHONE.aspect} radius={PHONE.radius}>
+              <ScreenFit corners={PHONE.corners} aspect={PHONE.aspect} radius={PHONE.radius}>
                 <div className={styles.screen} lang={chatLang.toLowerCase()}>
                   <div className={styles.phoneHead}>
                     <span className={styles.avatar} aria-hidden="true">YA</span>

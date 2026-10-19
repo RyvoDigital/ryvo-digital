@@ -54,13 +54,13 @@ export default function PhoneStory({ chat, story, langCode, slotShort }: Props) 
     const stop = withMotion(({ gsap }) => {
       if (!el.offsetParent) return; // the other layout's phone: stays still
       const q = gsap.utils.selector(el);
-      const one = (s: string) => q(`[data-s="${s}"]`)[0] as HTMLElement;
+      const one = <T extends Element = HTMLElement>(s: string) => el.querySelector<T>(`[data-s="${s}"]`)!;
       const hero = el.closest<HTMLElement>("[data-hero]");
       const chip = hero?.querySelector<HTMLElement>("[data-chip]");
       const fly = hero?.querySelector<HTMLElement>("[data-fly]");
       const scenes = ["notif", "lang", "reply", "time", "booked", "hand"].map(one);
       const reel = one("reel"), cell = (one("reel").firstElementChild as HTMLElement).offsetHeight || 84;
-      const check = one("check") as unknown as SVGPathElement, ring = one("ring") as unknown as SVGCircleElement;
+      const check = one<SVGPathElement>("check"), ring = one<SVGCircleElement>("ring");
       const len = check.getTotalLength(), rlen = ring.getTotalLength();
       const enter = { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: "expo.out" };
       const leave = { autoAlpha: 0, y: -26, scale: 0.97, duration: 0.45, ease: "power2.in" };
