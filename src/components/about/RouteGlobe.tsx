@@ -82,10 +82,11 @@ export default function RouteGlobe({
 
     const load = async () => {
       try {
-        const [{ createRouteGlobe, TURN }, m] = await Promise.all([import("./route-scene"), startMotion()]);
-        if (disposed) return;
-        // The build is one long task: run it while the page rests.
+        // Loading three.js and building the scene are long tasks (more so on
+        // a phone): both wait until the page rests.
         await new Promise<void>((resolve) => { cancelBuild = whenScrollRests(resolve); });
+        if (disposed) return;
+        const [{ createRouteGlobe, TURN }, m] = await Promise.all([import("./route-scene"), startMotion()]);
         if (disposed) return;
         const { gsap, ScrollTrigger, reduced } = m;
         globe = createRouteGlobe(canvas, FRAMES[framing], place);

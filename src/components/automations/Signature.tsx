@@ -53,10 +53,11 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
     async function boot() {
       const reduced = isReduced();
       try {
-        const m = await startMotion();
-        // The build is one long task: run it while the page rests.
+        // Loading three.js and building the scene are long tasks (more so on
+        // a phone): both wait until the page rests.
         await new Promise<void>((resolve) => { cleanups.push(whenScrollRests(resolve)); });
         if (disposed) return;
+        const m = await startMotion();
         const srcs = objects.map((i) => objectSrc(i, 800, "webp"));
         // The hero is the vitrine; the close is the mercury stage.
         const made = kind === "hero"

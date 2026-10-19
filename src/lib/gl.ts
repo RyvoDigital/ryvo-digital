@@ -19,7 +19,7 @@ const isWebKit = () => {
 // Phones (a touch screen under ~820 px on its short side) draw at 1.5× too:
 // at 3× a full-width stage is four times the pixels for no visible gain, and
 // it is battery and heat.
-const isPhone = () => matchMedia("(pointer: coarse)").matches && Math.min(screen.width, screen.height) < 820;
+export const isPhone = () => matchMedia("(pointer: coarse)").matches && Math.min(screen.width, screen.height) < 820;
 
 export function glPixelRatio() {
   return Math.min(window.devicePixelRatio || 1, isWebKit() || isPhone() ? 1.5 : 2);

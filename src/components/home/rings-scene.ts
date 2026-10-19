@@ -7,7 +7,7 @@ import {
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { gsap as GSAP } from "gsap";
-import { glPixelRatio, releaseContext } from "@/lib/gl";
+import { glPixelRatio, isPhone, releaseContext } from "@/lib/gl";
 
 export type Rings = { start: () => void; stop: () => void; resize: () => void; dispose: () => void; renderAt: (turn: number) => void };
 
@@ -15,7 +15,10 @@ const TURN_SECONDS = 26; // one full revolution: slow, calm
 
 // It turns on the site's one ticker (gsap.ticker, which also drives Lenis and
 // ScrollTrigger): no requestAnimationFrame loop of its own.
-export function createRings(canvas: HTMLCanvasElement, { opaque = false, ticker }: { opaque?: boolean; ticker: typeof GSAP.ticker }): Rings {
+// The build is split across frames (the renderer, the studio's environment
+// map, the shader compile), each its own short task, so a slow phone never
+// drops a frame to it: next() waits for the next frame.
+export async function createRings(canvas: HTMLCanvasElement, { opaque = false, ticker, next }: { opaque?: boolean; ticker: typeof GSAP.ticker; next: () => Promise<void> }): Promise<Rings> {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: !opaque, powerPreference: "high-performance" });
   renderer.setPixelRatio(glPixelRatio());
   renderer.outputColorSpace = SRGBColorSpace;
@@ -24,10 +27,12 @@ export function createRings(canvas: HTMLCanvasElement, { opaque = false, ticker 
   renderer.setClearColor(0x000000, opaque ? 1 : 0);
 
   const scene = new Scene();
+  await next();
   // A small studio: the RoomEnvironment, prefiltered for physically based reflections.
   const pmrem = new PMREMGenerator(renderer);
   const env = pmrem.fromScene(new RoomEnvironment(), 0.03).texture;
   scene.environment = env;
+  await next();
 
   const chrome = new MeshPhysicalMaterial({
     color: 0xe4e7ec, metalness: 1, roughness: 0.09, clearcoat: 0.4, clearcoatRoughness: 0.06, envMapIntensity: 1.25,
@@ -35,7 +40,9 @@ export function createRings(canvas: HTMLCanvasElement, { opaque = false, ticker 
 
   // A Hopf link: each ring passes through the other's centre, perpendicular to it.
   const R = 1, tube = 0.17;
-  const geo = new TorusGeometry(R, tube, 96, 320);
+  // Phones: 40 % of the vertices, which a ring that size cannot show; it
+  // halves the build and the garbage it leaves (a GC pause right after).
+  const geo = isPhone() ? new TorusGeometry(R, tube, 64, 200) : new TorusGeometry(R, tube, 96, 320);
   const a = new Mesh(geo, chrome);
   a.position.x = -R / 2;
   const b = new Mesh(geo, chrome);
@@ -80,6 +87,9 @@ export function createRings(canvas: HTMLCanvasElement, { opaque = false, ticker 
   const stop = () => { if (on) { on = false; ticker.remove(tick); } };
 
   resize();
+  await next();
+  renderer.compile(scene, camera);
+  await next();
   return {
     start: () => { if (!on) { on = true; ticker.add(tick); } },
     stop,

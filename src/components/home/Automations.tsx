@@ -34,12 +34,16 @@ function LoopStage({ active, note }: { active: number; note: string[] }) {
     let cancelBuild: (() => void) | undefined;
     const load = async () => {
       try {
-        const [{ createRings }, { gsap }] = await Promise.all([import("./rings-scene"), loadMotion()]);
-        if (gone) return;
-        // The build is one long task: run it while the page rests.
+        // Loading three.js and building the scene are long tasks (more so on
+        // a phone): both wait until the page rests.
         await new Promise<void>((resolve) => { cancelBuild = whenScrollRests(resolve); });
         if (gone) return;
-        rings = createRings(cv, { opaque: posterMode, ticker: gsap.ticker });
+        const [{ createRings }, { gsap }] = await Promise.all([import("./rings-scene"), loadMotion()]);
+        if (gone) return;
+        const next = () => new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+        const made = await createRings(cv, { opaque: posterMode, ticker: gsap.ticker, next });
+        if (gone) { made.dispose(); return; }
+        rings = made;
         if (posterMode) rings.renderAt(0);
         else run();
         setLive(true);
