@@ -64,6 +64,8 @@
 .whatCol { display: flex; flex-direction: column; gap: 14px; padding: 26px 0 30px; border-top: 1px solid var(--color-line-2); }
 @media (min-width: 1024px) { .whatCol { padding: 32px 0 0; gap: 18px; } }
 .whatT { margin: 0; font-size: 34px; line-height: 1; }
+/* tablets: three columns of ~210 px; the longest word (ES "Mantenimiento") fits */
+@media (min-width: 768px) and (max-width: 1023px) { .whatT { font-size: clamp(26px, 4vw, 34px); } }
 @media (min-width: 1024px) { .whatT { font-size: clamp(40px, 3.6vw, 54px); font-stretch: 114%; } }
 
 /* ── How a project runs: sticky counter ───────────────────────────────────── */
@@ -120,6 +122,8 @@
 .priceNoteOne { margin: 0; font-size: 15px; line-height: 1.6; color: var(--color-body); }
 .priceFoot { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; padding-top: 22px; border-top: 1px solid rgba(11, 12, 14, 0.12); }
 @media (min-width: 768px) { .priceFoot { flex-direction: row; align-items: center; justify-content: space-between; margin-top: 40px; } }
+/* the button keeps its words whole; the note beside it wraps (PT and ES are longer) */
+.priceFoot > :last-child { flex-shrink: 0; }
 .note { margin: 0; font-size: 15px; line-height: 1.6; color: var(--color-steel); }
 
 /* ── The team: the trust section ─────────────────────────────────────────
