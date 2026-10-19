@@ -253,19 +253,6 @@
 .field input:focus-visible { outline: none; border-color: var(--color-silver); }
 .field[data-bad="true"] input { border-color: #b97070; }
 
-.placeholder {
-  min-height: 360px;
-  border-radius: 18px;
-  border: 1px dashed #2e3136;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 32px 20px;
-  text-align: center;
-}
-
 .ring {
   width: 54px;
   height: 54px;

@@ -67,7 +67,6 @@
   }
 }
 
-
 .cardShadow {
   display: none;
 }
@@ -371,9 +370,6 @@
   .screenMob { display: none; }
 }
 
-/* The photo's screen is lit grey; the chat brings its own dark glass. */
-.screenBg { position: absolute; inset: 0; background: linear-gradient(170deg, #121317 0%, #0b0c0e 60%); }
-
 .glass {
   position: absolute;
   inset: 0;
@@ -464,9 +460,6 @@
     background: linear-gradient(180deg, #15171b 0%, rgba(21, 23, 27, 0.55) 55%, rgba(7, 8, 10, 0) 100%);
   }
 }
-
-
-
 
 /* Long-headline languages: a touch smaller on desktop, and balanced breaks. */
 .h1 [data-reveal-line] { text-wrap: balance; }
