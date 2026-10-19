@@ -7,13 +7,8 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   // First-time visitors from LinkedIn and email: styles arrive with the HTML, no render-blocking request.
   experimental: { inlineCss: true, globalNotFound: true },
-  async redirects() {
-    // Keep links to the old single-language legal pages working.
-    return [
-      { source: "/privacy-policy", destination: "/en/privacy-policy", permanent: true },
-      { source: "/terms-of-service", destination: "/en/terms-of-service", permanent: true },
-    ];
-  },
+  // The old single-language legal pages redirect to the visitor's language in
+  // src/proxy.ts (config redirects cannot read Accept-Language).
   async headers() {
     return [
       {
