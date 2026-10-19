@@ -9,7 +9,9 @@ import { BookButton } from "./Icons";
 import { navLinks } from "./nav-links";
 
 // The full-screen numbered menu (ZARA-style list), with its own button. Used by
-// the in-card bar on phones and by the floating pill on phones.
+// the in-card bar on phones and by the floating pill on phones. It fades in
+// and its rows rise one after another (globals.css .menu-panel); closed, it is
+// inert, so it is never in the tab order or the accessibility tree.
 export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang: Locale; t: Dictionary; bookHref: string; className?: string }) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -66,8 +68,9 @@ export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang
         role="dialog"
         aria-modal="true"
         aria-label={t.nav.main}
-        hidden={!open}
-        className="fixed inset-0 z-[80] flex flex-col bg-page/95 px-[18px] pb-8 pt-[22px] backdrop-blur-xl"
+        inert={!open}
+        data-open={open}
+        className="menu-panel fixed inset-0 z-[80] flex flex-col bg-page/95 px-[max(18px,env(safe-area-inset-left))] pb-[max(32px,env(safe-area-inset-bottom))] pt-[max(22px,env(safe-area-inset-top))] backdrop-blur-xl"
       >
         <div className="flex items-center justify-between">
           <span className="text-[17px] font-bold tracking-[0.06em]" style={{ fontStretch: "125%" }}>RYVO</span>
@@ -80,7 +83,7 @@ export default function MobileMenu({ lang, t, bookHref, className = "" }: { lang
         </div>
         <ol className="mt-14 flex flex-col">
           {links.map((l, i) => (
-            <li key={l.href} className="border-t border-line last:border-b">
+            <li key={l.href} className="border-t border-line last:border-b" style={{ ["--i" as string]: i }}>
               <Link href={l.href} onClick={() => setOpen(false)} className="flex min-h-[64px] items-baseline gap-4 py-4">
                 <span className="font-mono text-[11px] text-steel">[0{i + 1}]</span>
                 <span className="display text-[34px]">{l.label}</span>

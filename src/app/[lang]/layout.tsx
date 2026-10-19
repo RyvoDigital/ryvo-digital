@@ -37,6 +37,9 @@ export function generateStaticParams() {
 export const viewport: Viewport = {
   themeColor: "#07080A",
   colorScheme: "dark",
+  // The page runs edge to edge on notched phones; env(safe-area-inset-*) keeps
+  // the gutters and the fixed bars clear of the notch and the home indicator.
+  viewportFit: "cover",
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {

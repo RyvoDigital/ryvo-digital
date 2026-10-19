@@ -1,5 +1,5 @@
 /* The footer: the mercury horizon. */
-.footer { --ease: cubic-bezier(0.16, 1, 0.3, 1); --footer-end: #0a0b0d; --footer-label: #979ca4; position: relative; overflow-x: clip; padding: clamp(64px, 8vw, 112px) 0 28px; background: linear-gradient(var(--color-page), var(--footer-end)); }
+.footer { --ease: cubic-bezier(0.16, 1, 0.3, 1); --footer-end: #0a0b0d; --footer-label: #979ca4; position: relative; overflow-x: clip; padding: clamp(64px, 8vw, 112px) 0 max(28px, env(safe-area-inset-bottom)); background: linear-gradient(var(--color-page), var(--footer-end)); }
 /* On the light /websites page the footer keeps that page's own tones. */
 :global(.theme-light) .footer { --footer-end: var(--color-page); --footer-label: var(--color-steel); }
 .inner { max-width: calc(1240px + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); display: flex; flex-direction: column; gap: 40px; }

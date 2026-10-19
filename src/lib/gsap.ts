@@ -35,6 +35,9 @@ export function loadMotion(): Promise<Motion> {
   loading ??= afterFirstPaint().then(() => Promise.all([import("gsap"), import("gsap/ScrollTrigger")])).then(([g, s]) => {
     g.gsap.registerPlugin(s.ScrollTrigger);
     g.gsap.defaults({ ease: "expo.out", duration: 0.9 });
+    // The phone's address bar showing or hiding must never re-measure the page
+    // mid-scroll (no ScrollTrigger jumps); the same as lib/motion.
+    s.ScrollTrigger.config({ ignoreMobileResize: true });
     return { gsap: g.gsap, ScrollTrigger: s.ScrollTrigger };
   });
   return loading;

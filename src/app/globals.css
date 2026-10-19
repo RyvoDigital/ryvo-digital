@@ -23,12 +23,13 @@
 
 :root {
   --chrome: linear-gradient(135deg, #fafbfc 0%, #a9aeb6 38%, #eef0f2 58%, #8e939b 100%);
-  --gutter: 16px;
+  /* never under a notch in landscape (the insets are 0 everywhere else) */
+  --gutter: max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
   color-scheme: dark;
 }
 
 @media (min-width: 768px) {
-  :root { --gutter: 24px; }
+  :root { --gutter: max(24px, env(safe-area-inset-left), env(safe-area-inset-right)); }
 }
 
 html {
@@ -283,6 +284,13 @@ html.intro [data-hero] [data-baked-wordmark] { animation: hero-rise-baked 0.9s c
 @media (prefers-reduced-motion: reduce) {
   .pill-label { transition: none; }
 }
+
+/* The phone menu (MobileMenu): a calm fade with a slight rise; its rows
+   follow one after another. The same both ways, instant with reduced motion. */
+.menu-panel { opacity: 0; visibility: hidden; translate: 0 -10px; transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), translate 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.3s; }
+.menu-panel[data-open="true"] { opacity: 1; visibility: visible; translate: 0 0; transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), translate 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s; }
+.menu-panel li { opacity: 0; translate: 0 12px; transition: opacity 0.35s ease, translate 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.menu-panel[data-open="true"] li { opacity: 1; translate: 0 0; transition-delay: calc(0.06s + var(--i, 0) * 0.045s); }
 
 /* Between pages (app/[lang]/template.tsx): the new page fades in. */
 .page-in { animation: page-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) backwards; }

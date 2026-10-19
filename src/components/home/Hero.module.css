@@ -3,7 +3,7 @@
 
 .wrap {
   position: relative;
-  padding: 10px 10px 0;
+  padding: 10px max(10px, env(safe-area-inset-left), env(safe-area-inset-right)) 0;
   overflow-x: clip; /* the glow spills down onto the page, never sideways */
 }
 
