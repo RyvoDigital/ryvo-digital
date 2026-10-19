@@ -1,0 +1,36 @@
+/* Browser and phone frames: silver hardware on the light page. */
+.browser {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f7f8fa;
+  box-shadow:
+    0 0 0 1px rgba(11, 12, 14, 0.1),
+    inset 0 1px 0 #fff,
+    0 50px 100px -30px rgba(40, 44, 52, 0.35),
+    0 18px 36px -18px rgba(40, 44, 52, 0.25);
+}
+@media (min-width: 1024px) { .browser { border-radius: 18px; } }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 30px; padding: 0 12px; background: linear-gradient(180deg, #fbfbfc, #eef0f2); border-bottom: 1px solid #dfe2e6; }
+@media (min-width: 1024px) { .bar { height: 38px; padding: 0 16px; } }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: #cdd1d7; }
+.host { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 12px; border-radius: 999px; background: #e4e7eb; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: #4f545c; }
+@media (min-width: 1024px) { .host { font-size: 11px; padding: 4px 16px; } }
+.screen { aspect-ratio: 16 / 10; overflow: hidden; background: #0b0c0e; }
+.shot { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; }
+
+.phone {
+  position: relative;
+  aspect-ratio: 390 / 820;
+  padding: 3.2%;
+  border-radius: 15% / 7.2%;
+  background: linear-gradient(145deg, #fafbfc 0%, #b9bec6 34%, #eef0f2 56%, #9ea3ab 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 0 0 1px rgba(11, 12, 14, 0.14),
+    0 60px 90px -30px rgba(40, 44, 52, 0.45),
+    0 20px 40px -20px rgba(40, 44, 52, 0.35);
+}
+.phoneScreen { position: relative; height: 100%; overflow: hidden; border-radius: 12.4% / 5.8%; background: #0b0c0e; }
+.island { position: absolute; left: 50%; top: 4.6%; width: 28%; height: 3.4%; translate: -50% 0; border-radius: 999px; background: #0b0c0e; }
