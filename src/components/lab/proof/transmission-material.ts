@@ -20,6 +20,7 @@ export type TransmissionUniforms = {
   uUpY: { value: number }; // the height of the light
   uUpZ: { value: number }; // the slot's depth position
   uUpCol: { value: Color };
+  uUpHalf: { value: number }; // the slot's half length: the graze is keyed to its segment
 };
 
 export class TransmissionMaterial extends MeshPhysicalMaterial {
@@ -39,6 +40,7 @@ export class TransmissionMaterial extends MeshPhysicalMaterial {
       uUpY: { value: 0 },
       uUpZ: { value: 0 },
       uUpCol: { value: new Color(1, 1, 1) },
+      uUpHalf: { value: 0 },
     };
     this.customProgramCacheKey = () => `ryvo-transmission-${samples}`;
     this.onBeforeCompile = (shader) => {
@@ -60,6 +62,7 @@ export class TransmissionMaterial extends MeshPhysicalMaterial {
   uniform float uUpY;
   uniform float uUpZ;
   uniform vec3 uUpCol;
+  uniform float uUpHalf;
   uniform mat4 modelMatrix;
   uniform mat4 projectionMatrix;
   varying vec3 vWorldPosition;
@@ -96,7 +99,7 @@ export class TransmissionMaterial extends MeshPhysicalMaterial {
     vec3 upN = transformNormalByInverseViewMatrix(normal, viewMatrix);
     float upF = pow(1.0 - clamp(abs(dot(upN, upV)), 0.0, 1.0), 2.2);
     float upH = max(vWorldPosition.y - uUpY, 0.0);
-    vec2 upD = vec2(vWorldPosition.x, vWorldPosition.z - uUpZ);
+    vec2 upD = vec2(max(abs(vWorldPosition.x) - uUpHalf, 0.0), vWorldPosition.z - uUpZ);
     float upLat = exp(-dot(upD, upD) / 2.6);
     float glint = exp(-upH / 0.07) * upF * 1.6;
     float wash = exp(-upH / 0.8) * (0.004 + upF * 0.05);

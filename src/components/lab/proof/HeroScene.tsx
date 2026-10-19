@@ -23,7 +23,7 @@ const SETTLED = 0.004; // within this of the target (and nearly still), it rests
 
 const wrap = (p: number) => ((p % N) + N) % N;
 
-export default function HeroScene({ names, taglines }: { names: string[]; taglines: string[] }) {
+export default function HeroScene({ names, taglines, light }: { names: string[]; taglines: string[]; light?: "clean" | "haze" }) {
   const pos = useRef({ p: 0 }); // what the scene reads: the row's position, wrapped
   const [target, setTarget] = useState(0); // the number lit in the progress mark
   const [shown, setShown] = useState(0); // the label under the case
@@ -151,7 +151,7 @@ export default function HeroScene({ names, taglines }: { names: string[]; taglin
   return (
     <div className={s.heroScene}>
       <div ref={scene} className={s.heroCanvas} data-hero-scene>
-        <Signature sig="crystal" kind="hero" objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/proof/vitrine-poster-v3.webp" label="The five automations as chrome objects, shown one at a time in a lit glass case"
+        <Signature sig="crystal" kind="hero" light={light} objects={[0, 1, 2, 3, 4]} poster={0} posterSrc="/media/proof/vitrine-poster-v3.webp" label="The five automations as chrome objects, shown one at a time in a lit glass case"
           getPos={() => pos.current.p} onVisible={onVisible} onReady={(a) => { api.current = a; }} />
       </div>
       <div className={s.heroCaption} aria-live="polite">

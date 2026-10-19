@@ -15,6 +15,7 @@ export type SignatureApi = { renderNow: () => void };
 type Props = {
   sig: Sig; kind: StageKind; objects: number[]; poster: number; label: string;
   posterSrc?: string; // a rendered frame of the scene, shown when WebGL is off
+  light?: "clean" | "haze"; // the vitrine's light (dev-only comparison)
   // The hero's carousel: read every tick; told when the stage leaves or returns.
   getPos?: () => number;
   getHover?: () => number;
@@ -22,7 +23,7 @@ type Props = {
   onReady?: (api: SignatureApi) => void;
 };
 
-export default function Signature({ sig, kind, objects, poster, label, posterSrc, getPos, getHover, onVisible, onReady }: Props) {
+export default function Signature({ sig, kind, objects, poster, label, posterSrc, light, getPos, getHover, onVisible, onReady }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const hooks = useRef({ getPos, getHover, onVisible, onReady });
   useEffect(() => { hooks.current = { getPos, getHover, onVisible, onReady }; });
@@ -56,7 +57,7 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
         const srcs = objects.map((i) => objectSrc(i, 800, "webp"));
         // The hero is the vitrine; the close is the mercury stage.
         const made = kind === "hero"
-          ? import("./vitrine-scene").then(({ createVitrine }) => createVitrine(cv!, { objects: srcs, clips: objects.map((i) => clipSrc(i)), reduced }))
+          ? import("./vitrine-scene").then(({ createVitrine }) => createVitrine(cv!, { objects: srcs, clips: objects.map((i) => clipSrc(i)), reduced, light }))
           : import("./stage-scene").then(({ createStage }) => createStage(cv!, { sig, kind, objects: srcs, reduced }));
         if (disposed) return;
         stage = await made;
@@ -152,7 +153,7 @@ export default function Signature({ sig, kind, objects, poster, label, posterSrc
       stage?.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sig, kind, objects.join(",")]);
+  }, [sig, kind, light, objects.join(",")]);
 
   return (
     <div ref={wrap} className={s.sig} data-kind={kind} data-ready={ready} role="img" aria-label={label}>

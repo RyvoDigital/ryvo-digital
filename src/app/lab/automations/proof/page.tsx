@@ -12,8 +12,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 };
 
-export default function AutomationsProof() {
+// Round 8, dev only: ?light=haze|clean compares the vitrine's two lights. The
+// page is a 404 in production, and the flag is read only outside production.
+type Q = Promise<{ light?: string }>;
+
+export default async function AutomationsProof({ searchParams }: { searchParams: Q }) {
   if (process.env.NODE_ENV === "production") notFound();
+  const q = await searchParams;
+  const light = q.light === "haze" || q.light === "clean" ? q.light : undefined;
   const pages = getPages("en");
-  return <ProofPage t={getDictionary("en")} p={pages.automations} ctaLabel={pages.ctaLabel} place={pages.about.title[1].replace(/\.$/, "")} />;
+  return <ProofPage t={getDictionary("en")} p={pages.automations} ctaLabel={pages.ctaLabel} place={pages.about.title[1].replace(/\.$/, "")} light={light} />;
 }

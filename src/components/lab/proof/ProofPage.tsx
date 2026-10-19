@@ -72,7 +72,7 @@ function ObjectPicture({ i }: { i: number }) {
   );
 }
 
-export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p: P; ctaLabel: string; place: string }) {
+export default function ProofPage({ t, p, ctaLabel, place, light }: { t: Dictionary; p: P; ctaLabel: string; place: string; light?: "clean" | "haze" }) {
   const root = useRef<HTMLDivElement>(null);
   const names = t.automationNames;
 
@@ -280,7 +280,7 @@ export default function ProofPage({ t, p, ctaLabel, place }: { t: Dictionary; p:
             </h1>
           </div>
           <div className={s.heroStage} data-hero-stage>
-            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} />
+            <HeroScene names={names} taglines={p.items.map((it) => it.tagline)} light={light} />
           </div>
           <div className={s.heroActions} data-hero-copy>
             <span className={s.actions} data-hero-rise>
