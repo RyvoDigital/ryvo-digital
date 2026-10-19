@@ -219,8 +219,12 @@
 /* The times: pills, in two runs (morning, evening) with a hairline between. */
 .runs { display: flex; flex-direction: column; gap: 10px; padding-top: 6px; }
 .runs > .times + .times { padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
-.times { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 7px; }
-@media (min-width: 1024px) { .times { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; } }
+/* Laid out by the clock (quarterCol): a column per quarter of the hour, one
+   hour a row on phones, two from tablets up, so the :00s line up. */
+.times { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.times > .time { grid-column: var(--c4); }
+@media (min-width: 768px) { .times { grid-template-columns: repeat(8, minmax(0, 1fr)); } .times > .time { grid-column: var(--c8); } }
+@media (min-width: 1024px) { .times { gap: 8px; } }
 
 .time {
   position: relative; min-height: 44px; border-radius: 999px; border: 0;

@@ -12,7 +12,7 @@ import FloatingNav from "@/components/chrome/FloatingNav";
 import { FALLBACK_LINKS } from "@/lib/booking/config";
 import { useBooking, useCityClock, useSubmit, type Force } from "./useBooking";
 import { MercuryLine, DoneMark } from "./Mercury";
-import { AutoHeight, Chevron, WriteLine, runs } from "./shared";
+import { AutoHeight, Chevron, WriteLine, runs, quarterCol } from "./shared";
 import s from "./BookPage.module.css";
 
 type P = Pages["book"];
@@ -191,11 +191,11 @@ export default function BookPage({ lang, t, p, initial, force }: { lang: Locale;
                                       <div key={run[0].iso} className={s.times}>
                                         {run.map(({ iso, free }, k) => (
                                           free ? (
-                                            <button key={iso} type="button" onClick={() => b.setStage({ s: "form", slot: iso })} className={s.time} style={{ ["--i" as string]: k }}>
+                                            <button key={iso} type="button" onClick={() => b.setStage({ s: "form", slot: iso })} className={s.time} style={{ ["--i" as string]: k, ["--c4" as string]: quarterCol(iso, run[0].iso, b.tz, 4), ["--c8" as string]: quarterCol(iso, run[0].iso, b.tz, 8) }}>
                                               {b.fmtTime(iso)}
                                             </button>
                                           ) : (
-                                            <button key={iso} type="button" disabled aria-label={`${b.fmtTime(iso)}, ${bk.unavailable}`} className={`${s.time} ${s.taken}`} style={{ ["--i" as string]: k }}>
+                                            <button key={iso} type="button" disabled aria-label={`${b.fmtTime(iso)}, ${bk.unavailable}`} className={`${s.time} ${s.taken}`} style={{ ["--i" as string]: k, ["--c4" as string]: quarterCol(iso, run[0].iso, b.tz, 4), ["--c8" as string]: quarterCol(iso, run[0].iso, b.tz, 8) }}>
                                               {b.fmtTime(iso)}
                                             </button>
                                           )

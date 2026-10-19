@@ -53,7 +53,7 @@ export function Chevron({ dir }: { dir: "left" | "right" }) {
 }
 
 // Times in two runs (the morning hours and the evening hours): a new run
-// starts wherever the gap between two starts is more than one step.
+// starts wherever the gap between two starts is more than 30 minutes.
 export function runs<T extends { iso: string }>(list: T[]) {
   const out: T[][] = [];
   let prev = 0;
@@ -64,4 +64,19 @@ export function runs<T extends { iso: string }>(list: T[]) {
     prev = t;
   }
   return out;
+}
+
+// A time's column in a grid laid out by the clock: one column per quarter
+// (:00, :15, :30, :45), so the same minutes line up down the grid. Four columns
+// hold one hour a row; eight hold two (the hour's parity, counted from the
+// run's first time). In the visitor's zone: every zone's offset is a multiple
+// of 15 minutes, so the quarters hold everywhere.
+export function quarterCol(iso: string, first: string, tz: string, perRow: 4 | 8) {
+  const hm = (x: string) => {
+    const p = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(x));
+    const get = (t: string) => Number(p.find((q) => q.type === t)!.value);
+    return [get("hour"), get("minute")] as const;
+  };
+  const [h, m] = hm(iso), [h0] = hm(first);
+  return (perRow === 8 ? ((h - h0 + 24) % 2) * 4 : 0) + Math.floor(m / 15) + 1;
 }

@@ -31,7 +31,7 @@ function zonedDate(timeZone: string, at: Date) {
 
 const overlaps = (a0: number, a1: number, b0: number, b1: number) => a0 < b1 && b0 < a1;
 
-/** Every 30-minute start (UTC ISO) inside the published hours, the notice and the horizon, busy or not. */
+/** Every start (UTC ISO, each RULES.stepMin) inside the published hours, the notice and the horizon, busy or not. */
 export function candidateSlots(kind: Kind, now = new Date()) {
   const { timeZone, durationMin, stepMin, minNoticeHours, horizonDays } = RULES;
   const earliest = now.getTime() + minNoticeHours * 60 * MIN;
@@ -53,7 +53,7 @@ export function candidateSlots(kind: Kind, now = new Date()) {
   return [...new Set(out)].sort();
 }
 
-/** Every bookable 30-minute start (UTC ISO) for a call type, given the calendar's busy blocks. */
+/** Every bookable start (UTC ISO) for a call type, given the calendar's busy blocks. */
 export function availableSlots(kind: Kind, busy: Busy[], now = new Date()) {
   const { durationMin, bufferMin } = RULES;
   const blocks = busy.map((b) => [Date.parse(b.start), Date.parse(b.end)] as const);

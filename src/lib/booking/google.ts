@@ -1,6 +1,7 @@
 import "server-only";
 import type { Busy } from "./slots";
 import { mockAllowed } from "./mock";
+import { BOOKED_COLOR_ID } from "./config";
 
 // Google Calendar for hello@, over plain REST. Credentials come only from the
 // environment (.env.local / Vercel), placed by Manuel; nothing here logs them.
@@ -81,6 +82,7 @@ export async function createEvent(e: NewEvent): Promise<{ id: string; meet?: str
       end: { dateTime: e.end, timeZone: "UTC" },
       attendees: [{ email: e.guest.email, displayName: e.guest.name }],
       guestsCanModify: false,
+      colorId: BOOKED_COLOR_ID,
       conferenceData: { createRequest: { requestId: crypto.randomUUID(), conferenceSolutionKey: { type: "hangoutsMeet" } } },
       reminders: { useDefault: true },
     }),

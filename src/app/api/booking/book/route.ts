@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { RULES, TITLES } from "@/lib/booking/config";
+import { RULES, TITLES, bookedTitle } from "@/lib/booking/config";
 import { isBookable } from "@/lib/booking/slots";
 import { createEvent, freeBusy, mode } from "@/lib/booking/google";
 import { allow, validate } from "@/lib/booking/guard";
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const extraLabel = b.kind === "automations" ? "Enquiries per month" : "Current website";
     const description = [
-      `${TITLES[b.kind]}, booked on ryvodigital.com`,
+      `${TITLES[b.kind]} with Ryvo Digital, booked on ryvodigital.com`,
       "",
       `Name: ${b.name}`,
       `Email: ${b.email}`,
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     ].join("\n");
 
     const event = await createEvent({
-      summary: `${TITLES[b.kind]} · ${b.agency}`,
+      summary: bookedTitle(b.kind, b.agency),
       description,
       start: start.toISOString(),
       end: end.toISOString(),

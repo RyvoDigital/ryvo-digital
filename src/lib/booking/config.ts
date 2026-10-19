@@ -18,16 +18,27 @@ export const HOURS: Record<Kind, Week> = {
 export const RULES = {
   timeZone: "Europe/Madrid",
   durationMin: 30,
-  stepMin: 30,
+  // Starts every 15 minutes, with a 15-minute break kept either side of any
+  // busy time: after a 10:00–10:30 call the next start is 10:45, and the
+  // latest before it 09:15 (Manuel, 19 Oct 2026).
+  stepMin: 15,
   bufferMin: 15,
   minNoticeHours: 12,
   horizonDays: 28,
 };
 
 export const TITLES: Record<Kind, string> = {
-  automations: "Ryvo · Automations call",
-  websites: "Ryvo · Websites call",
+  automations: "Automations call",
+  websites: "Websites call",
 };
+
+// A site booking in hello@'s calendar: the title starts "Booked ·" and the
+// event is Tomato (Google's event colour 11; colour is private to this
+// calendar, guests keep their own), so it never looks like the open hours of
+// the two Google booking pages (FALLBACK_LINKS) shown in the same calendar.
+export const BOOKED_PREFIX = "Booked ·";
+export const BOOKED_COLOR_ID = "11";
+export const bookedTitle = (kind: Kind, agency: string) => `${BOOKED_PREFIX} ${TITLES[kind]} · ${agency}`;
 
 // Fallback: the public Google booking pages, opened in a new tab.
 export const FALLBACK_LINKS: Record<Kind, string> = {

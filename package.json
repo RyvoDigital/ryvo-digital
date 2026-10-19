@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "check:booking-mock": "node scripts/check-booking-mock.mjs"
+    "check:booking-mock": "node scripts/check-booking-mock.mjs",
+    "check:booking-slots": "node scripts/check-booking-slots.mjs",
+    "check:booking-event": "node scripts/check-booking-event.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "2.0.1",
