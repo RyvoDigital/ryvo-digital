@@ -1,0 +1,17 @@
+/* The notch's hairline (NotchNav with outline, the inner pages): where the
+   card is one even tone the notch's shape would not show, so a 1 px line
+   traces it, continuous with the card's edge: from the card's top edge down
+   each fillet and side, round the inner corners and along the bottom. Three
+   pieces on the notch's own --W, so it widens with it; none overlap (the line
+   is translucent). Half a pixel toward the card, on the edge's own row. */
+svg.cap { overflow: visible; z-index: 6; }
+svg.cap path { fill: none; stroke: var(--notch-line); stroke-width: 1px; }
+svg.capL path { transform: translate(-0.5px, 0.5px); }
+svg.capR path { transform: translate(0.5px, 0.5px); }
+span.mid {
+  z-index: 6; height: 1px; top: calc(18px + var(--nh));
+  left: calc(50% - var(--W) / 2 + var(--nr) * 2); width: calc(var(--W) - var(--nr) * 4);
+  background: var(--notch-line);
+}
+.cap, .mid { --notch-line: rgba(255, 255, 255, 0.1); }
+:global(.theme-light) .cap, :global(.theme-light) .mid { --notch-line: rgba(11, 12, 14, 0.1); }

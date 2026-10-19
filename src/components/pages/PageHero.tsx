@@ -29,7 +29,7 @@ export default function PageHero({
       <Link href={`/${lang}`} className={hs.wrapLogo} style={{ fontStretch: "125%" }}>
         R<span className="fold"><span>YVO</span></span>
       </Link>
-      <NotchNav links={navLinks(lang, t)} label={t.nav.main} />
+      <NotchNav links={navLinks(lang, t)} label={t.nav.main} outline />
 
       <section className={`${s.card} ${compact ? s.compact : ""}`} data-tone={tone} data-hero-card aria-labelledby="page-title">
         <div className={hs.nav}>

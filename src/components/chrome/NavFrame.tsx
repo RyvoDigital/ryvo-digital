@@ -25,7 +25,7 @@ export default function NavFrame({ lang, t, bookHref }: { lang: Locale; t: Dicti
       <Link href={`/${lang}`} className={hs.wrapLogo} style={{ fontStretch: "125%" }}>
         R<span className="fold"><span>YVO</span></span>
       </Link>
-      <NotchNav links={navLinks(lang, t)} label={t.nav.main} />
+      <NotchNav links={navLinks(lang, t)} label={t.nav.main} outline />
       <CardTop>
         <div className={hs.nav}>
           <SiteNav lang={lang} t={t} bookHref={bookHref} linksClassName={hs.inlineLinks} fold logoClassName={hs.cardLogo} />

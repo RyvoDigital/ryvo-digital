@@ -11,7 +11,8 @@
 }
 @media (min-width: 768px) { .card { border-radius: 32px; --pad: 32px; } }
 @media (min-width: 1024px) { .card { border-radius: 34px; background: #050506; --pad: 44px; } }
-.card[data-tone="light"] { background: #e9ebee; border-color: #cdd1d7; }
+/* Light: the edge at black 10 %, the notch's hairline (NotchOutline) the same. */
+.card[data-tone="light"] { background: #e9ebee; border-color: rgba(11, 12, 14, 0.1); }
 
 /* The hero, in its own stacking context. */
 .body { position: relative; z-index: 2; }

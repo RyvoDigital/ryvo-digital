@@ -5,13 +5,14 @@ import { useEffect, useRef } from "react";
 import { NavIcon, type NavIconName } from "./Icons";
 import { NOTCH, capPath } from "./notch";
 import styles from "@/components/home/Hero.module.css";
+import o from "./NotchOutline.module.css";
 
 // The four links in the hero card's notch, as icons. Hovering the notch, or
 // focusing a link with the keyboard, opens it: the notch widens and each icon
 // slides open into icon + label, while the card's top row folds away (RYVO → R,
 // the language switch → the current one, Book → a round arrow). One calm motion,
 // all CSS transitions on one width (--W) measured here; it reverses on leave.
-export default function NotchNav({ links, label }: { links: { href: string; label: string; icon: NavIconName }[]; label: string }) {
+export default function NotchNav({ links, label, outline = false }: { links: { href: string; label: string; icon: NavIconName }[]; label: string; outline?: boolean }) {
   const nav = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -74,6 +75,19 @@ export default function NotchNav({ links, label }: { links: { href: string; labe
       <svg aria-hidden="true" className={`${styles.notchFill} ${styles.fillR}`} width={2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${2 * NOTCH.r} ${NOTCH.h}`}>
         <path d={capPath("right", true)} />
       </svg>
+      {/* Inner pages: the notch's outline, where the card around it is the
+          page's own tone (NotchOutline.module.css). */}
+      {outline && (
+        <>
+          <svg aria-hidden="true" className={`${styles.notchFill} ${styles.fillL} ${o.cap} ${o.capL}`} width={2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${2 * NOTCH.r} ${NOTCH.h}`}>
+            <path d={capPath("left", false)} />
+          </svg>
+          <span aria-hidden="true" className={`${styles.notchFill} ${o.mid}`} />
+          <svg aria-hidden="true" className={`${styles.notchFill} ${styles.fillR} ${o.cap} ${o.capR}`} width={2 * NOTCH.r} height={NOTCH.h} viewBox={`0 0 ${2 * NOTCH.r} ${NOTCH.h}`}>
+            <path d={capPath("right", false)} />
+          </svg>
+        </>
+      )}
     </>
   );
 }
