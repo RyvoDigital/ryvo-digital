@@ -45,7 +45,7 @@ export type VitrineOptions = {
   // Each object's turning footage, alpha-matted and interpolated to 60 fps at
   // its final speed: VP9 with alpha (Chrome, Firefox) and HEVC with alpha
   // (Safari). Its first frame is the still's pose.
-  clips: { webm: string; hevc: string }[];
+  clips: ({ webm: string; hevc: string } | null)[]; // null: no clip, the still turns
   // Round 8, dev only: "clean" (light where it lands) or "haze" (plus a very
   // faint haze attached to the slot).
   light?: "clean" | "haze";
@@ -396,7 +396,8 @@ export async function createVitrine(canvas: HTMLCanvasElement, opts: VitrineOpti
     if (!videos[i]) {
       const v = document.createElement("video");
       v.muted = true; v.loop = true; v.playsInline = true; v.preload = "auto";
-      v.src = format === "hevc" ? opts.clips[i].hevc : opts.clips[i].webm; // already at its slow, 60 fps turn
+      const clip = opts.clips[i]!;
+      v.src = format === "hevc" ? clip.hevc : clip.webm; // already at its slow, 60 fps turn
       v.addEventListener("loadeddata", () => { if (alphaOK === null) verify(v); }, { once: true });
       videos[i] = v;
       const c = document.createElement("canvas"); c.width = c.height = 512;
