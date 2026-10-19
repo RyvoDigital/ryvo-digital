@@ -6,7 +6,8 @@ import type { Locale } from "@/i18n/config";
 import { fill, formatViewing, nextThursday, useViewingKey, weekdayOnly } from "@/lib/viewing-date";
 import PhoneStory, { HandCard } from "./PhoneStory";
 import ScreenFit, { type Corners } from "@/components/chrome/ScreenFit";
-import { ART, DESK_MEDIA, srcSet } from "./hero-media";
+import { ART } from "./hero-media";
+import ArtPicture from "./ArtPicture";
 import styles from "./Hero.module.css";
 
 // The hero is one photograph: a backlit hand and phone in front of a mercury
@@ -14,29 +15,6 @@ import styles from "./Hero.module.css";
 // silhouette layer cut from it, so the letters pass behind the hand. All layers
 // share one "art box" (the photo's cover rectangle, in container units), so the
 // silhouette and the chat line up with the photo at every size.
-function ArtPicture({ which, className, priority }: { which: "bg" | "hand"; className: string; priority?: boolean }) {
-  const d = ART.desk, m = ART.mob;
-  const sizes = (a: typeof d) => (which === "bg" ? a.sizes : a.handSizes);
-  const w = which === "bg" ? m.w : m.handW, h = which === "bg" ? m.h : m.handH;
-  return (
-    <picture>
-      <source media={DESK_MEDIA} type="image/avif" srcSet={srcSet(d, which, "avif")} sizes={sizes(d)} />
-      <source media={DESK_MEDIA} type="image/webp" srcSet={srcSet(d, which, "webp")} sizes={sizes(d)} />
-      <source type="image/avif" srcSet={srcSet(m, which, "avif")} sizes={sizes(m)} />
-      <img
-        src={`${m[which]}-${which === "bg" ? 900 : 640}.webp`}
-        srcSet={srcSet(m, which, "webp")}
-        sizes={sizes(m)}
-        width={w}
-        height={h}
-        alt=""
-        fetchPriority={priority ? "high" : undefined}
-        decoding={priority ? "sync" : "async"}
-        className={className}
-      />
-    </picture>
-  );
-}
 
 // RYVO in liquid glass, sitting on the card's bottom edge: solid, thick glass,
 // not an outline. One SVG: each letter is a clip of a blurred copy of the photo
