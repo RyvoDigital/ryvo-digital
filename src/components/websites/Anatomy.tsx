@@ -12,6 +12,20 @@ import a from "./Anatomy.module.css";
 // CSS, from the first paint). With reduced motion it is a still exploded view.
 //
 // Everything here is decoration (aria-hidden); the root carries one label.
+//
+// Phones and tablets (below 1024 px) draw the same layers from baked images
+// (each layer's content, and every part whose opacity follows the explosion,
+// rendered flat at 2×: public/media/websites/anatomy), moved only by transform
+// and opacity from the scroll (WebsitesPage). Live, every frame restyled and
+// re-rasterised five 3D layers of shadows, gradients and text: on an iPhone
+// that stuttered. Wide screens keep the live layers, as approved.
+const BAKED: Record<(typeof LAYERS)[number], string[]> = {
+  grid: ["grid"],
+  layout: ["layoutBg", "layoutRest", "layoutBorder"],
+  type: ["type"],
+  image: ["image"],
+  interaction: ["halo", "interaction"],
+};
 
 const LAYERS = ["grid", "layout", "type", "image", "interaction"] as const;
 
@@ -26,6 +40,8 @@ export default function Anatomy({ label, names }: { label: string; names: string
                 <div className={a.layerIn}>
                   <span className={a.glass} />
                   <Layer kind={key} />
+                  <span className={a.bk} data-bk="glass" />
+                  {BAKED[key].map((b) => <span key={b} className={a.bk} data-bk={b} />)}
                   <span className={a.tag}><span className={a.tagN}>0{i + 1}</span>{names[i]}</span>
                 </div>
               </div>

@@ -52,12 +52,48 @@ export default function WebsitesPage({ lang, t, p, ctaLabel }: { lang: Locale; t
     // Wide: over the first half of the hero, while the stage drifts down a
     // little so the stack stays in view; the copy fades. Phones: as the
     // stage itself crosses the screen, with less depth (Anatomy.module.css).
-    gsap.fromTo(anatomy, { "--p": 0 }, {
-      "--p": 1, ease: "none",
-      scrollTrigger: desk
-        ? { trigger: hero, start: "top top", end: "45% top", scrub: true }
-        : { trigger: anatomy, start: "top 54%", end: "top 4%", scrub: true },
-    });
+    if (desk) {
+      gsap.fromTo(anatomy, { "--p": 0 }, {
+        "--p": 1, ease: "none",
+        scrollTrigger: { trigger: hero, start: "top top", end: "45% top", scrub: true },
+      });
+    } else {
+      // Phones and tablets: the baked layers (Anatomy.tsx). One number, p,
+      // scrubbed with a little smoothing, sets only transforms and opacities,
+      // straight onto the elements: no custom property cascading through the
+      // stack, nothing re-rasterised, no layout read while scrolling (the
+      // sizes are read once, and again on a refresh).
+      const stack = anatomy.querySelector<HTMLElement>("[class*='_stack']")!;
+      const layers = q("[class*='_layer']", anatomy).filter((l) => l.parentElement === stack);
+      const bk = (n: string) => q(`[data-bk='${n}']`, anatomy);
+      const glass = bk("glass"), grid = bk("grid"), bg = bk("layoutBg"), border = bk("layoutBorder"), halo = bk("halo");
+      const tags = q("[class*='_tag']", anatomy).filter((t) => !/_tagN/.test(t.className));
+      let gap = 0, rx = 0, rz = 0;
+      const measure = () => { const phone = innerWidth < 768; gap = anatomy.clientWidth * (phone ? 0.14 : 0.15); rx = phone ? 50 : 54; rz = phone ? 22 : 30; };
+      measure();
+      ScrollTrigger.addEventListener("refreshInit", measure);
+      kit.onCleanup(() => ScrollTrigger.removeEventListener("refreshInit", measure));
+      // Never quite 0: an image Safari has never drawn is decoded and
+      // rasterised on its first visible frame, mid-scroll. At 0.5 % it is
+      // drawn (invisibly) from the start.
+      const op = (els: HTMLElement[], v: number) => { const o = String(Math.max(0.005, Math.min(1, v))); for (const e of els) e.style.opacity = o; };
+      const state = { p: 0 };
+      const apply = () => {
+        const p = state.p;
+        stack.style.transform = `rotateX(${(p * rx).toFixed(3)}deg) rotateZ(${(p * rz).toFixed(3)}deg) scale(${(1 - p * 0.14).toFixed(4)})`;
+        layers.forEach((l, i) => { l.style.transform = `translateZ(${((i - 2) * (p * gap + 2)).toFixed(2)}px)`; });
+        op(glass, p); op(grid, p); op(bg, 1 - p * 0.42); op(border, p * 0.5); op(halo, 0.4 + p * 0.6); op(tags, p * 1.8 - 0.6);
+      };
+      apply();
+      gsap.to(state, {
+        p: 1, ease: "none", onUpdate: apply,
+        scrollTrigger: { trigger: anatomy, start: "top 54%", end: "top 4%", scrub: 0.4 },
+      });
+      // The compositing hints from a screen before the stage to a screen past
+      // it: switching them, the layers are built or dropped, and that must
+      // happen off screen, never on a frame where the stage is in view.
+      ScrollTrigger.create({ trigger: anatomy, start: "top bottom+=100%", end: "bottom top-=100%", onToggle: (st) => { anatomy.dataset.moving = String(st.isActive); } });
+    }
     if (desk) {
       gsap.to(stage, { y: () => hero.offsetHeight * 0.12, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true, invalidateOnRefresh: true } });
       gsap.to(hero.querySelector("[data-hero-copy]"), { opacity: 0, y: -30, ease: "none", scrollTrigger: { trigger: hero, start: "20% top", end: "60% top", scrub: true } });

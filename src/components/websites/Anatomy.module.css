@@ -144,3 +144,29 @@
 
 /* the five layers (named so each can be addressed) */
 .grid, .layout, .type, .image, .interaction { pointer-events: none; }
+
+/* ── Phones and tablets: the baked layers (Anatomy.tsx) ──────────────────
+   The same picture, from images: each one covers the stage plus a margin for
+   its shadow (64 px at a 480 px stage = 13.3333cqw). Their opacities follow
+   --p here (reduced motion: the still exploded view); with motion the scroll
+   sets them, and the transforms, directly (WebsitesPage), never --p. */
+.bk { display: none; }
+@media (max-width: 1023px) {
+  .layerIn > :not(.bk):not(.tag) { display: none; }
+  .bk { display: block; position: absolute; inset: -13.3333cqw; background: no-repeat 0 0 / 100% 100%; pointer-events: none; }
+  .bk[data-bk="glass"] { background-image: url(/media/websites/anatomy/glass.webp); opacity: var(--p); }
+  .bk[data-bk="grid"] { background-image: url(/media/websites/anatomy/grid.webp); opacity: var(--p); }
+  .bk[data-bk="layoutBg"] { background-image: url(/media/websites/anatomy/layoutBg.webp); opacity: calc(1 - var(--p) * 0.42); }
+  .bk[data-bk="layoutRest"] { background-image: url(/media/websites/anatomy/layoutRest.webp); }
+  .bk[data-bk="layoutBorder"] { background-image: url(/media/websites/anatomy/layoutBorder.webp); opacity: calc(var(--p) * 0.5); }
+  .bk[data-bk="type"] { background-image: url(/media/websites/anatomy/type.webp); }
+  .bk[data-bk="image"] { background-image: url(/media/websites/anatomy/image.webp); }
+  .bk[data-bk="halo"] { background-image: url(/media/websites/anatomy/halo.webp); opacity: calc(0.4 + var(--p) * 0.6); }
+  .bk[data-bk="interaction"] { background-image: url(/media/websites/anatomy/interaction.webp); }
+  /* no z-fighting at rest (2 px apart, not 0.4), never a back face, and a
+     compositing hint only while the explosion is in range (data-moving) */
+  .layer { transform: translateZ(calc(var(--k) * (var(--p) * var(--gap) + 2px))); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .stack, .layer { will-change: auto; }
+  .root[data-moving="true"] .stack, .root[data-moving="true"] .layer { will-change: transform; }
+  .root[data-moving="true"] :is([data-bk="glass"], [data-bk="grid"], [data-bk="layoutBg"], [data-bk="layoutBorder"], [data-bk="halo"]), .root[data-moving="true"] .tag { will-change: opacity; }
+}
