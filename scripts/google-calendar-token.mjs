@@ -17,6 +17,7 @@ const ENV = ".env.local";
 const SCOPES = [
   "https://www.googleapis.com/auth/calendar.events", // create the booking event
   "https://www.googleapis.com/auth/calendar.freebusy", // read busy times only
+  "https://www.googleapis.com/auth/gmail.send", // send the booking notification email from hello@
 ];
 const PORT = 53682;
 const REDIRECT = `http://127.0.0.1:${PORT}/callback`;

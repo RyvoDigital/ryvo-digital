@@ -13,7 +13,7 @@ import FloatingNav from "@/components/chrome/FloatingNav";
 import { FALLBACK_LINKS } from "@/lib/booking/config";
 import { useBooking, useCityClock, useSubmit, type Force } from "./useBooking";
 import { MercuryLine, DoneMark } from "./Mercury";
-import { AutoHeight, Chevron, WriteLine, runs, quarterCol } from "./shared";
+import { AutoHeight, Chevron, WriteLine, runs, quarterCol, zoneCity } from "./shared";
 import s from "./BookPage.module.css";
 
 type P = Pages["book"];
@@ -32,11 +32,9 @@ export default function BookPage({ lang, t, p, initial, force }: { lang: Locale;
   const b = useBooking(lang, initial, panel, force);
   const { stage } = b;
   const clock = useCityClock(b.locale);
-  const [lisbon, madrid] = p.cities;
   const bookHref = "#book";
-  // The visitor's zone in plain words: Lisbon and Madrid by their local names,
-  // any other zone by its own city ("America/New_York" → "New York").
-  const zoneCity = b.tz === "Europe/Lisbon" ? lisbon : b.tz === "Europe/Madrid" ? madrid : (b.tz.split("/").pop() ?? b.tz).replace(/_/g, " ");
+  const [lisbon, madrid] = p.cities;
+  const city = zoneCity(b.tz, p.cities);
 
   // The first day with a free time opens by itself: one tap to a time.
   const firstOpen = b.days.find((k) => b.byDay.get(k)?.some((x) => x.free)) ?? null;
@@ -159,7 +157,7 @@ export default function BookPage({ lang, t, p, initial, force }: { lang: Locale;
                               <div className={s.weekHead}>
                                 <span className={s.weekTitle}>
                                   <span>{bk.pickTime}</span>
-                                  <span className={s.tz}>{p.zone.replace("{city}", zoneCity)}</span>
+                                  <span className={s.tz}>{p.zone.replace("{city}", city)}</span>
                                 </span>
                                 <span className={s.weekNav}>
                                   <button type="button" className={s.arrow} aria-label={bk.prevWeek} disabled={b.pageIdx === 0} onClick={() => b.goWeek(b.pageIdx - 1)}><Chevron dir="left" /></button>

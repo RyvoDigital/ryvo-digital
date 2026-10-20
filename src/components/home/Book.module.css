@@ -198,7 +198,9 @@
 .expand[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
 .expandInner { overflow: hidden; min-height: 0; margin: -3px; padding: 3px; }
 
-.times { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; align-content: start; padding-top: 2px; }
+.times { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-content: start; padding-top: 2px; }
+.times > .time { grid-column: var(--c4); }
+@media (min-width: 768px) { .times { grid-template-columns: repeat(8, minmax(0, 1fr)); } .times > .time { grid-column: var(--c8); } }
 
 @media (prefers-reduced-motion: reduce) {
   .enter { animation: none; }

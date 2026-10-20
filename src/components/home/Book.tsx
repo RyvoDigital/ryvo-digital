@@ -6,6 +6,7 @@ import type { Dictionary } from "@/i18n";
 import { INTL_LOCALE, type Locale } from "@/i18n/config";
 import { ArrowUpRight } from "@/components/chrome/Icons";
 import { FALLBACK_LINKS, type Kind } from "@/lib/booking/config";
+import { quarterCol, zoneCity } from "@/components/book/shared";
 import styles from "./Book.module.css";
 
 // Our own booking UI on hello@'s Google Calendar: free times come from
@@ -168,7 +169,7 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
                 <div className={styles.weekHead}>
                   <span className="flex flex-col gap-[2px]">
                     <span className="text-[15px] font-medium">{t.pickTime}</span>
-                    <span className="font-mono text-[10.5px] text-steel">{t.timesIn} {tz.replace(/_/g, " ")}</span>
+                    <span className="font-mono text-[10.5px] text-steel">{t.zone.replace("{city}", zoneCity(tz, t.cities))}</span>
                   </span>
                   <span className={styles.weekNav}>
                     <button type="button" className={styles.arrow} aria-label={t.prevWeek} disabled={pageIdx === 0} onClick={() => goWeek(pageIdx - 1)}>
@@ -200,13 +201,13 @@ export default function Book({ lang, t, initial = 0 }: { lang: Locale; t: Dictio
                     {shownDay && (
                       <div className={styles.times} key={shownDay} inert={!openDay}>
                         {/* Every time inside the hours; the ones already taken are shown, struck, and not bookable. */}
-                        {(byDay.get(shownDay) ?? []).map(({ iso, free }) => (
+                        {(byDay.get(shownDay) ?? []).map(({ iso, free }, _k, all) => (
                           free ? (
-                            <button key={iso} type="button" onClick={() => setStage({ s: "form", slot: iso })} className={styles.time}>
+                            <button key={iso} type="button" onClick={() => setStage({ s: "form", slot: iso })} className={styles.time} style={{ ["--c4" as string]: quarterCol(iso, all[0].iso, tz, 4), ["--c8" as string]: quarterCol(iso, all[0].iso, tz, 8) }}>
                               {fmtTime(iso)}
                             </button>
                           ) : (
-                            <button key={iso} type="button" disabled aria-disabled="true" aria-label={`${fmtTime(iso)}, ${t.unavailable}`} className={`${styles.time} ${styles.taken}`}>
+                            <button key={iso} type="button" disabled aria-disabled="true" aria-label={`${fmtTime(iso)}, ${t.unavailable}`} className={`${styles.time} ${styles.taken}`} style={{ ["--c4" as string]: quarterCol(iso, all[0].iso, tz, 4), ["--c8" as string]: quarterCol(iso, all[0].iso, tz, 8) }}>
                               {fmtTime(iso)}
                             </button>
                           )

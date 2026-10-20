@@ -64,7 +64,7 @@ export async function freeBusy(timeMin: Date, timeMax: Date): Promise<Busy[]> {
 
 export type NewEvent = { summary: string; description: string; start: string; end: string; guest: { email: string; name: string } };
 
-export async function createEvent(e: NewEvent): Promise<{ id: string; meet?: string }> {
+export async function createEvent(e: NewEvent): Promise<{ id: string; meet?: string; link?: string }> {
   if (mode() === "mock") {
     mockBooked.push({ start: e.start, end: e.end });
     return { id: `mock-${Date.now()}`, meet: undefined };
@@ -89,6 +89,21 @@ export async function createEvent(e: NewEvent): Promise<{ id: string; meet?: str
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`insert ${res.status}`);
-  const json = (await res.json()) as { id: string; hangoutLink?: string };
-  return { id: json.id, meet: json.hangoutLink };
+  const json = (await res.json()) as { id: string; hangoutLink?: string; htmlLink?: string };
+  return { id: json.id, meet: json.hangoutLink, link: json.htmlLink };
+}
+
+// One email from hello@, through Gmail's users.messages.send with the same
+// token (scope gmail.send). `raw` is the whole MIME message, base64url.
+// The mock never calls Gmail: the caller builds and checks the message instead.
+export async function sendMail(raw: string): Promise<{ id: string }> {
+  if (mode() === "mock") return { id: "mock" };
+  const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${await accessToken()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ raw }),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`gmail ${res.status}`);
+  return (await res.json()) as { id: string };
 }

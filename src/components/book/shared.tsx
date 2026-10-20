@@ -80,3 +80,9 @@ export function quarterCol(iso: string, first: string, tz: string, perRow: 4 | 8
   const [h, m] = hm(iso), [h0] = hm(first);
   return (perRow === 8 ? ((h - h0 + 24) % 2) * 4 : 0) + Math.floor(m / 15) + 1;
 }
+
+// The visitor's zone in plain words: Lisbon and Madrid by their local names,
+// any other zone by its own city ("America/New_York" → "New York").
+export function zoneCity(tz: string, [lisbon, madrid]: readonly [string, string] | string[]) {
+  return tz === "Europe/Lisbon" ? lisbon : tz === "Europe/Madrid" ? madrid : (tz.split("/").pop() ?? tz).replace(/_/g, " ");
+}
