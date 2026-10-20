@@ -16,6 +16,10 @@ export type StageOptions = {
   kind: StageKind;
   objects: string[]; // image URLs with alpha, square, all framed the same
   reduced: boolean;
+  // Awaited between the build's long tasks (the renderer, the environment
+  // map, the textures, the shader compile, the uploads), so the caller can
+  // spread them over idle moments. Without it the build runs straight through.
+  step?: () => Promise<void>;
 };
 
 export type Stage = {
@@ -158,6 +162,7 @@ void main() {
 }`;
 
 export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions): Promise<Stage> {
+  const step = opts.step ?? (async () => {});
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
   renderer.setPixelRatio(glPixelRatio());
   renderer.outputColorSpace = SRGBColorSpace;
@@ -166,11 +171,13 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
 
   const scene = new Scene();
   scene.background = PAGE;
+  await step();
   const envTex = studio(renderer);
 
   const camera = new PerspectiveCamera(30, 1, 0.1, 60);
   const lookAt = new Vector3(0, -0.15, 0);
 
+  await step();
   const loader = new TextureLoader();
   const textures: Texture[] = await Promise.all(opts.objects.map((src) => loader.loadAsync(src)));
   textures.forEach((t) => { t.colorSpace = SRGBColorSpace; t.anisotropy = 4; });
@@ -252,7 +259,9 @@ export async function createStage(canvas: HTMLCanvasElement, opts: StageOptions)
   // Compile every program before the first frame, off the main thread where
   // the browser can (KHR_parallel_shader_compile), and upload the textures.
   layout(0);
+  await step();
   await compileScene(renderer, scene, camera);
+  await step();
   textures.forEach((t) => renderer.initTexture(t));
 
   return {

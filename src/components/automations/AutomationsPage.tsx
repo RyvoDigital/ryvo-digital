@@ -14,6 +14,13 @@ import FloatingNav from "@/components/chrome/FloatingNav";
 import StickyBook from "@/components/chrome/StickyBook";
 import WordReveal, { Words } from "@/components/chrome/WordReveal";
 import Signature from "./Signature";
+
+// The closing stage's first frame, rendered from the live scene itself at its
+// two shapes (1:1 on phones, 16:9 from 768 px): createStage, setIntro(1),
+// render(0), on canvases of 600×600 and 980×551.25 CSS px at 2×, encoded with
+// cwebp -q 84. Render them again whenever stage-scene.ts or object 01
+// changes, or the cross-fade will no longer match.
+const CLOSE_STILL = { narrow: "/media/automations/close-still-1x1.webp", wide: "/media/automations/close-still-16x9.webp" };
 import HeroScene from "./HeroScene";
 import BrandFilm from "./BrandFilm";
 import Report from "./Report";
@@ -334,7 +341,7 @@ export default function AutomationsPage({ lang, t, p, ctaLabel }: { lang: Locale
         {/* ── Closing: the mercury ───────────────────────────────────────── */}
         <section className={s.cta} data-cta aria-labelledby="cta-title">
           <div className={s.ctaStage}>
-            <Signature sig="chrome" kind="cta" objects={[0]} poster={0} />
+            <Signature sig="chrome" kind="cta" objects={[0]} poster={0} still={CLOSE_STILL} />
           </div>
           <div className={s.ctaText}>
             <span className="mono-label" data-cta-rise>{ctaLabel}</span>

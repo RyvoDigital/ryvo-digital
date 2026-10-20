@@ -132,6 +132,7 @@
 .sigPoster[data-show="true"] { opacity: 1; }
 .sigPoster img { width: min(70%, 560px); height: auto; }
 .sigPoster img.sigPosterFull { width: 100%; height: 100%; object-fit: cover; }
+.sigPosterPic { position: absolute; inset: 0; display: block; }
 
 /* ── Index ───────────────────────────────────────────────────────────────── */
 .index { max-width: calc(1180px + 2 * var(--pad)); margin: 0 auto; padding: 48px var(--pad) 0; }
